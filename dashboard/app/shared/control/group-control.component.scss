@@ -1,0 +1,50 @@
+@import 'bootstrap/scss/mixins/breakpoints';
+@import '@nebular/theme/styles/global/breakpoints';
+@import '../../@theme/styles/themes';
+
+
+:host {
+  width: 100%;
+
+  .ng2-smart-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    font-size: 2rem !important;
+    color: var(--text-basic-color);
+  }
+
+  .ng2-smart-actions a.ng2-smart-action:not(:last-child) {
+    border-right: 1px solid var(--smart-table-separator);
+  }
+  .ng2-smart-actions a:first-child {
+    margin-right: 0.25rem
+  }
+  .cursor-move {
+    cursor: move;
+  }
+}
+::ng-deep nb-dialog-container {
+  width: 100%;
+}
+
+@include nb-install-component() {
+  table {
+    display: block;
+    border: none;
+    color: nb_theme(text-hint-color) !important;
+  }
+  table > :not(caption) > * > * {
+    border: none;
+  }
+
+  .scrollable {
+    @include nb-scrollbars(
+        nb-theme(sidebar-scrollbar-color),
+        nb-theme(sidebar-scrollbar-background-color),
+        nb-theme(sidebar-scrollbar-width)
+    );
+  }
+}

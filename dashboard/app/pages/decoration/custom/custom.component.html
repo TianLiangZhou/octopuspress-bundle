@@ -1,0 +1,18 @@
+<nb-card>
+  <nb-card-header>
+    你正在自义 {{theme.stylesheet}}
+    <div class="float-end">
+      <button size="small" status="success" [disabled]="spinner || !isChanged" (click)="save($event)" nbButton>保存发布</button>
+    </div>
+  </nb-card-header>
+  <nb-card-body>
+    <nb-tabset>
+      <nb-tab [tabId]="section.id" [lazyLoad]="false" [active]="i == 0" *ngFor="let section of sections; let i = index"
+              [tabTitle]="section.label" [tabIndex]="i">
+        <div class="col-6 mx-auto">
+          <control-container [controls]="section.controls" [form]="formGroup!"></control-container>
+        </div>
+      </nb-tab>
+    </nb-tabset>
+  </nb-card-body>
+</nb-card>

@@ -1,0 +1,43 @@
+
+
+<div class="row">
+  <div class="col-12">
+    <nb-card>
+      <nb-card-header class="d-flex justify-content-between align-items-center">
+        <span>主题列表</span>
+        <div class="d-flex">
+          <button nbButton class="me-2" status="danger" (click)="dialog.open(dialogTpl)">在线下载</button>
+          <app-upload (finish)="upload($event)" [suffix]="['zip']" [status]="'primary'"></app-upload>
+        </div>
+      </nb-card-header>
+    </nb-card>
+  </div>
+  <div class="col-12 col-md-6 col-lg-4 col-xl-3" *ngFor="let theme of themes">
+    <nb-card>
+      <nb-card-header class="d-flex justify-content-between">
+        <div>{{theme.name}}</div>
+        <button *ngIf="theme.isUpgrade" nbButton status="warning" [disabled]="!theme.isUpgrade || spinner" (click)="upgrade(theme.alias)">升级</button>
+      </nb-card-header>
+      <nb-card-body>
+        <img alt="{{theme.name}}" [src]="sanitizer.bypassSecurityTrustResourceUrl(theme.image)"  *ngIf="theme.image" width="100%"/>
+      </nb-card-body>
+      <nb-card-footer class="d-flex justify-content-between">
+        <button nbButton status="danger" [disabled]="theme.enabled || spinner" (click)="delete(theme.alias)">删除</button>
+        <button nbButton status="primary" (click)="activate(theme.alias)" [disabled]="theme.enabled || spinner">{{ theme.enabled ? '已启用' : '启用' }}</button>
+      </nb-card-footer>
+    </nb-card>
+  </div>
+</div>
+<ng-template #dialogTpl let-data let-ref="dialogRef">
+  <nb-card>
+    <nb-card-header>在线下载</nb-card-header>
+    <nb-card-body>
+      <input nbInput name="url" type="url" #url placeholder="下载地址" />
+    </nb-card-body>
+    <nb-card-footer class="d-flex justify-content-between">
+      <button nbButton status="basic" (click)="ref.close()">取消</button>
+      <button nbButton status="primary" (click)="openDownload(url.value, ref)">下载</button>
+    </nb-card-footer>
+  </nb-card>
+</ng-template>
+

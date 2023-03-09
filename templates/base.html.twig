@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}{{ title|default(site_title is defined ? site_title : '') }}{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        {{ hook_action('head') }}
+        {% block style %}{% endblock %}
+    </head>
+    <body class="{{ hook_filter('body_class')|join(' ') }}">
+        {{ hook_action('body') }}
+        {% block header %}
+            {% include (theme is defined ? theme : '') ~ '/header.twig'|apply_filter('get_template_header') ignore missing %}
+        {% endblock %}
+        {% block body %}{% endblock %}
+        {% block footer %}
+            {% include (theme is defined ? theme : '') ~ '/footer.twig'|apply_filter('get_template_footer') ignore missing %}
+        {% endblock %}
+        {{ hook_action('footer') }}
+    </body>
+    {% block script %}{% endblock %}
+</html>

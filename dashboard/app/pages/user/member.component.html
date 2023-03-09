@@ -1,0 +1,23 @@
+<nb-card>
+  <nb-card-header class="d-flex justify-content-between align-items-center">
+    <span>{{route.title}}</span>
+    <a routerLink="/app/user/new" nbButton size="small" status="primary"><nb-icon icon="plus-outline"></nb-icon></a>
+  </nb-card-header>
+  <nb-card-body>
+    <form (ngSubmit)="batch()" class="mb-2">
+      <div class="row">
+        <nb-select class="col" name="batchMode" [(ngModel)]="batchMode">
+          <nb-option [value]="option.value" *ngFor="let option of batches">{{option.label}}</nb-option>
+        </nb-select>
+        <div class="col-1 ms-2">
+          <button nbButton status="primary" [disabled]="!batchMode || spinner" [nbSpinner]="spinner" type="submit">应用</button>
+        </div>
+      </div>
+    </form>
+    <angular2-smart-table
+      [settings]="settings"
+      [source]="source"
+      (delete)="delete($event)">
+    </angular2-smart-table>
+  </nb-card-body>
+</nb-card>

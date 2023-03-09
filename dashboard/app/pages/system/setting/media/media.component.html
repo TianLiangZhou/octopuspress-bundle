@@ -1,0 +1,66 @@
+<div class="card-body py-4">
+  <form #ngForm="ngForm" (ngSubmit)="action($event)">
+    <div class="header">
+      <div>
+        <h6>图片大小</h6>
+        <div class="my-3">下面列出来的尺寸决定插入媒体库内的图片之最大尺寸。以像素为单位。</div>
+      </div>
+    </div>
+    <div class="my-4 row align-items-center">
+      <label class="label col-form-label col-2" >缩略图大小</label>
+      <div class="col-10">
+        <div class="d-flex flex-column">
+          <div class="mb-3">
+            <label class="label col-form-label" for="thumbnail_size_w">宽度</label>
+            <input nbInput id="thumbnail_size_w" type="number" class="ms-0 ms-sm-4" name="thumbnail_w" [(ngModel)]="option.thumbnail_size_w">
+          </div>
+          <div class="mb-3">
+            <label class="label col-form-label" for="thumbnail_size_h">高度</label>
+            <input nbInput id="thumbnail_size_h" type="number" class="ms-0 ms-sm-4" name="thumbnail_h" [(ngModel)]="option.thumbnail_size_h">
+          </div>
+          <div>
+            <nb-checkbox [checked]="option.thumbnail_crop == 1" (checkedChange)="thumbnailCrop($event)">总是裁剪缩略图到这个尺寸（一般情况下，缩略图应保持原始比例）</nb-checkbox>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mb-4 row align-items-center">
+      <label class="label col-form-label col-2" >中等大小</label>
+      <div class="col-10">
+        <div class="d-flex flex-column">
+          <div class="mb-3">
+            <label class="label col-form-label" for="medium_size_w">最大宽度</label>
+            <input nbInput id="medium_size_w" class="ms-0 ms-sm-4" type="number" name="medium_w" [(ngModel)]="option.medium_size_w">
+          </div>
+          <div>
+            <label class="label col-form-label" for="medium_size_h">最大高度</label>
+            <input nbInput id="medium_size_h" class="ms-0 ms-sm-4" type="number" name="medium_h" [(ngModel)]="option.medium_size_h">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mb-4 row align-items-center">
+      <label class="label col-form-label col-2" >大尺寸</label>
+      <div class="col-10">
+        <div class="d-flex flex-column">
+          <div class="mb-3">
+            <label class="label col-form-label" for="large_size_w">最大宽度</label>
+            <input nbInput id="large_size_w" class="ms-0 ms-sm-4" name="large_w" type="number" [(ngModel)]="option.large_size_w">
+          </div>
+          <div>
+            <label class="label col-form-label" for="large_size_h">最大高度</label>
+            <input nbInput id="large_size_h" class="ms-0 ms-sm-4" name="large_h" type="number" [(ngModel)]="option.large_size_h">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3 row">
+      <label class="label col-form-label col-2"></label>
+      <div class="col-10">
+        <button status="primary" size="small" [disabled]="submitted || !ngForm.valid" nbButton>保存更改</button>
+      </div>
+    </div>
+  </form>
+</div>
+

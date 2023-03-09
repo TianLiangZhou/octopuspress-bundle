@@ -1,0 +1,52 @@
+<div class="row">
+  <div class="col-12">
+    <nb-card>
+      <nb-card-header>{{title}}</nb-card-header>
+      <nb-card-body>
+        <ng-container [ngSwitch]="this.container">
+          <nb-tabset *ngSwitchCase="'tabs'">
+            <nb-tab *ngFor="let tab of tabs; let i = index" [tabTitle]="tab.title" [tabIndex]="i" [tabId]="''+i">
+              <ng-container [ngSwitch]="tab.container">
+                <angular2-smart-table *ngSwitchCase="'table'"
+                                 [settings]="this.settings[i]"
+                                 [source]="this.source[i]"
+                                 (create)="create()"
+                                 (edit)="edit($event)"
+                                 (delete)="delete($event)">
+                </angular2-smart-table>
+                <form [ngClass]="tab.form!.class" *ngSwitchCase="'form'" [formGroup]="formGroup[i]" (submit)="submit(i, tab.form!.submit.link)">
+                  <control-container [direction]="tab.form!.direction" [form]="formGroup[i]" [controls]="tab.form!.controls"></control-container>
+                  <div [class]="tab.form!.direction !== 'column' ? 'row' : ''"  class="form-group">
+                    <label [class]="tab.form!.direction !== 'column' ? 'col-12 col-md-2' : ''" class="label col-form-label"></label>
+                    <div [class]="tab.form!.direction !== 'column' ? 'col-12 col-md-10' : ''">
+                      <button status="primary" size="small" [disabled]="tab.form!.submit.valid && formGroup[i].invalid" nbButton type="submit">{{tab.form!.submit.name}}</button>
+                      <button status="danger" class="ms-2" *ngIf="tab.form!.reset" size="small" type="reset" nbButton>{{tab.form!.reset.name}}</button>
+                    </div>
+                  </div>
+                </form>
+              </ng-container>
+            </nb-tab>
+          </nb-tabset>
+          <angular2-smart-table *ngSwitchCase="'table'"
+             [settings]="this.settings[0]"
+             [source]="this.source[0]"
+             (create)="create()"
+             (edit)="edit($event)"
+             (delete)="delete($event)">
+          </angular2-smart-table>
+          <form [ngClass]="this.form!.class" *ngSwitchCase="'form'" [formGroup]="formGroup[0]" (submit)="submit(0, this.form!.submit.link)">
+            <control-container [direction]="this.form!.direction" [form]="formGroup[0]" [controls]="this.form!.controls"></control-container>
+            <div [class]="this.form!.direction !== 'column' ? 'row' : ''" class="form-group">
+              <label [class]="this.form!.direction !== 'column' ? 'col-12 col-md-2' : ''" class="label col-form-label"></label>
+              <div [class]="this.form!.direction !== 'column' ? 'col-12 col-md-10' : ''">
+                <button status="primary" size="small" [disabled]="this.form!.submit.valid && formGroup[0].invalid" type="submit" nbButton>{{this.form!.submit.name}}</button>
+                <button status="danger" class="ms-2" *ngIf="this.form!.reset" size="small" type="reset" nbButton>{{this.form!.reset.name}}</button>
+              </div>
+            </div>
+          </form>
+        </ng-container>
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>
+

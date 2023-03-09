@@ -1,0 +1,92 @@
+/* You can add global styles to this file, and also import other style files */
+// themes - our custom or/and out of the box themes
+@import 'app/@theme/styles/themes';
+
+
+
+// framework component themes (styles tied to theme variables)
+@import '@nebular/theme/styles/globals';
+@import '@nebular/auth/styles/globals';
+
+@import 'bootstrap/scss/functions';
+@import 'bootstrap/scss/variables';
+// bootstrap >= 5
+@import 'bootstrap/scss/maps';
+
+@import 'bootstrap/scss/mixins';
+@import 'bootstrap/scss/grid';
+
+// ...
+
+// global app font size
+//@import './font-size';
+
+// loading progress bar theme
+//@import './pace.theme';
+@import 'app/@theme/styles/pace.theme';
+
+@import "app/@theme/styles/overrides";
+
+
+//@import './bootstrap-rtl';
+
+// install the framework and custom global styles
+
+@include nb-install() {
+
+    // framework global styles
+    @include nb-theme-global();
+    @include nb-auth-global();
+
+    // @include ngx-layout();
+    // loading progress bar
+    @include ngx-pace-theme();
+
+    @include nb-overrides();
+};
+
+.ck-editor__editable_inline {
+    min-height: 15cm !important;
+}
+.ck-source-editing-area {
+    min-height: 15cm !important;
+}
+
+.ck.ck-editor__main > .ck-editor__editable {
+    background: var(--background-basic-color-2) !important;
+}
+
+.ck.ck-reset_all * {
+    color: var(--text-hint-color) !important;
+}
+
+.ck.ck-toolbar {
+    background: var(--background-basic-color-1) !important;
+    color: var(--text-hint-color) !important;
+    border: 1px solid var(--border-basic-color-3) !important;
+}
+
+.ck.ck-toolbar .ck.ck-toolbar__separator {
+    background: var(--border-basic-color-3) !important;
+}
+
+.ck.ck-editor__main > .ck-editor__editable:not(.ck-focused) {
+    border-color: var(--border-basic-color-3) !important;
+}
+
+.ck-source-editing-area textarea {
+    background: var(--background-basic-color-2) !important;
+    color: var(--text-basic-color) !important;
+}
+
+
+#ckf-modal {
+    background-color: var(--background-basic-color-3) !important;
+    border-color: var(--background-basic-color-3) !important;
+}
+#ckf-modal-header {
+    background-color: var(--background-basic-color-2) !important;
+}
+#ckf-modal-footer {
+    background-color: var(--background-basic-color-2) !important;
+}

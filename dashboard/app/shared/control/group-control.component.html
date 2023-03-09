@@ -1,0 +1,41 @@
+<div class="float-end">
+  <button status="primary" size="small" nbButton (click)="open()">{{element!.label}}数据</button>
+</div>
+<table class="table overflow-auto text-nowrap m-0 scrollable" [hidden]="values.length < 1">
+  <thead>
+  <tr>
+    <th scope="col">#</th>
+    <th scope="col" [width]="width" *ngFor="let th of head">{{th.name}}</th>
+    <th scope="col" [width]="width" *ngIf="element!.multiple">操作</th>
+  </tr>
+  </thead>
+  <tbody cdkDropList [cdkDropListDisabled]="!element.settings?.is_sort" (cdkDropListDropped)="drop($event)">
+  <tr class="align-middle"
+      [class.cursor-move]="element.settings?.is_sort"
+      *ngFor="let value of values; let i = index"
+      cdkDrag
+      [cdkDragDisabled]="!element.settings?.is_sort"
+      [cdkDragData]="i">
+    <th scope="row">{{ i + 1}}</th>
+    <td *ngFor="let th of head">
+      <ng-container [ngSwitch]="th.type">
+        <div *ngSwitchCase="'image'"><img width="100" alt="{{th.key}}" [src]="getMedia(value[th.key])"></div>
+        <div *ngSwitchCase="'combine'">
+          <button nbButton status="primary" size="small">子集</button>
+        </div>
+        <div *ngSwitchDefault>{{value[th.key]}}</div>
+      </ng-container>
+    </td>
+    <td *ngIf="element!.multiple">
+      <div class="ng2-smart-actions d-flex h-100">
+        <a href="javascript:" class="ng2-smart-action ng2-smart-action-edit-edit" (click)="edit(i)">
+          <nb-icon icon="edit-outline"></nb-icon>
+        </a>
+        <a href="javascript:" class="ng2-smart-action ng2-smart-action-delete-delete" (click)="delete(i)">
+          <nb-icon icon="trash-2-outline"></nb-icon>
+        </a>
+      </div>
+    </td>
+  </tr>
+  </tbody>
+</table>

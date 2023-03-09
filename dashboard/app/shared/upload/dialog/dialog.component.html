@@ -1,0 +1,48 @@
+<div class="row">
+  <div class="col-12">
+    <input type="file" #file style="display: none"  (change)="onFilesAdded()" [multiple]="multiple"/>
+    <nb-card class="list-card">
+      <nb-card-header class="d-flex justify-content-between align-items-center">
+        <span>上传文件</span>
+        <button [disabled]="uploading || uploadSuccessful" nbButton status="primary" (click)="addFiles()">添加文件</button>
+      </nb-card-header>
+      <nb-card-body>
+        <nb-list>
+          <nb-list-item *ngFor="let file of files;">
+            <div class="row flex-grow-1 flex-nowrap">
+              <div class="col-1">
+                <nb-icon status="primary" icon="file"></nb-icon>
+              </div>
+              <div class="col-5">
+                {{file.name}}
+              </div>
+              <div class="col-5">
+                <nb-progress-bar
+                  *ngIf="progress"
+                  [status]="messages[file.name] ? 'danger' : 'success'"
+                  [displayValue]="!messages[file.name]"
+                  [value]="progress[file.name].progress | async">
+                  {{messages[file.name]}}
+                </nb-progress-bar>
+              </div>
+              <div class="col-1" *ngIf="!uploading && !uploadSuccessful">
+                <nb-icon style="cursor: pointer" (click)="remove(file)" icon="close" status="danger"></nb-icon>
+              </div>
+            </div>
+          </nb-list-item>
+        </nb-list>
+      </nb-card-body>
+      <nb-card-footer class="actions">
+        <div class="row">
+          <div class="col-12 text-danger py-2" *ngIf="errorMessage.length > 0">
+            {{ errorMessage }}
+          </div>
+          <div class="col-12 d-flex justify-content-between">
+            <button *ngIf="showCancelButton" nbButton status="control" (click)="dialogRef.close();" class="mr-2">取消</button>
+            <button nbButton status="primary" [disabled]="!canBeClosed || files.size < 1" (click)="closeDialog()">{{primaryButtonText}}</button>
+          </div>
+        </div>
+      </nb-card-footer>
+    </nb-card>
+  </div>
+</div>

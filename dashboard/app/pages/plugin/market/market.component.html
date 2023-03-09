@@ -1,0 +1,20 @@
+<div class="row">
+  <div class="col-12">
+    <nb-card>
+      <nb-card-header>
+        插件市场
+      </nb-card-header>
+    </nb-card>
+  </div>
+  <div class="col-12 col-md-6 col-lg-4 col-xl-3" *ngFor="let plugin of plugins">
+    <nb-card>
+      <nb-card-header>{{plugin.name}}</nb-card-header>
+      <nb-card-body>
+        <img alt="{{plugin.name}}" [src]="sanitizer.bypassSecurityTrustResourceUrl(plugin.image)" *ngIf="plugin.image" width="100%"/>
+      </nb-card-body>
+      <nb-card-footer class="d-flex justify-content-end">
+        <button nbButton status="primary" (click)="setup(plugin.alias)" [disabled]="plugin.enabled">{{ plugin.enabled ? '已安装' : '现在安装' }}</button>
+      </nb-card-footer>
+    </nb-card>
+  </div>
+</div>

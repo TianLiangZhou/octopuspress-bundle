@@ -1,0 +1,74 @@
+{% if pageCount > 1 %}
+    <nav>
+        <ul class="pagination flex-wrap {{ containerClass }}">
+
+            {% if previous is defined %}
+                <li class="page-item">
+                    <a class="page-link" rel="prev"
+                       href="{{ permalink(entity, query|merge({(pageName): previous})) }}">&lt;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled {{ disabledClass }}">
+                    <span class="page-link">&lt;</span>
+                </li>
+            {% endif %}
+
+            {% if startPage > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ permalink(entity, query|merge({(pageName): 1})) }}">1</a>
+                </li>
+                {% if startPage == 3 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ permalink(entity, query|merge({(pageName): 2})) }}">2</a>
+                    </li>
+                {% elseif startPage != 2 %}
+                    <li class="page-item disabled {{ disabledClass }}">
+                        <span class="page-link">&hellip;</span>
+                    </li>
+                {% endif %}
+            {% endif %}
+
+            {% for page in pagesInRange %}
+                {% if page != current %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ permalink(entity, query|merge({(pageName): page})) }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item active {{ activeClass }}">
+                        <span class="page-link">{{ page }}</span>
+                    </li>
+                {% endif %}
+
+            {% endfor %}
+
+            {% if pageCount > endPage %}
+                {% if pageCount > (endPage + 1) %}
+                    {% if pageCount > (endPage + 2) %}
+                        <li class="page-item disabled {{ disabledClass }}">
+                            <span class="page-link">&hellip;</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="{{ permalink(entity, query|merge({(pageName): (pageCount - 1)})) }}">{{ pageCount -1 }}</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ permalink(entity, query|merge({(pageName): pageCount})) }}">{{ pageCount }}</a>
+                </li>
+            {% endif %}
+
+            {% if next is defined %}
+                <li class="page-item">
+                    <a class="page-link" rel="next"
+                       href="{{ permalink(entity, query|merge({(pageName): next})) }}">&gt;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled {{ disabledClass }}">
+                    <span class="page-link">&gt;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}

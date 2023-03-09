@@ -1,0 +1,82 @@
+.sidebar-widget-item {
+  width: 33.3%;
+  color: var(--text-basic-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  &:focus, &:hover {
+    span {
+      color: var(--text-hint-color);
+      font-weight: bold;
+    }
+  }
+}
+
+:host {
+  ::ng-deep nb-layout nb-layout-column {
+    padding: 0 !important;
+  }
+  min-height: calc(100vh - var(--header-height) - 60px);
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  .scrollable {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+  }
+  .sidebar-expanded {
+    left: var(--sidebar-width) !important;
+  }
+  .sidebar-compact {
+    left: var(--sidebar-width-compact) !important;
+  }
+  .component-skeleton {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    max-height: 100%;
+    position: fixed;
+    top: var(--header-height);
+    right: 0;
+    bottom: 0;
+    left: var(--sidebar-width-compact);
+  }
+  .component-skeleton-body {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 0 1 100%;
+    padding-bottom: 60px;
+  }
+
+  .sidebar-widget-toggle-animation {
+    transition: transform .3s;
+    transform: rotate(45deg);
+  }
+
+  nb-tabset nb-tab {
+    padding-bottom: 2.875rem !important;
+  }
+
+  nb-accordion, widget-item {
+    position: relative;
+  }
+  nb-accordion:focus:after, widget-item:focus:after, nb-accordion-item-header:focus:after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
+    left: 1px;
+    box-shadow: 0 0 0 1.5px var(--color-danger-focus);
+    border-radius: var(--accordion-border-radius);
+    outline: 2px solid transparent;
+  }
+}

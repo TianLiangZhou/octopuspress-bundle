@@ -1,0 +1,159 @@
+<nb-card>
+  <nb-card-header class="border-0">
+  </nb-card-header>
+  <nb-card-body class=" border-0">
+    <angular2-smart-table
+      [settings]="settings"
+      [source]="source">
+    </angular2-smart-table>
+  </nb-card-body>
+</nb-card>
+
+<ng-template #createTpl>
+  <form (ngSubmit)="onSubmit()" [formGroup]="formGroup">
+    <div class="mb-3 row">
+      <label for="inputName" class="label col-lg-2 col-form-label">名称</label>
+      <div class="col-lg-6">
+        <input id="inputName" type="text" nbInput fullWidth
+               formControlName="name">
+      </div>
+    </div>
+    <div class="mb-3 row">
+      <label for="inputType" class="label col-lg-2 col-form-label">值类型</label>
+      <div class="col-lg-3">
+        <nb-select class="col-lg-1 px-0" status="primary" name="dataType" placeholder="--请选择--"
+                   formControlName="type" id="inputType">
+          <nb-option *ngFor="let typeItem of dataType" [value]="typeItem.t">{{ typeItem.n }}</nb-option>
+        </nb-select>
+      </div>
+    </div>
+    <ng-container [ngSwitch]="formGroup.controls.type.value">
+      <ng-container *ngSwitchCase="1" [ngTemplateOutlet]="templateRef1"></ng-container>
+      <ng-container *ngSwitchCase="2" [ngTemplateOutlet]="templateRef2"></ng-container>
+      <ng-container *ngSwitchCase="3" [ngTemplateOutlet]="templateRef3"></ng-container>
+      <ng-container *ngSwitchCase="4" [ngTemplateOutlet]="templateRef4"></ng-container>
+      <ng-container *ngSwitchCase="5" [ngTemplateOutlet]="templateRef5"></ng-container>
+      <ng-container *ngSwitchCase="6" [ngTemplateOutlet]="templateRef6"></ng-container>
+    </ng-container>
+    <div class="mb-3">
+      <button type="submit" status="primary" [disabled]="formGroup.invalid" nbButton>保存</button>
+    </div>
+  </form>
+</ng-template>
+
+
+<ng-template #templateRef1>
+  <div class="mb-3 row" [formGroup]="formGroup">
+    <label for="inputValue" class="label col-lg-2 col-form-label">值</label>
+    <div class="col-lg-6">
+      <nb-toggle id="inputValue" formControlName="value1" status="primary"></nb-toggle>
+    </div>
+  </div>
+</ng-template>
+<ng-template #templateRef2>
+  <div [formGroup]="formGroup">
+    <ng-container formArrayName="value2">
+      <ng-container *ngFor="let control of value2.controls; let i = index;">
+        <div class="mb-3 row">
+          <label for="inputValue" class="label col-lg-2 col-form-label">{{ i > 0 ? '' : '值'}}</label>
+          <div class="col-lg-8">
+            <input type="text" nbInput fullWidth [formControlName]="i">
+          </div>
+          <div class="col-lg-2">
+            <ng-container [ngTemplateOutlet]="i==0 ? createRowTpl : closeRowTpl"
+                          [ngTemplateOutletContext]="{i:i, j: -1}">
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+<ng-template #templateRef3>
+  <div [formGroup]="formGroup">
+    <ng-container formArrayName="value3">
+      <ng-container *ngFor="let fg of value3.controls; let i = index;">
+        <div class="mb-3 row" [formGroup]="fg">
+          <label for="inputValue" class="label col-lg-2 col-form-label">{{ i > 0 ? '' : '值'}}</label>
+          <div class="col-lg-4">
+            <input type="text" nbInput fullWidth formControlName="key">
+          </div>
+          <div class="col-lg-4">
+            <input type="text" nbInput fullWidth formControlName="value">
+          </div>
+          <div class="col-lg-2">
+            <ng-container
+              [ngTemplateOutlet]="i==0 ? createRowTpl : closeRowTpl"
+              [ngTemplateOutletContext]="{i:i, j: -1}">
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+<ng-template #templateRef4>
+  <div [formGroup]="formGroup">
+    <ng-container formArrayName="value4">
+      <ng-container *ngFor="let formArray of value4.controls; let i = index;">
+        <ng-container *ngFor="let fg of formArray.controls; let j = index;">
+          <div class="mb-3 row" [formGroup]="fg">
+            <label for="inputValue" class="label col-lg-2 col-form-label">{{ j > 0 ? '' : '键值'}}</label>
+            <div class="col-lg-4">
+              <input type="text" nbInput fullWidth formControlName="key">
+            </div>
+            <div class="col-lg-4">
+              <input type="text" nbInput fullWidth formControlName="value">
+            </div>
+            <div class="col-lg-2">
+              <ng-container
+                [ngTemplateOutlet]="j==0 ? createRowTpl : closeRowTpl"
+                [ngTemplateOutletContext]="{i:i, j:j}"></ng-container>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+
+
+<ng-template #templateRef5>
+  <div class="mb-3 row" [formGroup]="formGroup">
+    <label for="inputValue" class="label col-lg-2 col-form-label">值</label>
+    <div class="col-lg-6">
+      <input type="text" id="inputValue" nbInput fullWidth formControlName="value5" />
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #templateRef6>
+  <div class="mb-3 row" [formGroup]="formGroup">
+    <label for="inputTextValue" class="label col-lg-2 col-form-label">值</label>
+    <div class="col-lg-6">
+      <textarea rows="5" nbInput fullWidth shape="round" id="inputTextValue"
+                formControlName="value5"></textarea>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #createRowTpl let-i="i" let-j="j">
+  <button nbButton type="button" status="success" size="tiny" (click)="createRow(i, j)">
+    <nb-icon icon="plus-outline"></nb-icon>
+  </button>
+  <button class="ml-1" type="button" nbButton status="success" *ngIf="i == 0 && j == 0" size="small"
+          (click)="createRow(i, -1)">
+    <nb-icon icon="plus-outline"></nb-icon>
+  </button>
+  <button class="ml-1" type="button" nbButton status="danger" *ngIf="i > 0 && j == 0" size="small"
+          (click)="deleteRow(i, -1)">
+    <nb-icon icon="close-outline"></nb-icon>
+  </button>
+</ng-template>
+<ng-template #closeRowTpl let-i="i" let-j="j">
+  <button nbButton type="button" status="danger" size="tiny" (click)="deleteRow(i, j)">
+    <nb-icon icon="close-outline"></nb-icon>
+  </button>
+</ng-template>
+
+

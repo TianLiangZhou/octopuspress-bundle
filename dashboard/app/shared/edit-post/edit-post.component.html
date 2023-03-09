@@ -1,0 +1,136 @@
+<form  [formGroup]="formGroup" (ngSubmit)="action('publish')">
+  <div class="row">
+    <div class="col-12">
+      <nb-card class="mb-0">
+        <nb-card-header class="d-flex justify-content-between align-items-center">
+          <span *ngIf="this.typeSetting.labels">{{id > 0 ? this.typeSetting.labels.edit_item : this.typeSetting.labels.add_item}}</span>
+          <div class="d-flex justify-content-end">
+            <button nbButton [nbSpinner]="submitted" [disabled]="submitted || formGroup.invalid" (click)="action('draft')" type="button" status="warning">保存草稿</button>
+            <div class="mx-2"></div>
+            <button nbButton status="basic" *ngIf="entity.content.length > 0" (click)="preview()">预览</button>
+            <div class="mx-2"></div>
+            <button nbButton status="success" [nbSpinner]="submitted" type="submit" [disabled]="submitted || formGroup.invalid">发布</button>
+            <div class="mx-2"></div>
+            <button nbButton status="primary" type="button" (click)="documentPanelState = !documentPanelState"><nb-icon icon="settings-2"></nb-icon></button>
+          </div>
+        </nb-card-header>
+      </nb-card>
+    </div>
+    <div class="col" [class.col-lg-9]="documentPanelState">
+      <nb-card>
+        <nb-card-body>
+          <div class="mb-2" *ngIf="typeSetting.supports && typeSetting.supports.includes('title')">
+            <div class="col-12">
+              <input formControlName="title" type="text" nbInput fullWidth placeholder="标题" (keydown.enter)="$event.preventDefault()">
+            </div>
+          </div>
+          <div class="mb-2" *ngIf="typeSetting.supports && typeSetting.supports.includes('editor')">
+            <div class="col-12">
+              <app-ckeditor #ckeditorComponent (contentChange)="updateContent($event)"  [data]="entity.content"></app-ckeditor>
+            </div>
+          </div>
+        </nb-card-body>
+      </nb-card>
+    </div>
+    <div class="col col-lg-3" [hidden]="!documentPanelState">
+      <nb-accordion #accordionComponent multi="true">
+        <nb-accordion-item>
+          <nb-accordion-item-header>
+            状态与可见性
+          </nb-accordion-item-header>
+          <nb-accordion-item-body>
+            <div class="col-12">
+              <div class="d-flex align-items-center justify-content-between my-4">
+                <div><nb-icon icon="eye"></nb-icon>可见性</div>
+                <button nbButton #visibleBtnElement  [nbPopover]="list" size="small" status="primary" type="button">公开</button>
+                <ng-template #list>
+                  <nb-card class="margin-bottom-0">
+                    <nb-card-header>文章可见性</nb-card-header>
+                    <nb-list>
+                      <nb-list-item class="flex-column align-items-start">
+                        <nb-radio value="open" ngDefaultControl [checked]="formGroup.controls.visible.value == 'open'" formControlName="visible">公开</nb-radio>
+                        <label class="label">所有人可见。</label>
+                      </nb-list-item>
+                      <nb-list-item class="flex-column align-items-start">
+                        <nb-radio value="private" ngDefaultControl [checked]="formGroup.controls.visible.value == 'private'" formControlName="visible">私密</nb-radio>
+                        <label class="label">只有站点管理员和编辑可见。</label>
+                      </nb-list-item>
+                      <nb-list-item class="flex-column align-items-start">
+                        <nb-radio value="password" ngDefaultControl [checked]="formGroup.controls.visible.value == 'password'" formControlName="visible">密码保护</nb-radio>
+                        <label class="label">受您选择的密码保护，只有持有密码的人士可查看此文章。</label>
+                        <input class="mt-1" nbInput *ngIf="formGroup.controls.visible.value == 'password'" size="small" formControlName="password"
+                           (keydown.enter)="$event.preventDefault()"/>
+                      </nb-list-item>
+                    </nb-list>
+                  </nb-card>
+                </ng-template>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="d-flex align-items-center justify-content-between my-4">
+                <div><nb-icon icon="calendar"></nb-icon>发布</div>
+                <div>
+                  <button nbButton #inputBtnElement size="small" (click)="inputDate.click()" type="button" status="primary">立即</button>
+                  <input nbInput class="visually-hidden" #inputDate [nbDatepicker]="dateTimePicker" status="primary" />
+                  <nb-date-timepicker #dateTimePicker format="yyyy-MM-dd HH:mm:ss" singleColumn [step]="10"></nb-date-timepicker>
+                </div>
+              </div>
+            </div>
+            <div class="col-12" *ngIf="typeSetting.supports && typeSetting.supports.includes('author')">
+              <div class="d-flex align-items-center justify-content-between my-4">
+                <div><nb-icon icon="person-outline"></nb-icon>作者</div>
+                <div>
+                  <input formControlName="authorNickname" status="primary" nbInput type="text" placeholder="作者" fullWidth [nbAutocomplete]="autoAuthor" (keydown.enter)="$event.preventDefault()"/>
+                  <nb-autocomplete #autoAuthor (selectedChange)="selectAuthor($event)">
+                    <nb-option *ngFor="let option of filteredAuthorOptions$ | async"
+                               [value]="option">{{ option.nickname }}</nb-option>
+                  </nb-autocomplete>
+                </div>
+              </div>
+            </div>
+          </nb-accordion-item-body>
+        </nb-accordion-item>
+
+        <nb-accordion-item *ngFor="let taxonomyPanel of taxonomyPanels">
+          <nb-accordion-item-header>{{taxonomyPanel.label}}</nb-accordion-item-header>
+          <nb-accordion-item-body style="max-height: 400px; overflow-y: auto">
+            <div *ngIf="taxonomyPanel.hierarchical; then hierarchical else flat"></div>
+            <ng-template #hierarchical><hierarchical-term-selector [control]="formGroup.controls.relationships" [taxonomySetting]="taxonomyPanel"></hierarchical-term-selector></ng-template>
+            <ng-template #flat><flat-term-selector [control]="formGroup.controls.relationships" [taxonomySetting]="taxonomyPanel"></flat-term-selector></ng-template>
+          </nb-accordion-item-body>
+        </nb-accordion-item>
+
+
+        <nb-accordion-item *ngIf="typeSetting.supports && typeSetting.supports.includes('thumbnail')">
+          <nb-accordion-item-header>特色图像</nb-accordion-item-header>
+          <nb-accordion-item-body class="text-center">
+            <div class="mb-2" *ngIf="entity.featuredImage && entity.featuredImage.url">
+              <img class="img-thumbnail" src="{{entity.featuredImage.url}}" alt=""/>
+            </div>
+            <button type="button" nbButton fullWidth status="primary"
+                    (click)="ckfinder.popup({resourceType: 'Images', multi: false, source: 'attachment'})">设置特色图像
+            </button>
+          </nb-accordion-item-body>
+        </nb-accordion-item>
+        <nb-accordion-item *ngIf="typeSetting.supports && typeSetting.supports.includes('excerpt')">
+          <nb-accordion-item-header>摘要</nb-accordion-item-header>
+          <nb-accordion-item-body>
+            <p>撰写摘要（可选）</p>
+            <textarea status="primary" formControlName="excerpt" rows="3" fullWidth nbInput></textarea>
+          </nb-accordion-item-body>
+        </nb-accordion-item>
+        <nb-accordion-item *ngIf="typeSetting.supports && (typeSetting.supports.includes('comments') || typeSetting.supports.includes('trackbacks'))">
+          <nb-accordion-item-header>评论</nb-accordion-item-header>
+          <nb-accordion-item-body>
+            <div class="d-flex flex-column">
+              <nb-checkbox *ngIf="typeSetting.supports && typeSetting.supports.includes('comments')" status="primary" [checked]="entity.commentStatus == 'open'"
+                           (checkedChange)="commentStatus($event)">允许评论</nb-checkbox>
+              <nb-checkbox *ngIf="typeSetting.supports && typeSetting.supports.includes('trackbacks')" status="primary" [checked]="entity.pingStatus == 'open'"
+                           (checkedChange)="pingStatus($event)">允许pingback和trackback</nb-checkbox>
+            </div>
+          </nb-accordion-item-body>
+        </nb-accordion-item>
+      </nb-accordion>
+    </div>
+  </div>
+</form>

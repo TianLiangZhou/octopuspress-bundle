@@ -1,0 +1,73 @@
+<nb-card>
+  <nb-card-header>{{route.title}}</nb-card-header>
+  <nb-card-body>
+    <form (ngSubmit)="onSubmit($event)" [formGroup]="formGroup">
+      <div class="mb-3 row">
+        <label for="inputName" class="label col-form-label col-12 col-md-2">用户名</label>
+        <div class="col-12 col-md-5">
+          <input nbInput id="inputName" fullWidth status="primary" formControlName="account" />
+        </div>
+        <label class="label offset-md-2 col-form-label">用户名在站点登陆中使用，不可以修改。</label>
+      </div>
+
+      <div class="mb-3 row">
+        <label for="inputEmail" class="label col-form-label col-12 col-md-2">邮箱</label>
+        <div class="col-12 col-md-5">
+          <input nbInput id="inputEmail" fullWidth status="primary" type="email" formControlName="email" />
+        </div>
+        <label class="label offset-md-2 col-form-label">在忘记密码的时候可以通过邮箱找回密码。</label>
+      </div>
+
+      <div class="mb-3 row">
+        <label for="inputNickname" class="label col-form-label col-12 col-md-2">显示名称</label>
+        <div class="col-12 col-md-5">
+          <input nbInput id="inputNickname" fullWidth status="primary" formControlName="nickname" />
+        </div>
+        <label class="label offset-md-2 col-form-label">显示在站点的任何地方。</label>
+      </div>
+
+      <div class="mb-3 row">
+        <label for="inputUrl" class="label col-form-label col-12 col-md-2">网站地址</label>
+        <div class="col-12 col-md-5">
+          <input nbInput id="inputUrl" fullWidth status="primary" type="url" formControlName="url" />
+        </div>
+        <label class="label offset-md-2 col-form-label">个人网页地址。</label>
+      </div>
+
+      <div class="mb-3 row">
+        <label for="inputPassword" class="label col-form-label col-12 col-md-2">密码</label>
+        <div class="col-12 col-md-5">
+          <nb-form-field>
+            <input nbInput id="inputPassword"   fullWidth status="primary" [type]="getInputType()" formControlName="password" />
+            <button nbSuffix nbButton ghost type="button" (click)="toggleShowPassword()">
+              <nb-icon [icon]="showPassword ? 'eye-outline' : 'eye-off-2-outline'"
+                       pack="eva"
+                       [attr.aria-label]="showPassword ? 'hide password' : 'show password'">
+              </nb-icon>
+            </button>
+          </nb-form-field>
+        </div>
+        <label class="label offset-md-2 col-form-label">
+          必须是数字字母组合，不修改密码保持为空即可。
+        </label>
+      </div>
+      <div class="mb-3 row">
+        <label for="inputRole" class="label col-form-label col-12 col-md-2">角色</label>
+        <div class="col-12 col-md-5">
+          <nb-select multiple id="inputRole" fullWidth formControlName="roles">
+            <nb-option *ngFor="let option of roles" [value]="option.value">{{option.label}}</nb-option>
+          </nb-select>
+        </div>
+      </div>
+      <control-container [controls]="controls" [form]="metaGroup"></control-container>
+      <div class="mb-3 row">
+        <label class="label col-form-label col-12 col-md-2"></label>
+        <div class="col-12 col-md-5">
+          <button nbButton status="primary" [disabled]="formGroup.invalid || spinner" [nbSpinner]="spinner" type="submit">
+            {{formGroup.controls['id'].value > 0 ? '更新用户' : '添加新用户'}}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nb-card-body>
+</nb-card>

@@ -1,0 +1,23 @@
+<nb-card>
+  <nb-card-header>{{route.title}}</nb-card-header>
+  <nb-card-body>
+    <nb-radio-group [formControl]="radioFilter" class="d-flex flex-row mb-2">
+      <nb-radio *ngFor="let radio of radios" [value]="radio.value">{{radio.label}}</nb-radio>
+    </nb-radio-group>
+    <form (ngSubmit)="batch()" class="row mb-2">
+      <nb-select name="batchMode" [(ngModel)]="batchMode">
+        <nb-option [value]="option.value" *ngFor="let option of batches">{{option.label}}</nb-option>
+      </nb-select>
+      <div class="col">
+        <button nbButton status="primary" [disabled]="!batchMode || spinner" [nbSpinner]="spinner" type="submit">应用</button>
+      </div>
+    </form>
+    <angular2-smart-table
+      [settings]="settings"
+      [source]="source"
+      (edit)="edit($event)"
+    >
+    </angular2-smart-table>
+
+  </nb-card-body>
+</nb-card>

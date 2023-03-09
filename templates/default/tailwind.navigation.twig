@@ -1,0 +1,22 @@
+<nav id="navbarCollapse" class="absolute right-4 top-full hidden w-full max-w-[250px] rounded-lg bg-white py-5 shadow-lg lg:static lg:block lg:w-full lg:max-w-full lg:bg-transparent lg:py-0 lg:px-4 lg:shadow-none xl:px-6">
+    <ul class="block lg:flex">
+        {% for nav in navigation %}
+            <li class="{% if nav.children|length > 0 %} submenu-item {% endif %} group relative">
+                <a href="{{ permalink(nav) }}" class="max-w-xs text-ellipsis mx-8 flex py-2 text-base text-dark group-hover:text-primary lg:mr-0 lg:inline-flex lg:py-6 lg:px-0 lg:text-white lg:group-hover:text-white lg:group-hover:opacity-70">
+                    {{ nav.title }}
+                </a>
+                {% for children in nav.children %}
+                    {% if loop.first %}
+                        <div class="submenu relative top-full left-0 hidden bg-basic-1 text-basic-color w-[250px] rounded-sm p-4 transition-[top] duration-300 group-hover:opacity-100 lg:invisible lg:absolute lg:top-[110%] lg:block lg:opacity-0 lg:shadow-lg lg:group-hover:visible lg:group-hover:top-full">
+                    {% endif %}
+                        <a href="{{ permalink(children) }}" class="block rounded py-[10px] px-4 text-sm text-body-color hover:text-primary">
+                            {{ children.title }}
+                        </a>
+                    {% if loop.last %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </li>
+        {% endfor %}
+    </ul>
+</nav>

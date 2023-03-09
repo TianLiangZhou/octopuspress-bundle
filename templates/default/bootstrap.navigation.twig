@@ -1,0 +1,41 @@
+{% if location %}
+    {% if primary %}
+        <nav class="navbar navbar-expand-lg {{ className }}">
+            <div class="container">
+            <a class="navbar-brand" href="{{ site_url is defined ? site_url : '' }}">
+                {% if displayLogo %}{{ hook_action('custom_logo') }}{% endif %}{{ site_title is defined ? site_title : '' }}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+    {% endif %}
+        <ul class="navbar-nav">
+            {% for nav in navigation %}
+                <li class="nav-item {% if nav.children|length > 0 %} dropdown {% endif %}">
+                    {% set url = permalink(nav) %}
+                    <a class="nav-link {% if compare_url(url) %} active {{ activeClass is defined ? activeClass : '' }}{% endif %}" aria-current="page"
+                       href="{{ url }}">{{ nav.title }}</a>
+                    {% for children in nav.children %}
+                        {% if loop.first %}
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        {% endif %}
+                        {% set url = permalink(children) %}
+                        <li><a class="dropdown-item {% if compare_url(url) %} active {{  activeClass is defined ? activeClass : '' }}{% endif %}"
+                               href="{{ url }}">{{ children.title }}</a></li>
+                        {% if loop.last %}
+                            </ul>
+                        {% endif %}
+                    {% endfor %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% if primary %}
+                </div>
+            </div>
+        </nav>
+    {% endif %}
+{% else %}
+    <div>未选择菜单</div>
+{% endif %}
