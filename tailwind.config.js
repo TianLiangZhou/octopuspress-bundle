@@ -1,8 +1,13 @@
 /** @type {import('tailwindcss').Config} */
+const colors = require('tailwindcss/colors')
 module.exports = {
-  content: ['templates/index.html.twig'],
+  content: ['templates/*.twig'],
   theme: {
     colors: {
+      current: 'currentColor',
+      transparent: 'transparent',
+      black: colors.black,
+      white: colors.white,
       basic: {
         100: "#ffffff",
         200: "#f7f9fc",

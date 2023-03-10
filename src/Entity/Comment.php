@@ -130,7 +130,7 @@ class Comment implements \JsonSerializable
     /**
      * @var Collection<int, CommentMeta>&Selectable<int, CommentMeta>
      */
-    #[OneToMany(mappedBy: "comment", targetEntity: CommentMeta::class, cascade: ["remove"])]
+    #[OneToMany(mappedBy: "comment", targetEntity: CommentMeta::class, cascade: ["persist", "remove"])]
     private Collection $metas;
 
 

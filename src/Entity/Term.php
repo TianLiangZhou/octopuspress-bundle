@@ -60,7 +60,7 @@ class Term implements JsonSerializable
 
 
     /**
-     * @var Collection<int, Permission>
+     * @var Collection<int, TermTaxonomy>
      */
     #[OneToMany(mappedBy: "term", targetEntity: TermTaxonomy::class, cascade: ["persist", "remove"])]
     private Collection $taxonomies;
@@ -68,7 +68,7 @@ class Term implements JsonSerializable
     /**
      * @var Collection<int, TermMeta>
      */
-    #[OneToMany(mappedBy: "term", targetEntity: TermMeta::class, cascade: ["remove"])]
+    #[OneToMany(mappedBy: "term", targetEntity: TermMeta::class, cascade: ["persist", "remove"])]
     #[JoinColumn(name: "term_id", referencedColumnName: "term_id")]
     #[Valid]
     private Collection $metas;

@@ -54,7 +54,7 @@ class WebController extends Controller
     {
         $model = new InstallRequest();
         $form = $this->createForm(InstallType::class, $model)->handleRequest($request);
-        $vars = ['title' => '正在安装章鱼管理系统...',];
+        $vars = [];
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 try {

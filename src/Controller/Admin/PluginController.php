@@ -28,15 +28,10 @@ class PluginController extends AdminController
 
     #[Route('/menu1', name: 'market', options: ['name' => '插件市场', 'parent' => 'plugin', 'sort' => 0, 'link' => '/app/plugin/market'])]
     #[Route('/menu2', name: 'installed', options: ['name' => '已安装插件', 'parent' => 'plugin', 'sort' => 0, 'link' => '/app/plugin/installed'])]
-    public function menu(): Response
+    #[Route('/market', name: 'market_sets', options: ['name' => '插件列表', 'parent' => 'plugin_market', 'sort' => 0])]
+    public function market(): Response
     {
         return new Response();
-    }
-
-    #[Route('/market', name: 'market_sets', options: ['name' => '插件列表', 'parent' => 'plugin_market', 'sort' => 0])]
-    public function market(): JsonResponse
-    {
-        return $this->json([]);
     }
 
 

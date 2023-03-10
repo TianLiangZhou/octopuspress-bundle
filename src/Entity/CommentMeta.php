@@ -33,7 +33,6 @@ class CommentMeta
      * @var Comment
      */
     #[ManyToOne(targetEntity: Comment::class, fetch: "EAGER", inversedBy: "metas")]
-//    #[JoinColumn(name: "user_id", referencedColumnName: 'id', nullable: false)]
     private Comment $comment;
 
     /**

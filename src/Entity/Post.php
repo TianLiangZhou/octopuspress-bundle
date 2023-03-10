@@ -205,7 +205,7 @@ class Post implements JsonSerializable
     /**
      * @var Collection<int, PostMeta>
      */
-    #[OneToMany(mappedBy: "post", targetEntity: PostMeta::class, cascade: ["remove"])]
+    #[OneToMany(mappedBy: "post", targetEntity: PostMeta::class, cascade: ["persist", "remove"])]
     #[Valid]
     private Collection $metas;
 

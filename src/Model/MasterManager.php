@@ -87,8 +87,8 @@ class MasterManager
             'thumbnail_crop' => 1,
         ];
         $defaultOptions['thumbnail_size_w'] = $defaultOptions['thumbnail_size_h'] = 150;
-        $defaultOptions['medium_size_w'] = $defaultOptions['medium_size_w'] = 300;
-        $defaultOptions['large_size_w'] = $defaultOptions['large_size_w'] = 1024;
+        $defaultOptions['medium_size_w'] = $defaultOptions['medium_size_h'] = 300;
+        $defaultOptions['large_size_w'] = $defaultOptions['large_size_h'] = 1024;
         $menus = array_keys($this->menuManager->collection());
         $defaultOptions['roles'] = [
             ["name" => 'Administrator', 'capabilities' => array_combine($menus, array_fill(0, count($menus), 1))],
@@ -134,37 +134,17 @@ class MasterManager
                 'label' => '分类',
                 'hierarchical' => true,
                 'showPostFilter' => true,
-                'labels'=> [
-                    'addNewItem'=> '添加新分类',
-                    'editItem'  => '编辑分类',
-                    'nameField' => '名称',
-                    'slugField' => '别名',
-                    'descField' => '描述',
-                    'parentField' => '父级分类',
-                    'nameFieldDescription' => '这将是它在站点上显示的名字。',
-                    'slugFieldDescription' => '“别名”是在URL中使用的别称，它可以令URL更美观。通常使用小写，只能包含字母，数字和连字符（-）。',
-                    'parentFieldDescription' => '分类和标签不同，它可以有层级关系。您可以有一个“音乐”分类目录，在这个目录下可以有叫做“流行”和“古典”的子目录。',
-                    'descFieldDescription' => '描述默认不显示，但某些主题可能会显示。',
-                ],
             ])
             ->registerTaxonomy('tag', 'post', [
                 'label' => '标签',
                 'labels'=> [
                     'addNewItem'=> '添加新标签',
                     'editItem'  => '编辑标签',
-                    'nameField' => '名称',
-                    'slugField' => '别名',
-                    'descField' => '描述',
-                    'parentField' => '父级分类',
-                    'nameFieldDescription' => '这将是它在站点上显示的名字。',
-                    'slugFieldDescription' => '“别名”是在URL中使用的别称，它可以令URL更美观。通常使用小写，只能包含字母，数字和连字符（-）。',
-                    'parentFieldDescription' => '分类和标签不同，它可以有层级关系。您可以有一个“音乐”分类目录，在这个目录下可以有叫做“流行”和“古典”的子目录。',
-                    'descFieldDescription' => '描述默认不显示，但某些主题可能会显示。',
                 ],
             ])
             ->registerTaxonomy('nav_menu_item', 'nav_menu_item', [
                 'label' => '导航',
-                'labels'=> [],
+                'showUi' => false,
             ])
         ;
     }

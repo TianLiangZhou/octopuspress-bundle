@@ -46,27 +46,27 @@ final class Taxonomy implements \JsonSerializable
     private function buildProps(array $args): void
     {
         $defaults = [
-            'label' => '',
+            'label' => null,
             'labels'                => [],
             'description'           => '',
             'hierarchical'          => false,
             'showUi'                => true,
             'showPostFilter'        => false,
         ];
-
         $args = array_merge($defaults, $args);
-        if (is_array($args['labels'])) {
-            $this->labels = $args['labels'];
-        }
-        if ($args['label']) {
-            $this->label = $args['label'];
-        }
+        $this->label = $args['label'] ?? $this->name;
         if ($args['description']) {
             $this->description = $args['description'];
         }
         $this->hierarchical = (bool) $args['hierarchical'];
         $this->showUi      = (bool) $args['showUi'];
         $this->showPostFilter      = (bool) $args['showPostFilter'];
+        if (is_array($args['labels'])) {
+            $this->labels = $args['labels'];
+        }
+        if ($this->showUi) {
+            $this->setDefaultLabel();
+        }
     }
 
     /**
@@ -118,5 +118,31 @@ final class Taxonomy implements \JsonSerializable
     public function getObjectType(): array
     {
         return $this->objectType;
+    }
+
+    /**
+     * @return void
+     */
+    private function setDefaultLabel(): void
+    {
+        $defaultLabels = [
+            'addNewItem'=> '添加新' . $this->label,
+            'editItem'  => '编辑' . $this->label,
+            'nameField' => '名称',
+            'slugField' => '别名',
+            'descField' => '描述',
+            'parentField' => '父级' . $this->label,
+            'nameFieldDescription' => '这将是它在站点上显示的名字。',
+            'slugFieldDescription' => '“别名”是在URL中使用的别称，它可以令URL更美观。通常使用小写，只能包含字母，数字和连字符（-）。',
+            'parentFieldDescription' => '分类和标签不同，它可以有层级关系。您可以有一个“音乐”分类目录，在这个目录下可以有叫做“流行”和“古典”的子目录。',
+            'descFieldDescription' => '描述默认不显示，但某些主题可能会显示。',
+        ];
+        foreach ($defaultLabels as $name => $value) {
+            if (!isset($this->labels[$name])) {
+                $this->labels[$name] = $value;
+            } elseif ($this->labels[$name] === null) {
+                unset($this->labels[$name]);
+            }
+        }
     }
 }

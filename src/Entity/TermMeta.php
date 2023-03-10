@@ -37,7 +37,7 @@ class TermMeta
      * @var Term
      */
     #[ManyToOne(targetEntity: Term::class, fetch: "EAGER", inversedBy: "metas")]
-//    #[JoinColumn(name: "term_id", referencedColumnName: "term_id", nullable: false)]
+    #[JoinColumn(name: "term_id", referencedColumnName: "term_id", nullable: false)]
     private Term $term;
 
 

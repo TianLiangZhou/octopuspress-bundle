@@ -37,7 +37,6 @@ class PostMeta
      * @var Post
      */
     #[ManyToOne(targetEntity: Post::class, fetch: "EAGER", inversedBy: "metas")]
-//    #[JoinColumn(name: 'post_id', referencedColumnName: 'id', nullable: false)]
     private Post $post;
 
 

@@ -19,10 +19,13 @@ use OctopusPress\Bundle\Model\ViewManager;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Scalable\Plugin;
 use OctopusPress\Bundle\Security\PermissionVoter;
+use OctopusPress\Bundle\Service\Requester;
+use OctopusPress\Bundle\Service\ServiceCenter;
 use OctopusPress\Bundle\Twig\OctopusExtension;
 use OctopusPress\Bundle\Twig\OctopusRuntime;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container) {
@@ -118,4 +121,13 @@ return static function (ContainerConfigurator $container) {
             service(ThemeManager::class)
         ])
         ->tag('console.command');
+
+    $services->set(Requester::class, Requester::class)
+        ->args([service(HttpClientInterface::class)]);
+
+    $services->set(ServiceCenter::class, ServiceCenter::class)
+        ->args([
+            service(Requester::class),
+            service(Bridger::class),
+        ]);
 };

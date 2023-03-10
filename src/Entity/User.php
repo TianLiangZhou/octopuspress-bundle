@@ -113,7 +113,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     /**
      * @var Collection<int, UserMeta>&Selectable<int, UserMeta>
      */
-    #[OneToMany(mappedBy: "user", targetEntity: UserMeta::class, cascade: ["remove"])]
+    #[OneToMany(mappedBy: "user", targetEntity: UserMeta::class, cascade: ["persist", "remove"])]
     private Collection $metas;
 
     private UserRepository $userRepository;

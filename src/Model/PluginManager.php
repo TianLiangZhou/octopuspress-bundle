@@ -96,6 +96,9 @@ class PluginManager
      */
     public function plugins(): array
     {
+        if (!file_exists($this->getPluginDir())) {
+            return [];
+        }
         $activePlugins = $this->optionRepository->activePlugins();
         $dirs = new \DirectoryIterator($this->getPluginDir());
         $plugins = [];

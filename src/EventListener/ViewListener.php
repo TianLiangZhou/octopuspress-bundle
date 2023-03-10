@@ -85,6 +85,7 @@ class ViewListener implements EventSubscriberInterface
         if (str_starts_with($event->getRequest()->getPathInfo(), '/backend')) {
             $event->setResponse(new JsonResponse([
                 'message' => $event->getThrowable()->getMessage(),
+                'trace' => $event->getThrowable()->getTraceAsString(),
             ], $event->getThrowable() instanceof NotFoundHttpException
                 ? Response::HTTP_NOT_FOUND
                 : Response::HTTP_INTERNAL_SERVER_ERROR));

@@ -183,15 +183,15 @@ class PostRepository extends ServiceEntityRepository
         $items = [];
         foreach ($records as $record) {
             $author = $record->getAuthor();
-            $termRelationships = $record->getTermRelationships();
+//            $termRelationships = $record->getTermRelationships();
             $taxonomies = [];
-            foreach ($termRelationships as $relationship) {
-                $taxonomy = $relationship->getTaxonomy();
-                $taxonomies[] = array_merge(
-                    $taxonomy->jsonSerialize(),
-                    $taxonomy->getTerm()->jsonSerialize()
-                );
-            }
+//            foreach ($termRelationships as $relationship) {
+//                $taxonomy = $relationship->getTaxonomy();
+//                $taxonomies[] = array_merge(
+//                    $taxonomy->jsonSerialize(),
+//                    $taxonomy->getTerm()->jsonSerialize()
+//                );
+//            }
             $items[] = array_merge(
                 $record->jsonSerialize(),
                 [

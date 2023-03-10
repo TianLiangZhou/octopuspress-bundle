@@ -6,6 +6,7 @@ namespace OctopusPress\Bundle\DependencyInjection;
 use DoctrineExtensions\Query\Mysql\Day;
 use DoctrineExtensions\Query\Mysql\Month;
 use DoctrineExtensions\Query\Mysql\Year;
+use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\CKFinder\CKFinderAuthentication;
 use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Security\AuthenticationEntryPoint;
@@ -19,6 +20,7 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class OctopusPressExtension extends Extension implements PrependExtensionInterface
 {
@@ -37,6 +39,15 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
                     $assetsUrl = (array) $fragment['assets']['base_urls'];
                 }
             }
+
+            $container->prependExtensionConfig('framework', [
+                'http_client' => [
+                    'max_host_connections' => 10,
+                    'default_options' => [
+                        'max_redirects' => 7,
+                    ],
+                ],
+            ]);
         }
         $container->prependExtensionConfig($this->getAlias(), [
             'assetsUrl' => $assetsUrl,
@@ -254,9 +265,6 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
         $container->setParameter('plugin_dir', $config['pluginDir']);
 
         $container->setParameter('public_dir', $this->getPublicDir($container));
-
-        $container->register(Requester::class, Requester::class);
-        $container->register(ServiceCenter::class, ServiceCenter::class);
 
         $container->register(AuthenticationEntryPoint::class, AuthenticationEntryPoint::class);
         $container->register(AccessDeniedHandler::class, AccessDeniedHandler::class);
