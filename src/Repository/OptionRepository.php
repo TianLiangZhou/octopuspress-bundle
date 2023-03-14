@@ -172,6 +172,11 @@ class OptionRepository extends ServiceEntityRepository
         return $this->getDefaultOptions()['site_keyword'] ?? '';
     }
 
+    public function postsPerPage(int $default = 30): int
+    {
+        return $this->getDefaultOptions()['posts_per_page'] ?? $default;
+    }
+
     /**
      * @return string
      */

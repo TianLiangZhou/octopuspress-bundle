@@ -1,6 +1,6 @@
 <?php
 
-namespace OctopusPress\Bundle\Pagination;
+namespace OctopusPress\Bundle\Support;
 
 use ArrayAccess;
 use Countable;
@@ -9,6 +9,7 @@ use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
 use OctopusPress\Bundle\Widget\WidgetInterface;
 use Traversable;
+use Twig\Environment;
 
 /**
  * @template T
@@ -25,7 +26,9 @@ class Pagination implements Countable, IteratorAggregate, ArrayAccess, WidgetInt
      */
     private array $options;
 
-    public function __construct(iterable $items, array $options = [])
+    private Environment $twig;
+
+    public function __construct(Environment $twig, iterable $items, array $options = [])
     {
         $this->items = $items;
         $this->options = array_merge([
@@ -35,13 +38,12 @@ class Pagination implements Countable, IteratorAggregate, ArrayAccess, WidgetInt
             'pageName' => 'page',
             'pageRange'=> 7,
             'containerClass' => '',
-            'bootstrap' => true,
-            'tailwind'  => false,
             'activeClass' => '',
             'disabledClass' => '',
             'template' => '',
             'query'    => [],
         ], $options);
+        $this->twig = $twig;
     }
 
     public function render(array $attributes = []): string

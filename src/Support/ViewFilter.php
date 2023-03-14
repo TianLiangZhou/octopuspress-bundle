@@ -1,16 +1,18 @@
 <?php
 
-namespace OctopusPress\Bundle\View;
+namespace OctopusPress\Bundle\Support;
 
+use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
+use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Model\ViewManager;
-use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Scalable\Hook;
 use OctopusPress\Bundle\Twig\OctopusRuntime;
 use OctopusPress\Bundle\Util\Helper;
 use Symfony\Bridge\Twig\Extension\AssetExtension;
 use Twig\Error\RuntimeError;
+use str_ends_with;
 
 class ViewFilter
 {
@@ -49,15 +51,15 @@ class ViewFilter
          * @var AssetExtension $extension
          */
         $extension = $this->bridger->getTwig()->getExtension(AssetExtension::class);
-        $theme = $this->bridger->getTheme();
-        if ($theme->isThemeSupport('bootstrap') || $theme->isThemeSupport('nebular')) {
+        $themeExtension = $this->bridger->getTheme();
+        if ($themeExtension->isThemeSupport('bootstrap') || $themeExtension->isThemeSupport('nebular')) {
             echo sprintf(
                 '<link href="%s" rel="stylesheet" />',
                 $extension->getAssetUrl('assets/css/bootstrap.css')
             );
         }
-        if ($theme->isThemeSupport('nebular')) {
-            $nebular = $theme->getThemeSupport('nebular');
+        if ($themeExtension->isThemeSupport('nebular')) {
+            $nebular = $themeExtension->getThemeSupport('nebular');
             $themes = ['default'];
             if (isset($nebular['theme'])) {
                 $themes = is_array($nebular['theme']) ? $nebular['theme'] : [$nebular['theme']];
@@ -75,6 +77,29 @@ class ViewFilter
                 '<link href="%s" rel="stylesheet" />',
                 $extension->getAssetUrl('assets/css/nebular/components.css')
             );
+        }
+        $theme = $this->viewManager->getOption()->theme();
+        if ($theme) {
+            $templateDir = $this->bridger->getTemplateDir();
+            $names = $this->hook->filter('load_theme_resource_names', ['common', 'index', $theme]);
+            foreach ($names as $name) {
+                $file = sprintf('%s/%s/css/%s.css', $templateDir, $theme, $name);
+                if (file_exists($file)) {
+                    echo sprintf(
+                        '<link href="%s" rel="stylesheet" />',
+                        $extension->getAssetUrl('css/' . $name . '.css', 'theme')
+                    );
+                }
+            }
+            foreach ($names as $name) {
+                $file = sprintf('%s/%s/js/%s.js', $templateDir, $theme, $name);
+                if (file_exists($file)) {
+                    echo sprintf(
+                        '<script type="text/javascript" src="%s"></script>',
+                        $extension->getAssetUrl('js/' . $name . '.js', 'theme')
+                    );
+                }
+            }
         }
         $this->backgroundImage();
     }
@@ -220,11 +245,12 @@ EOF;
             $class[] = 'nb-theme-default';
         }
         $routeName = $this->viewManager->getRouteName();
+        $controllerResult = $this->viewManager->getControllerResult();
         if (Helper::isHome($routeName)) {
             $class[] = 'home';
         } elseif (Helper::isSingular($routeName)) {
-            if ($this->viewManager->getControllerResult() instanceof Post) {
-                $class[] = $this->viewManager->getControllerResult()->getType() . '-template';
+            if ($controllerResult instanceof Post) {
+                $class[] = $controllerResult->getType() . '-template';
             }
             if (Helper::isSingle($routeName)) {
                 $class[] = 'single';
@@ -233,13 +259,19 @@ EOF;
                 $class[] = 'page';
             }
         } elseif (Helper::isArchive($routeName)) {
-            if ($this->viewManager->getControllerResult() instanceof TermTaxonomy) {
-                $prefix = $this->viewManager->getControllerResult()->getTaxonomy();
-                $class[] = $prefix;
-                if (($term = $this->viewManager->getControllerResult()->getTerm())) {
-                    $class[] = $prefix .'-'. $term->getSlug();
+            if ($controllerResult instanceof ArchiveDataSet) {
+                $taxonomy = $controllerResult->getTaxonomy();
+                if ($taxonomy instanceof TermTaxonomy) {
+                    $prefix = $taxonomy->getTaxonomy();
+                    $class[] = $prefix;
+                    if (($term = $taxonomy->getTerm())) {
+                        $class[] = $prefix .'-'. $term->getSlug();
+                    }
+                } elseif ($taxonomy instanceof User) {
+                    $class[] = 'author';
                 }
             }
+            $class[] = 'archive';
         } elseif (Helper::is404($routeName)) {
             $class[] = 'error404';
         }

@@ -6,8 +6,10 @@ namespace OctopusPress\Bundle\Controller\Admin;
 
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use OctopusPress\Bundle\Bridge\Bridger;
+use OctopusPress\Bundle\Entity\Term;
 use OctopusPress\Bundle\Entity\TermMeta;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
 use OctopusPress\Bundle\Event\OctopusEvent;
@@ -15,11 +17,13 @@ use OctopusPress\Bundle\Event\TaxonomyEvent;
 use OctopusPress\Bundle\Form\Type\TaxonomyType;
 use OctopusPress\Bundle\Repository\TaxonomyRepository;
 use Exception;
-use Symfony\Component\Form\FormInterface;
+use OctopusPress\Bundle\Repository\TermRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\Slugger\AsciiSlugger;
+use function Symfony\Component\String\u;
 
 /**
  * Class CategoryController
@@ -33,6 +37,7 @@ class TaxonomyController extends AdminController
      * @var TaxonomyRepository
      */
     protected TaxonomyRepository $repository;
+    protected TermRepository $termRepository;
 
     /**
      * @param Bridger $bridger
@@ -41,6 +46,7 @@ class TaxonomyController extends AdminController
     {
         parent::__construct($bridger);
         $this->repository = $bridger->getTaxonomyRepository();
+        $this->termRepository = $bridger->getTermRepository();
     }
 
     /**
@@ -153,7 +159,7 @@ class TaxonomyController extends AdminController
      * @return JsonResponse
      */
     #[Route('/{taxonomy}/store', name: 'store', methods: Request::METHOD_POST)]
-    public function store(Request $request, string $taxonomy): JsonResponse
+    public function create(string $taxonomy, Request $request): JsonResponse
     {
         if (($response = $this->checkTaxonomy($taxonomy))) {
             return $response;
@@ -168,7 +174,7 @@ class TaxonomyController extends AdminController
      * @return JsonResponse
      */
     #[Route('/{taxonomy}/{id}/update', name: 'update', requirements: ['id' => '\d+'], methods: Request::METHOD_POST)]
-    public function update(TermTaxonomy $termTaxonomy, Request $request, string $taxonomy): JsonResponse
+    public function edit(string $taxonomy, TermTaxonomy $termTaxonomy, Request $request): JsonResponse
     {
         if (($response = $this->checkTaxonomy($taxonomy))) {
             return $response;
@@ -185,7 +191,7 @@ class TaxonomyController extends AdminController
      * @throws OptimisticLockException
      */
     #[Route('/{taxonomy}/delete', name: 'delete', methods: [Request::METHOD_POST, Request::METHOD_DELETE])]
-    public function delete(Request $request, string $taxonomy): JsonResponse
+    public function remove(string $taxonomy, Request $request): JsonResponse
     {
         if (($response = $this->checkTaxonomy($taxonomy))) {
             return $response;
@@ -233,60 +239,97 @@ class TaxonomyController extends AdminController
      * @param TermTaxonomy $taxonomy
      * @param Request $request
      * @return JsonResponse
+     * @throws NonUniqueResultException
      */
     private function save(TermTaxonomy $taxonomy, Request $request): JsonResponse
     {
-        $eventDispatcher = $this->bridger->getDispatcher();
-        $eventDispatcher->dispatch(new TaxonomyEvent($taxonomy), OctopusEvent::TAXONOMY_SAVE_BEFORE);
+        $taxonomies = $this->bridger->getTaxonomy()->getNames();
         try {
-            $data = $request->toArray();
-            $form = $this->validation(TaxonomyType::class, $taxonomy, $data, []);
+            $form = $this->validation(TaxonomyType::class, $taxonomy, $request->toArray(), [
+                'taxonomies' => array_combine($taxonomies, $taxonomies),
+            ]);
         } catch (\Throwable $exception) {
             return $this->json([
                 'message' => $exception->getMessage(),
             ], Response::HTTP_NOT_ACCEPTABLE);
         }
-        $parent = $taxonomy->getParent();
-        if (($id = $taxonomy->getId()) != null && $parent && $id == $parent->getId()) {
-            $taxonomy->setParent(null);
-        }
-        $term = $taxonomy->getTerm();
-        if ($term->getId() != null) {
-            $identical = $this->repository->findOneBy([
-                'taxonomy' => $taxonomy->getTaxonomy(),
-                'term'     => $term
-            ]);
-            if ($identical != null && $taxonomy->getId() == null) {
-                return $this->json(
-                    array_merge($identical->jsonSerialize(), $identical->getTerm()->jsonSerialize())
-                );
+        if (($parentId = (int) $form->get('parent')->getNormData()) > 0) {
+            $parent = $this->repository->find($parentId);
+            if ($parent && $parent->getTaxonomy() === $taxonomy->getTaxonomy() && $parentId != $taxonomy->getId()) {
+                $taxonomy->setParent($parent);
             }
         }
-        $this->metas($form, $taxonomy);
+        $name = $form->get('name')->getNormData();
+        $slug = $form->get('slug')->getNormData();
+        if (empty($slug)) {
+            $slug = (new AsciiSlugger('zh'))->slug($name)->lower()->toString();
+        }
+        $slug = $this->bridger->getHook()->filter('taxonomy_slug', $slug, $name);
+        $term = $taxonomy->getTerm();
+        $existSource = $this->termRepository->findOneBy([
+            'name' => $name,
+            'slug' => $slug,
+        ]);
+        if ($existSource) {
+            $existTaxonomy = $this->repository->findOneBy([
+                'taxonomy' => $taxonomy->getTaxonomy(),
+                'term'     => $existSource,
+            ]);
+            if ($existTaxonomy && $term == null) {
+                return $this->json(['message' => '已存在相同的类目',], Response::HTTP_NOT_ACCEPTABLE);
+            }
+        }
+        $queryBuilder = $this->termRepository->createQueryBuilder('t')
+            ->where('t.slug = :slug')
+            ->setParameter('slug', $slug);
+        if ($term) {
+            $queryBuilder->andWhere('t.id != :id')
+                ->setParameter('id', $term->getId());
+        }
+        $existSlug = $queryBuilder->getQuery()->setMaxResults(1)->getOneOrNullResult();
+        $suffix = 2;
+        $slugSuffix = null;
+        while ($existSlug != null) {
+            $slugSuffix = $slug . '-' . $suffix;
+            $existSlug = $this->termRepository->findOneBy(['slug' => $slugSuffix]);
+            $suffix++;
+        }
+        if ($slugSuffix) {
+            $slug = $slugSuffix;
+        }
+        if ($term == null) {
+            $term = new Term();
+            $term->setTermGroup(0);
+        }
+        $term->setName($name)->setSlug($slug);
         try {
+            $taxonomy->setTerm($term);
+            $this->metas($form->get('metas')->getNormData(), $taxonomy);
             $this->repository->add($taxonomy);
         } catch (Exception $exception) {
             return $this->json([
                 'message' => $exception->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        $eventDispatcher->dispatch(new TaxonomyEvent($taxonomy), OctopusEvent::TAXONOMY_SAVE_AFTER);
+        $eventDispatcher = $this->bridger->getDispatcher();
+        $taxonomyEvent = new TaxonomyEvent($taxonomy);
+        $taxonomyEvent->setRequest($request);
+        $eventDispatcher->dispatch($taxonomyEvent, OctopusEvent::TAXONOMY_SAVE_AFTER);
         return $this->json(
             array_merge($taxonomy->jsonSerialize(), $taxonomy->getTerm()->jsonSerialize())
         );
     }
 
     /**
-     * @param FormInterface $form
+     * @param TermMeta[] $normData
      * @param TermTaxonomy $entity
      * @return void
      */
-    private function metas(FormInterface $form, TermTaxonomy $entity): void
+    private function metas(array $normData, TermTaxonomy $entity): void
     {
         /**
-         * @var $normData array<int, TermMeta>
+         * @var $normData
          */
-        $normData = $form->get('metas')->getNormData();
         if (empty($normData)) {
             return ;
         }

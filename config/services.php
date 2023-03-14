@@ -1,6 +1,7 @@
 <?php
 
 
+use Doctrine\ORM\EntityManagerInterface;
 use OctopusPress\Bundle\Asset\ThemePackage;
 use OctopusPress\Bundle\Asset\ThemeStaticVersionStrategy;
 use OctopusPress\Bundle\Bridge\Bridger;
@@ -23,6 +24,7 @@ use OctopusPress\Bundle\Service\Requester;
 use OctopusPress\Bundle\Service\ServiceCenter;
 use OctopusPress\Bundle\Twig\OctopusExtension;
 use OctopusPress\Bundle\Twig\OctopusRuntime;
+use OctopusPress\Bundle\Form\Type\TaxonomyType;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;

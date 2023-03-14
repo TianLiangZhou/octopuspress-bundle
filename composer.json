@@ -12,7 +12,7 @@
         "ext-zip": "*",
         "ckfinder/ckfinder-symfony-bundle": "^4.0.0",
         "doctrine/doctrine-bundle": "^2.7",
-        "doctrine/orm": "^2.13.4",
+        "doctrine/orm": "^2.14.1",
         "mobiledetect/mobiledetectlib": "^3.74",
         "sensio/framework-extra-bundle": "^6.2.9",
         "spatie/flysystem-dropbox": "^2.0.6",
@@ -64,7 +64,6 @@
     },
     "scripts": {
         "auto-scripts": {
-            "ckfinder:download": "symfony-cmd"
         },
         "post-install-cmd": [
             "@auto-scripts"

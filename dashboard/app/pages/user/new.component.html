@@ -59,12 +59,32 @@
           </nb-select>
         </div>
       </div>
+
+      <nb-card class="px-0 border-0">
+        <nb-card-header class="px-0">其它设置</nb-card-header>
+      </nb-card>
+      <div class="mb-3 row">
+        <label for="inputEditor" class="label col-form-label col-12 col-md-2">可视化编辑器</label>
+        <div class="col-12 col-md-5">
+          <nb-checkbox id="inputEditor">撰写文章时不使用可视化编辑器</nb-checkbox>
+        </div>
+      </div>
+
+
+      <div class="mb-3 row">
+        <label for="inputDescription" class="label col-form-label col-12 col-md-2">个人说明</label>
+        <div class="col-12 col-md-5">
+          <textarea id="inputDescription" fullWidth rows="5" nbInput></textarea>
+        </div>
+      </div>
+
+
       <control-container [controls]="controls" [form]="metaGroup"></control-container>
       <div class="mb-3 row">
         <label class="label col-form-label col-12 col-md-2"></label>
         <div class="col-12 col-md-5">
           <button nbButton status="primary" [disabled]="formGroup.invalid || spinner" [nbSpinner]="spinner" type="submit">
-            {{formGroup.controls['id'].value > 0 ? '更新用户' : '添加新用户'}}
+            {{ getBtnName() }}
           </button>
         </div>
       </div>

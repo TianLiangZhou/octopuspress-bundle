@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {ActivatedRoute} from "@angular/router";
 import {OnSpinner, Records, ResponseBody} from "../../../@core/definition/common";
@@ -12,13 +12,14 @@ import {
 import {Theme} from "../../../@core/definition/decoration/type";
 import {DomSanitizer} from "@angular/platform-browser";
 import {DialogRef} from "@angular/cdk/dialog";
-import {NbDialogService, NbToastrService} from "@nebular/theme";
+import {NbDialogService, NbSidebarService, NbToastrService} from "@nebular/theme";
+import {timer} from "rxjs";
 
 @Component({
   selector: 'app-theme',
   templateUrl: './theme.component.html',
 })
-export class ThemeComponent implements OnInit, OnSpinner {
+export class ThemeComponent implements OnInit, OnSpinner, AfterViewInit {
 
   themes: Theme[] = [];
 
@@ -32,6 +33,7 @@ export class ThemeComponent implements OnInit, OnSpinner {
     private route: ActivatedRoute,
     public sanitizer: DomSanitizer,
     public dialog: NbDialogService,
+    private sidebar: NbSidebarService,
   ) {
 
   }
@@ -94,6 +96,12 @@ export class ThemeComponent implements OnInit, OnSpinner {
   delete(name: string) {
     this.http.post<ResponseBody>(THEME_DELETE, {name: name}).subscribe(res => {
       this.getThemes()
+    });
+  }
+
+  ngAfterViewInit(): void {
+    timer(300).subscribe(val => {
+      this.sidebar.toggle(true, 'menu-sidebar');
     });
   }
 }

@@ -24,6 +24,7 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->getRootNode();
         $rootNode->children()
                 ->scalarNode('pluginDir')->defaultValue("%kernel.project_dir%/plugins")->end()
+                ->scalarNode('buildAssetDir')->end()
                 ->arrayNode('assetsUrl')->scalarPrototype()->end()->end()
                 ->arrayNode('accessControls')
                     ->arrayPrototype()

@@ -30,7 +30,9 @@
                     </div>
                     <div class="px-6 py-4 relative">
                         <form action="/install" method="post">
+                            {% if csrf %}
                             <input type="hidden" name="install[_token]" value="{{ csrf_token('install') }}"/>
+                            {% endif %}
                             <div class="mb-6 flex flex-col md:flex-row items-start">
                                 <label for="title" class="w-full md:w-1/4 text-basic-600 text-base py-1.5">站点名称</label>
                                 <input

@@ -54,11 +54,17 @@ class OctopusExtension extends AbstractExtension
             new TwigFunction('attachment', [OctopusRuntime::class, 'attachment']),
             new TwigFunction('attachments', [OctopusRuntime::class, 'attachments']),
 
+
+            new TwigFunction('get_users', [OctopusRuntime::class, 'getUsers']),
+            new TwigFunction('get_user', [OctopusRuntime::class, 'getUser']),
+
             new TwigFunction('taxonomies', [OctopusRuntime::class, 'taxonomies']),
+            new TwigFunction('taxonomy', [OctopusRuntime::class, 'taxonomy']),
 
             new TwigFunction('sidebar', [OctopusRuntime::class, 'sidebar'], ['is_safe' => ['html']]),
             new TwigFunction('widget', [OctopusRuntime::class, 'widget'], ['is_safe' => ['html']]),
 
+            new TwigFunction('get_post', [OctopusRuntime::class, 'getPost'], ['is_safe' => ['html']]),
             new TwigFunction('get_posts', [OctopusRuntime::class, 'getPosts'], ['is_safe' => ['html']]),
             new TwigFunction('get_taxonomy_posts', [OctopusRuntime::class, 'getTaxonomyPosts'], ['is_safe' => ['html']]),
 

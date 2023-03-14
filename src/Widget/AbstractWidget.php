@@ -132,8 +132,8 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
         if (!empty($attributes['class_name'])) {
             $context['className'] = $attributes['class_name'];
         }
-        if (!empty($attributes['template']) && is_integer($attributes['template'])) {
-            $context['template'] = $attributes['template'] - 1;
+        if (!empty($attributes['template']) && $this->hasExistsTemplate($attributes['template'])) {
+            $context['template'] = $attributes['template'];
         }
         return $context;
     }
@@ -149,12 +149,12 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
     }
 
     /**
-     * @param int $index
+     * @param string $name
      * @return bool
      */
-    private function hasExistsTemplate(int $index): bool
+    private function hasExistsTemplate(string $name): bool
     {
-        return isset($this->options['templates'][$index]);
+        return isset($this->options['templates'][$name]);
     }
 
     /**
@@ -249,7 +249,7 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
      */
     public function addTemplate(string $name): static
     {
-        $this->options['templates'][] = $name;
+        $this->options['templates'][$name] = $name;
         return $this;
     }
 
@@ -300,8 +300,8 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
             $options = [
                 ['label' => '默认', 'value' => '']
             ];
-            foreach ($this->options['templates'] as $index => $template) {
-                $options[] = ['label' => $template, 'value' => $index + 1];
+            foreach ($this->options['templates'] as $template) {
+                $options[] = ['label' => $template, 'value' => $template];
             }
             $section->addControl(new Control('template', [
                 'type' => AbstractControl::SELECT,

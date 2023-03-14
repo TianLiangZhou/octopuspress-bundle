@@ -128,4 +128,12 @@ final class PostType implements \JsonSerializable
             ],
         ];
     }
+
+    /**
+     * @return bool
+     */
+    public function isShowUi(): bool
+    {
+        return $this->showUi;
+    }
 }

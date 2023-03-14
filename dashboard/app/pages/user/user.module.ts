@@ -22,6 +22,11 @@ const routes: Routes = [
     component: NewComponent,
   },
   {
+    path: 'profile',
+    title: '个人资料',
+    component: NewComponent,
+  },
+  {
     path: ':id',
     title: '编辑用户',
     component: NewComponent,

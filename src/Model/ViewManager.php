@@ -2,15 +2,17 @@
 
 namespace OctopusPress\Bundle\Model;
 
+use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
+use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Event\OctopusEvent;
 use OctopusPress\Bundle\Event\ViewRenderEvent;
-use OctopusPress\Bundle\Bridge\Bridger;
-use OctopusPress\Bundle\Scalable\Hook;
 use OctopusPress\Bundle\Repository\OptionRepository;
+use OctopusPress\Bundle\Scalable\Hook;
+use OctopusPress\Bundle\Support\ArchiveDataSet;
+use OctopusPress\Bundle\Support\ViewFilter;
 use OctopusPress\Bundle\Util\Helper;
-use OctopusPress\Bundle\View\ViewFilter;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -20,8 +22,6 @@ use Twig\Error\SyntaxError;
 class ViewManager
 {
     private Environment $twig;
-
-    private mixed $controllerResult = null;
 
     private Hook $hook;
 
@@ -67,11 +67,19 @@ class ViewManager
      */
     public function render(): Response
     {
+        $controllerResult = $this->getControllerResult();
         $context = [
             'title' => $this->getTitle(),
             'route' => $this->getRouteName(),
-            'entity' => $this->getControllerResult(),
+            'entity' => null,
+            'pagination'=> null,
         ];
+        if ($controllerResult instanceof Post) {
+            $context['entity'] = $controllerResult;
+        } elseif ($controllerResult instanceof ArchiveDataSet) {
+            $context['entity'] = $controllerResult->getTaxonomy();
+            $context['pagination'] = $controllerResult->getPagination();
+        }
         foreach ($context as $name => $value) {
             $this->twig->addGlobal($name, $value);
         }
@@ -81,18 +89,12 @@ class ViewManager
             return $event->getResponse();
         }
         if (!$event->hasContext('layout')) {
-            $event->addContext('layout', $this->twig->load('@OctopusPressBundle/base.html.twig'));
+            $event->addContext(
+                'layout',
+                $this->twig->load('@OctopusPressBundle/base.html.twig')
+            );
         }
         return new Response($this->twig->render($this->getTemplate(), $event->getContext()));
-    }
-
-    /**
-     * @param mixed $result
-     * @return void
-     */
-    public function setControllerResult(mixed $result): void
-    {
-        $this->controllerResult = $result;
     }
 
     /**
@@ -125,7 +127,7 @@ class ViewManager
             $template = $this->getTagTemplate();
         } elseif (Helper::isCategory($routeName)) {
             $template = $this->getCategoryTemplate();
-        } elseif (Helper::isTaxonomy($routeName)) {
+        } elseif (Helper::isArchives($routeName)) {
             $template = $this->getTaxonomyTemplate();
         } elseif (Helper::isSingle($routeName)) {
             $template = $this->getSingleTemplate();
@@ -148,13 +150,14 @@ class ViewManager
     private function getTagTemplate(): string
     {
         $templates = [];
-        if ($this->controllerResult instanceof TermTaxonomy) {
-            $term = $this->controllerResult->getTerm();
-            $templates[] = 'tag-' . $term->getSlug() . '.twig';
-            $templates[] = 'tag-' . $term->getId() . '.twig';
+        $controllerResult = $this->getControllerResult();
+        if ($controllerResult instanceof ArchiveDataSet) {
+            $term = $controllerResult->getTaxonomy()->getTerm();
+            $templates[] = 'tag-' . $term->getSlug();
+            $templates[] = 'tag-' . $term->getId();
         }
-        $templates[] = 'tag.twig';
-        $templates[] = 'taxonomy.twig';
+        $templates[] = 'tag';
+        $templates[] = 'taxonomy';
         return $this->getQueryTemplate('tag', $templates);
     }
 
@@ -164,13 +167,14 @@ class ViewManager
     private function getCategoryTemplate(): string
     {
         $templates = [];
-        if ($this->controllerResult instanceof TermTaxonomy) {
-            $term = $this->controllerResult->getTerm();
-            $templates[] = 'category-' . $term->getSlug() . '.twig';
-            $templates[] = 'category-' . $term->getId() . '.twig';
+        $controllerResult = $this->getControllerResult();
+        if ($controllerResult instanceof ArchiveDataSet) {
+            $term = $controllerResult->getTaxonomy()->getTerm();
+            $templates[] = 'category-' . $term->getSlug();
+            $templates[] = 'category-' . $term->getId();
         }
-        $templates[] = 'category.twig';
-        $templates[] = 'taxonomy.twig';
+        $templates[] = 'category';
+        $templates[] = 'taxonomy';
         return $this->getQueryTemplate('category', $templates);
     }
 
@@ -180,13 +184,20 @@ class ViewManager
     private function getTaxonomyTemplate(): string
     {
         $templates = [];
-        if ($this->controllerResult instanceof TermTaxonomy) {
-            $taxonomy = $this->controllerResult->getTaxonomy();
-            $slug = $this->controllerResult->getTerm()?->getSlug();
-            $templates[] = 'taxonomy-' . $taxonomy . '-' . $slug . '.twig';
-            $templates[] = 'taxonomy-' . $taxonomy . '.twig';
+        $controllerResult = $this->getControllerResult();
+        if ($controllerResult instanceof ArchiveDataSet) {
+            $taxonomy = $controllerResult->getTaxonomy();
+            if ($taxonomy instanceof TermTaxonomy) {
+                $templates[] = $taxonomy->getTaxonomy();
+                $slug = $taxonomy->getTerm()->getSlug();
+                $templates[] = $taxonomy->getTaxonomy() . '-' . $slug;
+            } elseif ($taxonomy instanceof User) {
+                $templates[] = 'author';
+            } else {
+                $templates[] = 'archive';
+            }
         }
-        $templates[] = 'taxonomy.twig';
+        $templates[] = 'taxonomy';
         return $this->getQueryTemplate('taxonomy', $templates);
     }
 
@@ -196,17 +207,14 @@ class ViewManager
     private function getSingleTemplate(): string
     {
         $templates = [];
-        if ($this->controllerResult instanceof Post) {
-            $meta = $this->controllerResult->getMeta('_wp_page_template');
-            if ($meta && ($template = $meta->getMetaValue())) {
-                $templates[] = $template;
-            }
-            $type = $this->controllerResult->getType();
-            $name = $this->controllerResult->getName();
-            $templates[] = 'single-' . $type . '-' . $name . '.twig';
-            $templates[] = 'single-' . $type . '.twig';
+        $controllerResult = $this->getControllerResult();
+        if ($controllerResult instanceof Post) {
+            $type = $controllerResult->getType();
+            $name = $controllerResult->getName();
+            $templates[] = 'single-' . $type . '-' . $name;
+            $templates[] = 'single-' . $type;
         }
-        $templates[] = 'single.twig';
+        $templates[] = 'single';
         return $this->getQueryTemplate('single', $templates);
     }
 
@@ -216,15 +224,16 @@ class ViewManager
     private function getPageTemplate(): string
     {
         $templates = [];
-        if ($this->controllerResult instanceof Post) {
-            $meta = $this->controllerResult->getMeta('_wp_page_template');
+        $controllerResult = $this->getControllerResult();
+        if ($controllerResult instanceof Post) {
+            $meta = $controllerResult->getMeta('_wp_page_template');
             if ($meta && ($template = $meta->getMetaValue())) {
                 $templates[] = $template;
             }
-            $templates[] = 'page-' . $this->controllerResult->getName() . '.twig';
-            $templates[] = 'page-' . $this->controllerResult->getId() . '.twig';
+            $templates[] = 'page-' . $controllerResult->getName();
+            $templates[] = 'page-' . $controllerResult->getId();
         }
-        $templates[] = 'page.twig';
+        $templates[] = 'page';
         return $this->getQueryTemplate('page', $templates);
     }
 
@@ -233,7 +242,7 @@ class ViewManager
      */
     private function getHomeTemplate(): string
     {
-        $templates = ['home.twig', 'index.twig'];
+        $templates = ['home', 'index'];
         return $this->getQueryTemplate('home', $templates);
     }
 
@@ -242,11 +251,7 @@ class ViewManager
      */
     private function getNotFoundTemplate(): string
     {
-        $template = $this->getQueryTemplate('404', ['@OctopusPressBundle/404.html.twig']);
-        if (!empty($template)) {
-            return $template;
-        }
-        return '404.twig';
+        return $this->getQueryTemplate('404', ['@OctopusPressBundle/404']);
     }
 
     /**
@@ -267,17 +272,17 @@ class ViewManager
         $templates = [];
         $chunkCount = count($routeBlocks);
         if ($chunkCount < 2) {
-            $templates[] = sprintf('@%s/%s.twig', $routeBlocks[0], $routeBlocks[0]);
-            $templates[] = sprintf('@%s/index.twig', $routeBlocks[0]);
+            $templates[] = sprintf('@%s/%s', $routeBlocks[0], $routeBlocks[0]);
+            $templates[] = sprintf('@%s/index', $routeBlocks[0]);
         } elseif ($chunkCount < 3) {
-            $templates[] = sprintf('@%s/%s.twig', $routeBlocks[0], $routeBlocks[1]);
-            $templates[] = sprintf('@%s/%s/index.twig', $routeBlocks[0], $routeBlocks[1]);
+            $templates[] = sprintf('@%s/%s', $routeBlocks[0], $routeBlocks[1]);
+            $templates[] = sprintf('@%s/%s/index', $routeBlocks[0], $routeBlocks[1]);
         } else {
             $name = array_shift($routeBlocks);
             $nest = implode('/', $routeBlocks);
             $single = implode('_', $routeBlocks);
-            $templates[] = sprintf('@%s/%s.twig', $name, $nest);
-            $templates[] = sprintf('@%s/%s.twig', $name, $single);
+            $templates[] = sprintf('@%s/%s', $name, $nest);
+            $templates[] = sprintf('@%s/%s', $name, $single);
         }
         return $this->getQueryTemplate('plugin', $templates);
     }
@@ -287,7 +292,7 @@ class ViewManager
      */
     private function getIndexTemplate(): string
     {
-        return $this->getQueryTemplate('index', ['@OctopusPressBundle/index.html.twig']);
+        return $this->getQueryTemplate('index', ['@OctopusPressBundle/index']);
     }
 
     /**
@@ -298,24 +303,25 @@ class ViewManager
     private function getQueryTemplate(string $type, array $templates = []): string
     {
         if (empty($templates)) {
-            $templates = ["$type.twig"];
+            $templates = [$type];
         }
         $templates = $this->hook->filter($type . '_template_hierarchy', $templates);
         $themePath = $this->getThemePath();
         $template = '';
         foreach ($templates as $tpl) {
-            if (str_starts_with($tpl, '@')) {
-                if ($this->twig->getLoader()->exists($tpl)) {
-                    $template = $tpl;
+            $templateName = $tpl . '.html.twig';
+            if (str_starts_with($templateName, '@')) {
+                if ($this->twig->getLoader()->exists($templateName)) {
+                    $template = $templateName;
                     break;
                 }
             }
-            if ($this->twig->getLoader()->exists($themePath . $tpl)) {
-                $template = $themePath . $tpl;
+            if ($this->twig->getLoader()->exists($themePath . $templateName)) {
+                $template = $themePath . $templateName;
                 break;
             }
         }
-        return $this->hook->filter($type . '_template', $template, $type, $templates);
+        return $this->hook->filter($type . '_template', $template, $themePath, $templates);
     }
 
     /**
@@ -348,15 +354,23 @@ class ViewManager
         $args = ['title' => '',];
         $siteName = $this->option->title();
         $routeName = $this->getRouteName();
+        $controllerResult = $this->getControllerResult();
         if (Helper::isHome($routeName)) {
             $args['title'] = $siteName;
-        } elseif (Helper::isTaxonomy($routeName) || Helper::isTag($routeName) || Helper::isCategory($routeName)) {
-            $args['title'] = $this->controllerResult instanceof TermTaxonomy
-                ? $this->controllerResult->getTerm()?->getName()
-                : '';
+        } elseif (Helper::isArchives($routeName)) {
+            if ($controllerResult instanceof ArchiveDataSet) {
+                $taxonomy = $controllerResult->getTaxonomy();
+                if ($taxonomy instanceof TermTaxonomy) {
+                    $args['title'] = $taxonomy->getTerm()->getName();
+                } elseif ($taxonomy instanceof User) {
+                    $args['title'] = $taxonomy->getNickname() . '作品';
+                } else {
+                    $args['title'] = $taxonomy->title ?? '';
+                }
+            }
         } elseif (Helper::isSingle($routeName)) {
-            $args['title'] = $this->controllerResult instanceof Post
-                ? $this->controllerResult->getTitle()
+            $args['title'] = $controllerResult instanceof Post
+                ? $controllerResult->getTitle()
                 : '';
         }
         if (Helper::isHome($routeName)) {
@@ -364,8 +378,10 @@ class ViewManager
         } else {
             $args['site'] = $siteName;
         }
-        $sep = $this->hook->filter('title_separator', '-');
-        return $this->hook->filter('title', implode(" $sep ", array_filter($args)));
+        $sep = $this->hook->filter('document_title_separator', '-');
+        $args = $this->hook->filter('document_title_parts', $args);
+        $title = implode(" $sep ", array_filter($args));
+        return $this->hook->filter('document_title', $title);
     }
 
     /**
@@ -381,7 +397,7 @@ class ViewManager
      */
     public function getThemePath(): string
     {
-        return $this->option->theme() . DIRECTORY_SEPARATOR;
+        return ($theme = $this->option->theme()) ? $theme . DIRECTORY_SEPARATOR : '';
     }
 
     /**
@@ -397,7 +413,7 @@ class ViewManager
      */
     public function getControllerResult(): mixed
     {
-        return $this->controllerResult;
+        return $this->getBridger()->getRequest()->attributes->get('controller_result');
     }
 
     /**

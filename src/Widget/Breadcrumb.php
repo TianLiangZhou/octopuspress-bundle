@@ -2,6 +2,10 @@
 
 namespace OctopusPress\Bundle\Widget;
 
+use OctopusPress\Bundle\Entity\Post;
+use OctopusPress\Bundle\Entity\TermTaxonomy;
+use OctopusPress\Bundle\Entity\User;
+use OctopusPress\Bundle\Support\ArchiveDataSet;
 use Traversable;
 
 class Breadcrumb extends AbstractWidget implements \IteratorAggregate
@@ -13,8 +17,7 @@ class Breadcrumb extends AbstractWidget implements \IteratorAggregate
     public function getIterator(): Traversable
     {
         // TODO: Implement getIterator() method.
-
-        return new \ArrayIterator($this->items);
+        return new \ArrayIterator($this->getContext()['crumbs'] ?? []);
     }
 
     protected function template(): string
@@ -26,7 +29,62 @@ class Breadcrumb extends AbstractWidget implements \IteratorAggregate
     protected function context(array $attributes = []): array
     {
         // TODO: Implement context() method.
-        return [];
+        $controllerResult = $this->getBridger()->getRequest()->attributes->get('controller_result', null);
+        if ($controllerResult == null) {
+            $controllerResult = $attributes['entity'] ?? null;
+        }
+        if ($controllerResult == null) {
+            return [
+                'crumbs' => [],
+            ];
+        }
+        $crumbs = [];
+        if ($controllerResult instanceof Post) {
+            $crumbs = [$controllerResult];
+            $categories = $controllerResult->getCategories();
+            foreach ($categories as $category) {
+                array_unshift($crumbs, $category);
+                $parent = $category->getParent();
+                while ($parent != null) {
+                    array_unshift($crumbs, $parent);
+                    $parent = $parent->getParent();
+                }
+                break;
+            }
+        } elseif ($controllerResult instanceof ArchiveDataSet) {
+            $taxonomy = $controllerResult->getTaxonomy();
+            if ($taxonomy instanceof TermTaxonomy) {
+                $crumbs[] = $taxonomy;
+                $this->taxonomyCrumbs($taxonomy, $crumbs);
+            } elseif ($taxonomy instanceof User) {
+                $crumbs[] = (object) ['title' => $taxonomy->getNickname()];
+            } else {
+                $crumbs[] = $taxonomy;
+            }
+        } elseif ($controllerResult instanceof TermTaxonomy) {
+            $crumbs[] = $controllerResult;
+            $this->taxonomyCrumbs($controllerResult, $crumbs);
+        }
+        $crumbs = $this->getBridger()
+            ->getHook()
+            ->filter('breadcrumb', $crumbs);
+        return [
+            'crumbs' => $crumbs,
+        ];
+    }
+
+    /**
+     * @param TermTaxonomy $taxonomy
+     * @param array $crumbs
+     * @return void
+     */
+    private function taxonomyCrumbs(TermTaxonomy $taxonomy, array &$crumbs): void
+    {
+        $parent = $taxonomy->getParent();
+        while ($parent != null) {
+            array_unshift($crumbs, $parent);
+            $parent = $parent->getParent();
+        }
     }
 
     public function delayRegister(): void

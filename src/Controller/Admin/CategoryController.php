@@ -32,20 +32,20 @@ class CategoryController extends TaxonomyController
 
 
     #[Route('/category/store', name: 'category_create', options: ['name' => '创建分类', 'parent' => 'taxonomy_category'])]
-    public function store(Request $request, string $taxonomy = 'category'): JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        return parent::store($request, $taxonomy);
+        return $this->create('category', $request);
     }
 
     #[Route('/category/{id}/update', name: 'category_update', options: ['name' => '更新分类', 'parent' => 'taxonomy_category'])]
-    public function update(TermTaxonomy $termTaxonomy, Request $request, string $taxonomy = 'category'): JsonResponse
+    public function update(TermTaxonomy $termTaxonomy, Request $request): JsonResponse
     {
-        return parent::update($taxonomy, $request, $taxonomy);
+        return $this->edit('category', $termTaxonomy, $request);
     }
 
     #[Route('/category/delete', name: 'category_delete', options: ['name' => '删除分类', 'parent' => 'taxonomy_category'], methods: [Request::METHOD_POST, Request::METHOD_DELETE])]
-    public function delete(Request $request, string $taxonomy = 'category'): JsonResponse
+    public function delete(Request $request): JsonResponse
     {
-        return parent::delete($request, $taxonomy);
+        return $this->remove('category', $request);
     }
 }

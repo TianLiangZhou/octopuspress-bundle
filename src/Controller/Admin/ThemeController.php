@@ -114,8 +114,7 @@ class ThemeController extends AdminController
     public function activate(string $name): JsonResponse
     {
         $this->themeManager->activate($name);
-        return $this->json([
-        ]);
+        return $this->json([]);
     }
 
     /**

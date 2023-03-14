@@ -47,7 +47,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       if (token.isValid()) {
         this.user = token.getPayload();
         this.userMenu = [
-          {title: '个人信息', link: "app/user/member/" + this.user?.id},
+          {title: '个人信息', link: "app/user/profile"},
           {title: '退出', link: 'auth/logout'}
         ];
       }

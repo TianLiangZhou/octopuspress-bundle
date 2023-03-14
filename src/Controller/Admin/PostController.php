@@ -16,6 +16,7 @@ use OctopusPress\Bundle\Repository\PostRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use OctopusPress\Bundle\Repository\RelationRepository;
+use OctopusPress\Bundle\Repository\UserRepository;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,11 +34,13 @@ class PostController extends AdminController
     protected PostRepository $repository;
     protected PostManager $postManager;
     protected RelationRepository $relationRepository;
+    protected UserRepository $userRepository;
 
     public function __construct(Bridger $bridger, PostManager $postManager)
     {
         parent::__construct($bridger);
         $this->repository = $bridger->getPostRepository();
+        $this->userRepository = $bridger->getUserRepository();
         $this->relationRepository = $bridger->getRelationRepository();
         $this->postManager = $postManager;
     }
@@ -223,12 +226,21 @@ class PostController extends AdminController
     #[Route('/{id}/update', name: 'update', options: ['name' => '更新文章', 'parent' => 'post_all'], methods: Request::METHOD_POST)]
     public function update(Post $post, Request $request, #[CurrentUser] User $user): JsonResponse
     {
+        $data = $request->toArray();
+        $postExtension = $this->bridger->getPost();
+        $types = $postExtension->getNames();
+        $postType = $postExtension->getType($data['type']);
+        if ($postType == null || !$postType->isShowUi()) {
+            return $this->json(null, Response::HTTP_NOT_ACCEPTABLE);
+        }
         try {
-            $form = $this->validation(PostType::class, $post, $request->toArray());
+            $form = $this->validation(PostType::class, $post, $data, [
+                'types' => array_combine($types, $types)
+            ]);
+            $this->handle($form, $post);
             if ($post->getAuthor() == null) {
                 $post->setAuthor($user);
             }
-            $this->handle($form, $post);
         } catch (\Throwable $exception) {
             return $this->json(['message' => $exception->getMessage()], Response::HTTP_NOT_ACCEPTABLE);
         }
@@ -310,7 +322,12 @@ class PostController extends AdminController
      */
     private function handle(FormInterface $form, Post $post): void
     {
-        $this->handleFeaturedImage($post, $form->get('featuredImage')->getNormData());
+        $otherEntity = [
+            'featuredImage' => $form->get('featuredImage')->getNormData(),
+            'author'        => $form->get('author')->getNormData(),
+            'parent'        => $form->get('parent')->getNormData(),
+        ];
+        $this->handleOtherEntity($post, $otherEntity);
         $this->handleMeta($post, $form->get('metas')->getNormData());
         $normData = $form->get('relationships')->getNormData();
         if (!is_array($normData)) {
@@ -398,20 +415,40 @@ class PostController extends AdminController
 
     /**
      * @param Post $post
-     * @param Post|null $changeFeaturedImage
+     * @param array{featuredImage: number, author: number, parent:number} $otherEntityMap
      * @return void
      */
-    private function handleFeaturedImage(Post $post, ?Post $changeFeaturedImage = null): void
+    private function handleOtherEntity(Post $post, array $otherEntityMap): void
     {
-        if ($changeFeaturedImage == null) {
-            return ;
+        if (!empty($otherEntityMap['featuredImage']) && is_numeric($otherEntityMap['featuredImage'])) {
+            $changeFeaturedImage = $this->repository->findOneBy([
+                'id' => (int) $otherEntityMap['featuredImage'],
+                'type' => Post::TYPE_ATTACHMENT,
+            ]);
+            if ($changeFeaturedImage) {
+                $featuredImage = $post->getMeta('_thumbnail_id');
+                if ($featuredImage == null) {
+                    $featuredImage = new PostMeta();
+                    $featuredImage->setMetaKey('_thumbnail_id');
+                }
+                $featuredImage->setMetaValue($changeFeaturedImage->getId());
+                $post->addMeta($featuredImage);
+            }
         }
-        $featuredImage = $post->getMeta('_thumbnail_id');
-        if ($featuredImage == null) {
-            $featuredImage = new PostMeta();
-            $featuredImage->setMetaKey('_thumbnail_id');
+        if (!empty($otherEntityMap['parent']) && is_numeric($otherEntityMap['parent'])) {
+            $parent = $this->repository->findOneBy([
+                'id' => (int) $otherEntityMap['parent'],
+                'type' => $post->getType(),
+            ]);
+            if ($parent) {
+                $post->setParent($parent);
+            }
         }
-        $featuredImage->setMetaValue($changeFeaturedImage->getId());
-        $post->addMeta($featuredImage);
+        if (!empty($otherEntityMap['author']) && is_numeric($otherEntityMap['author'])) {
+            $author = $this->userRepository->find((int) $otherEntityMap['author']);
+            if ($author) {
+                $post->setAuthor($author);
+            }
+        }
     }
 }

@@ -63,8 +63,8 @@ class Comment implements \JsonSerializable
 
 
     #[ManyToOne(targetEntity: Comment::class, inversedBy: 'children')]
-//    #[JoinColumn(name: 'parent', referencedColumnName: 'id', nullable: true, onDelete: "CASCADE")]
-    private ?Comment $parent;
+    #[JoinColumn(name: 'parent', referencedColumnName: 'id', nullable: true, onDelete: "CASCADE")]
+    private ?Comment $parent = null;
 
     /**
      * @var string

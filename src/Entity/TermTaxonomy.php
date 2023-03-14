@@ -55,7 +55,7 @@ class TermTaxonomy implements JsonSerializable
     #[ManyToOne(targetEntity: Term::class, cascade: ["persist"])]
     #[JoinColumn(name: 'term_id', referencedColumnName: 'term_id', nullable: false)]
     #[Valid]
-    private Term $term;
+    private ?Term $term = null;
 
     /**
      * @var string
@@ -149,9 +149,9 @@ class TermTaxonomy implements JsonSerializable
     }
 
     /**
-     * @return Term
+     * @return ?Term
      */
-    public function getTerm(): Term
+    public function getTerm(): ?Term
     {
         return $this->term;
     }

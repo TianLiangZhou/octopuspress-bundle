@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 /**
  * Class UserController
@@ -61,6 +62,16 @@ class UserController extends AdminController
         }
         $jsonSerialize['meta'] = (object) $metaStdclass;
         return $this->json($jsonSerialize);
+    }
+
+    /**
+     * @param User $user
+     * @return JsonResponse
+     */
+    #[Route('/profile', name: 'self_profile')]
+    public function current(#[CurrentUser] User $user): JsonResponse
+    {
+        return $this->profile($user);
     }
 
     #[Route('/store', name: 'store', options: ['name' => '创建用户', 'parent' => 'user_menu1'], methods: Request::METHOD_POST)]

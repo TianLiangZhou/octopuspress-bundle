@@ -7,15 +7,17 @@ use OctopusPress\Bundle\Customize\AbstractControl;
 use OctopusPress\Bundle\Customize\Control;
 use OctopusPress\Bundle\Customize\Section;
 use OctopusPress\Bundle\Entity\Post;
+use Traversable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Twig\TemplateWrapper;
+use IteratorAggregate;
 
 /**
  *
  */
-class Navigation extends AbstractWidget
+class Navigation extends AbstractWidget implements IteratorAggregate
 {
 
     /**
@@ -104,5 +106,15 @@ class Navigation extends AbstractWidget
         $this->addSection($section);
         $this->addTemplate('@OctopusPressBundle/default/bootstrap.navigation.twig');
         $this->addTemplate('@OctopusPressBundle/default/tailwind.navigation.twig');
+    }
+
+    /**
+     * @return Traversable
+     */
+    public function getIterator(): Traversable
+    {
+        // TODO: Implement getIterator() method.
+        $context = $this->getContext();
+        return new \ArrayIterator($context['navigation'] ?? []);
     }
 }

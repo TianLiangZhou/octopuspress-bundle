@@ -1,5 +1,10 @@
 import {Component, OnInit} from '@angular/core';
-import {USER_CREATE_MEMBER, USER_MEMBER_PROFILE, USER_UPDATE_MEMBER} from '../../@core/definition/user/api';
+import {
+  USER_CREATE_MEMBER,
+  USER_MEMBER_PROFILE,
+  USER_SELF_PROFILE,
+  USER_UPDATE_MEMBER
+} from '../../@core/definition/user/api';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {OnSpinner} from "../../@core/definition/common";
 import {HttpClient, HttpContext} from "@angular/common/http";
@@ -44,18 +49,22 @@ export class NewComponent implements OnInit, OnSpinner {
 
   ngOnInit(): void {
     this.roles.push(...this.configService.roles());
+
     this.activatedRoute.paramMap.subscribe(map => {
-      if (!map.has('id')) {
-        return ;
+      if (this.activatedRoute.snapshot.url[0].path !== 'new') {
+        let url = USER_SELF_PROFILE;
+        if (map.has('id')) {
+          let userId = parseInt(map.get('id') || '0', 10)
+          if (isNaN(userId) || userId < 1) {
+            this.router.navigateByUrl("/app/user").then();
+            return;
+          }
+          url = USER_MEMBER_PROFILE.replace('{id}', userId + '');
+        }
+        this.http.get<User>(url).subscribe(response => {
+          this.buildEditorForm(response);
+        });
       }
-      let id = parseInt(map.get('id') || '0', 10);
-      if (isNaN(id) || id < 1) {
-        this.router.navigateByUrl("/app/user").then();
-        return ;
-      }
-      this.http.get<User>(USER_MEMBER_PROFILE, {params: {id: id}}).subscribe(response => {
-        this.buildEditorForm(response);
-      });
     });
   }
 
@@ -103,5 +112,11 @@ export class NewComponent implements OnInit, OnSpinner {
       roles: user.roles,
       meta: user.meta
     });
+  }
+
+  getBtnName() {
+    return this.formGroup.controls['id'].value < 1
+          ? '添加新用户'
+          : '更新' + this.route.title?.replace('编辑', '');
   }
 }

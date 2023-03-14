@@ -21,11 +21,12 @@ final class Hook
      * @param string $name
      * @param callable $callback
      * @param int $priority
-     * @return void
+     * @return Hook
      */
-    public function add(string $name, callable $callback, int $priority = 0): void
+    public function add(string $name, callable $callback, int $priority = 0)
     {
         $this->dispatcher->addListener($name, $callback, $priority);
+        return $this;
     }
 
     /**

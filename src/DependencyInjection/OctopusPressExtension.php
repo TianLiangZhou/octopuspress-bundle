@@ -263,9 +263,10 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
         $loader->load('services.php');
         $container->setParameter('assets.base_urls', $assetsUrl);
         $container->setParameter('plugin_dir', $config['pluginDir']);
-
-        $container->setParameter('public_dir', $this->getPublicDir($container));
-
+        $publicDir = $this->getPublicDir($container);
+        $buildAssetDir = empty($config['buildAssetDir']) ? $publicDir : $config['buildAssetDir'];
+        $container->setParameter('build_asset_dir', $buildAssetDir);
+        $container->setParameter('public_dir', $publicDir);
         $container->register(AuthenticationEntryPoint::class, AuthenticationEntryPoint::class);
         $container->register(AccessDeniedHandler::class, AccessDeniedHandler::class);
         $container->register(LoginFailureHandler::class, LoginFailureHandler::class);

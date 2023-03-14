@@ -4,15 +4,13 @@ declare(strict_types=1);
 namespace OctopusPress\Bundle\Form\Type;
 
 use OctopusPress\Bundle\Entity\Post;
-use OctopusPress\Bundle\Entity\User;
 use DateTime;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Event\PreSubmitEvent;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\Extension\Core\Type\DateIntervalType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
@@ -31,27 +29,23 @@ class PostType extends AbstractType
         $builder->add('title', TextType::class)
             ->add('content', TextType::class, ['required' => false, 'empty_data' => ''])
             ->add('type', ChoiceType::class, [
-                'choices' => array_combine(Post::TYPE, Post::TYPE),
+                'choices' => $options['types'],
                 'data' => Post::TYPE_POST,
             ])
-            ->add('parent', EntityType::class, [
+            ->add('parent', NumberType::class, [
                 'required' => false,
                 'empty_data' => null,
-                'class' => Post::class,
-                'choice_value' => 'id',
-            ])
-            ->add('featuredImage', EntityType::class, [
-                'required' => false,
-                'empty_data' => null,
-                'class' => Post::class,
-                'choice_value' => 'id',
                 'mapped' => false,
             ])
-            ->add('author', EntityType::class, [
+            ->add('featuredImage', NumberType::class, [
                 'required' => false,
                 'empty_data' => null,
-                'class' => User::class,
-                'choice_value' => 'id',
+                'mapped' => false,
+            ])
+            ->add('author', NumberType::class, [
+                'required' => false,
+                'empty_data' => null,
+                'mapped' => false,
             ])
             ->add('excerpt', TextType::class, ['required' => false, 'empty_data' => ''])
             ->add('status', ChoiceType::class, [
@@ -128,6 +122,7 @@ class PostType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Post::class,
             'allow_extra_fields' => true,
+            'types' => [],
         ]);
     }
 }

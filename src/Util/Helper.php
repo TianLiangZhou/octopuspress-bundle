@@ -47,9 +47,27 @@ final class Helper
      * @param string $name
      * @return bool
      */
+    public static function isAuthor(string $name): bool
+    {
+        return $name == 'author';
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
     public static function isArchive(string $name): bool
     {
-        return self::isTaxonomy($name) || self::isTag($name) || self::isCategory($name);
+        return $name == 'archives';
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public static function isArchives(string $name): bool
+    {
+        return self::isTaxonomy($name) || self::isTag($name) || self::isCategory($name) || self::isAuthor($name) || self::isArchive($name);
     }
 
     /**

@@ -12,6 +12,9 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ *
+ */
 abstract class AdminController extends Controller
 {
 
@@ -41,6 +44,9 @@ abstract class AdminController extends Controller
      */
     protected function validation(string $formType, object $entity, array $formData, array $options = []): FormInterface
     {
+        if ($this->container->has('security.csrf.token_manager')) {
+            $options['csrf_protection'] = false;
+        }
         $form = $this->createForm($formType, $entity, $options);
         $form->submit($formData);
         if (!$form->isValid()) {

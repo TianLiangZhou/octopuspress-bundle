@@ -70,7 +70,7 @@ class ThemeManager
             if (!empty($manifest['screenshot'])) {
                 if (str_starts_with($manifest['screenshot'], 'http://') ||
                     str_starts_with($manifest['screenshot'], 'https://') ||
-                    str_starts_with($manifest['screenshot'], 'data:')) {
+                    str_starts_with($manifest['screenshot'], 'data:image/')) {
                     $screenshot = $manifest['screenshot'];
                 } else {
                     $filename = $this->getThemePath($name) . ltrim($manifest['screenshot'], "./\\");
@@ -162,7 +162,7 @@ class ThemeManager
     public function activate(string $theme): void
     {
         $themePath = $this->getThemePath($theme);
-        if (file_exists($themePath)) {
+        if (!file_exists($themePath)) {
             throw new DirectoryNotFoundException("Theme directory does not exist");
         }
         $currentTheme = $this->optionRepository->findOneByName('theme');

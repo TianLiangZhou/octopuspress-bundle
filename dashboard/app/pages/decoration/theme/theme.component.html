@@ -12,7 +12,7 @@
       </nb-card-header>
     </nb-card>
   </div>
-  <div class="col-12 col-md-6 col-lg-4 col-xl-3" *ngFor="let theme of themes">
+  <div class="col-12 col-md-6 col-lg-4 col-xxl-3" *ngFor="let theme of themes">
     <nb-card>
       <nb-card-header class="d-flex justify-content-between">
         <div>{{theme.name}}</div>
@@ -20,6 +20,9 @@
       </nb-card-header>
       <nb-card-body>
         <img alt="{{theme.name}}" [src]="sanitizer.bypassSecurityTrustResourceUrl(theme.image)"  *ngIf="theme.image" width="100%"/>
+        <div class="description" *ngIf="!theme.image">
+          {{theme.description}}
+        </div>
       </nb-card-body>
       <nb-card-footer class="d-flex justify-content-between">
         <button nbButton status="danger" [disabled]="theme.enabled || spinner" (click)="delete(theme.alias)">删除</button>

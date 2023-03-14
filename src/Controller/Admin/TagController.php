@@ -29,20 +29,20 @@ class TagController extends TaxonomyController
     }
 
     #[Route('/tag/store', name: 'tag_create', options: ['name' => '创建标签', 'parent' => 'taxonomy_tag'])]
-    public function store(Request $request, string $taxonomy = 'tag'): JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        return parent::store($request, $taxonomy);
+        return $this->create('tag', $request);
     }
 
     #[Route('/tag/{id}/update', name: 'tag_update', options: ['name' => '更新标签', 'parent' => 'taxonomy_tag'])]
-    public function update(TermTaxonomy $termTaxonomy, Request $request, string $taxonomy = 'tag'): JsonResponse
+    public function update(TermTaxonomy $termTaxonomy, Request $request): JsonResponse
     {
-        return parent::update($taxonomy, $request, $taxonomy);
+        return $this->edit('tag', $termTaxonomy, $request);
     }
 
     #[Route('/tag/delete', name: 'tag_delete', options: ['name' => '删除标签', 'parent' => 'taxonomy_tag'], methods: [Request::METHOD_POST, Request::METHOD_DELETE])]
-    public function delete(Request $request, string $taxonomy = 'tag'): JsonResponse
+    public function delete(Request $request): JsonResponse
     {
-        return parent::delete($request, $taxonomy);
+        return $this->remove('tag', $request);
     }
 }

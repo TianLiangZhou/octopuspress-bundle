@@ -2,6 +2,7 @@
 
 namespace OctopusPress\Bundle\Event;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\Event;
 
 class OctopusEvent extends Event
@@ -24,4 +25,22 @@ class OctopusEvent extends Event
     const TAXONOMY_DELETE = 'taxonomy.delete';
 
     const VIEW_RENDER = 'view.render';
+
+    private ?Request $request;
+
+    /**
+     * @return Request|null
+     */
+    public function getRequest(): ?Request
+    {
+        return $this->request;
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function setRequest(Request $request): void
+    {
+        $this->request = $request;
+    }
 }

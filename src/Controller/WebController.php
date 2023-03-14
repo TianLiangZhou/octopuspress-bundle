@@ -53,8 +53,12 @@ class WebController extends Controller
     public function install(Request $request): Response
     {
         $model = new InstallRequest();
-        $form = $this->createForm(InstallType::class, $model)->handleRequest($request);
-        $vars = [];
+        $form = $this->createForm(InstallType::class, $model, [
+            'csrf_protection' => $this->container->has('security.csrf.token_manager'),
+        ])->handleRequest($request);
+        $vars = [
+            'csrf' => $this->container->has('security.csrf.token_manager'),
+        ];
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 try {

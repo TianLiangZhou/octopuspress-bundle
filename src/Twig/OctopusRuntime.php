@@ -9,12 +9,14 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
-use OctopusPress\Bundle\Pagination\Pagination;
+use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Repository\PostRepository;
 use OctopusPress\Bundle\Repository\RelationRepository;
 use OctopusPress\Bundle\Repository\TaxonomyRepository;
+use OctopusPress\Bundle\Repository\UserRepository;
 use OctopusPress\Bundle\Scalable\Hook;
+use OctopusPress\Bundle\Support\Pagination;
 use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Util\Helper;
 use OctopusPress\Bundle\Widget\AbstractWidget;
@@ -36,6 +38,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
     private Hook $hook;
     private RouterInterface $router;
     private array $assetsUrl;
+    private UserRepository $user;
 
     public function __construct(Bridger $bridger)
     {
@@ -45,6 +48,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
         $this->post     = $this->bridger->get(PostRepository::class);
         $this->relation = $this->bridger->get(RelationRepository::class);
         $this->taxonomy = $this->bridger->get(TaxonomyRepository::class);
+        $this->user     = $this->bridger->get(UserRepository::class);
         $this->router   = $this->bridger->getRouter();
         $this->assetsUrl = $this->bridger->getAssetsUrl();
     }
@@ -156,6 +160,10 @@ class OctopusRuntime implements RuntimeExtensionInterface
             $url = $this->router->generate('taxonomy', [
                 'taxonomy' => $obj->getTaxonomy(),
                 'slug' => $obj->getSlug()
+            ]);
+        } elseif ($obj instanceof User) {
+            $url = $this->router->generate('author', [
+                'slug' => $obj->getAccount(),
             ]);
         }
         if ($url && $query) {
@@ -303,9 +311,41 @@ class OctopusRuntime implements RuntimeExtensionInterface
         return $this->widget('navigation', $options);
     }
 
-    public function taxonomies(array $options = [])
+    public function getUsers(array $idSets)
     {
+        $ids = array_filter($idSets, function ($id) {
+           return is_numeric($id) && $id > 0;
+        });
+        if (empty($ids)) {
+            return null;
+        }
+        return $this->user->findBy([
+            'id' => $ids,
+        ]);
+    }
 
+    public function getUser(int $id)
+    {
+        return $this->user->find($id);
+    }
+
+    /**
+     * @param string $name
+     * @param array $options
+     * @return TermTaxonomy[]
+     */
+    public function taxonomies(string $name, array $options = []): array
+    {
+        return $this->taxonomy->taxonomies($name, $options, $options['limit'] ?? null);
+    }
+
+    /**
+     * @param int $id
+     * @return TermTaxonomy|null
+     */
+    public function taxonomy(int $id): ?TermTaxonomy
+    {
+        return $this->taxonomy->find($id);
     }
 
     /**
@@ -356,7 +396,15 @@ class OctopusRuntime implements RuntimeExtensionInterface
         return $container;
     }
 
-
+    public function getPost(int $id)
+    {
+        $post = $this->post->find($id);
+        if ($post == null) {
+            return null;
+        }
+        $this->post->thumbnails([$post]);
+        return $post;
+    }
 
     /**
      * @param array<string, bool|int|string> $options
@@ -380,13 +428,17 @@ class OctopusRuntime implements RuntimeExtensionInterface
             $filter['id'] = is_array($options['id']) ? array_map('intval', $options['id']) : (int) $options['id'];
             unset($options['id']);
         }
+        if (isset($options['author'])) {
+            $filter['author'] = $options['author'];
+            unset($options['author']);
+        }
         $query = $this->post->createQuery($filter, function (QueryBuilder $builder) use ($options) {
             if (isset($options['sort']) && !$options['sort']) {
                 $builder->resetDQLPart('orderBy');
             }
         });
-        if (isset($options['limit'])) {
-            $records = $query->getResult();
+        if (isset($options['limit']) && $options['limit'] > 0) {
+            $records = $query->setMaxResults((int) $options['limit'])->getResult();
             [$limit, $count, $page] = [(int) $options['limit'], count($records), 1];
         } else {
             [$page, $limit] = $this->getPageLimit();
@@ -426,7 +478,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
             $ids = array_map(function ($item) {
                 return $item['object_id'];
             }, $objects);
-            $records = $this->post->createQuery(['id' => $ids])->getResult();
+            $records = $this->post->createQuery(['id' => $ids])->setMaxResults((int) $options['limit'])->getResult();
             [$limit, $count, $page] = [(int) $options['limit'], count($records), 1];
         } else {
             [$page, $limit] = $this->getPageLimit();
@@ -458,7 +510,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
     {
         return [
             max((int) $this->getRequest()->get('page', 1), 1),
-            $this->option->value('posts_per_size', 30),
+            $this->option->postsPerPage(),
         ];
     }
 

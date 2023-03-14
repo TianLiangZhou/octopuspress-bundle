@@ -75,6 +75,8 @@ export class TaxonomyComponent implements OnInit, OnSpinner {
     this.http.post<TermTaxonomy>(TAXONOMY_STORE.replace('{taxonomy}', this.taxonomy), data, {context:new HttpContext().set(SPINNER, this)}).subscribe(response => {
       this.source?.refresh();
       this.formGroup?.reset();
+      this.formGroup?.controls['taxonomy'].setValue(this.taxonomy);
+      this.formGroup?.controls['parent']?.setValue('');
     });
   }
 
@@ -92,6 +94,15 @@ export class TaxonomyComponent implements OnInit, OnSpinner {
     if (!setting.visibility.showUi) {
       return ;
     }
+    this.settings = this.buildSettings();
+    this.source = new ServerDataSource(this.http, {
+      endPoint: TAXONOMIES.replace('{taxonomy}', this.taxonomy),
+      dataKey: 'records',
+      totalKey: 'total',
+      pagerPageKey: 'page',
+      pagerLimitKey: 'limit',
+      filterFieldKey: '#field#',
+    });
     let elements: Control[] = [];
     if (setting.labels['nameField']) {
       elements.push({
@@ -110,6 +121,7 @@ export class TaxonomyComponent implements OnInit, OnSpinner {
       elements.push({
         label: setting.labels['parentField'], id: "parent", required: false, type: "select", value: '', options: options, description: setting.labels['parentFieldDescription'],
       });
+
       this.source?.getAll().then((taxonomies: TermTaxonomy[]) => {
         taxonomies.forEach(taxonomy => {
           let name = taxonomy.name;
@@ -128,7 +140,6 @@ export class TaxonomyComponent implements OnInit, OnSpinner {
     this.formGroup = elements.length ? buildFormGroup(elements) : new FormGroup<any>({});
     this.formGroup.addControl('id', new FormControl<number>(0));
     this.formGroup.addControl('taxonomy', new FormControl<string>(this.taxonomy));
-
     const metas = this.config.taxonomyMeta(this.taxonomy);
     const metaControls: Control[] = [];
     if (metas.length > 0) {
@@ -144,15 +155,6 @@ export class TaxonomyComponent implements OnInit, OnSpinner {
     this.metaControls = metaControls;
     this.controls = elements;
     this.taxonomySetting = setting;
-    this.settings = this.buildSettings();
-    this.source = new ServerDataSource(this.http, {
-      endPoint: TAXONOMIES.replace('{taxonomy}', this.taxonomy),
-      dataKey: 'records',
-      totalKey: 'total',
-      pagerPageKey: 'page',
-      pagerLimitKey: 'limit',
-      filterFieldKey: '#field#',
-    });
   }
   get metaGroup() {
     return this.formGroup?.controls['meta'] as FormGroup;
@@ -247,9 +249,7 @@ export class TaxonomyComponent implements OnInit, OnSpinner {
   selector: 'app-taxonomy-edit',
   template: `
     <nb-card>
-      <nb-card-header>
-        {{taxonomySetting ? taxonomySetting!.labels.editItem : ''}}
-      </nb-card-header>
+      <nb-card-header>{{taxonomySetting ? taxonomySetting!.labels.editItem : ''}}</nb-card-header>
       <nb-card-body>
         <form *ngIf="formGroup" (ngSubmit)="onSubmit($event)" [formGroup]="formGroup!">
           <control-container direction="" [controls]="controls" [form]="formGroup!"></control-container>
@@ -304,6 +304,7 @@ export class EditTaxonomyComponent implements OnInit, OnSpinner {
   }
 
   onSpinner(spinner: boolean): void {
+    this.spinner = spinner;
   }
 
   private buildSetting(setting: TaxonomySetting, termTaxonomy: TermTaxonomy) {
@@ -345,7 +346,7 @@ export class EditTaxonomyComponent implements OnInit, OnSpinner {
       });
     }
     this.formGroup = elements.length ? buildFormGroup(elements) : new FormGroup<any>({});
-    this.formGroup.addControl('id', new FormControl<number>(0));
+    this.formGroup.addControl('id', new FormControl<number>(termTaxonomy.id!));
     this.formGroup.addControl('taxonomy', new FormControl<string>(termTaxonomy.taxonomy));
     const metas = this.config.taxonomyMeta(termTaxonomy.taxonomy);
     const metaControls: Control[] = [];
