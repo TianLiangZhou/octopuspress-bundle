@@ -68,6 +68,9 @@ final class PostType implements \JsonSerializable
         if ($args['label'] && is_string($args['label'])) {
             $this->label = $args['label'];
         }
+        if ($this->isShowUi()) {
+            $this->setDefaultLabel();
+        }
     }
 
     /**
@@ -135,5 +138,24 @@ final class PostType implements \JsonSerializable
     public function isShowUi(): bool
     {
         return $this->showUi;
+    }
+
+
+    /**
+     * @return void
+     */
+    private function setDefaultLabel(): void
+    {
+        if (empty($this->labels['addItem'])) {
+            $this->labels['addItem'] = '创建' . $this->label;
+        }
+
+        if (empty($this->labels['editItem'])) {
+            $this->labels['editItem'] = '编辑' . $this->label;
+        }
+
+        if (empty($this->labels['singularName'])) {
+            $this->labels['singularName'] = '编辑' . $this->label;
+        }
     }
 }

@@ -29,6 +29,7 @@ use OctopusPress\Bundle\Widget\LatestPosts;
 use OctopusPress\Bundle\Widget\MediaText;
 use OctopusPress\Bundle\Widget\Navigation;
 use OctopusPress\Bundle\Widget\Pages;
+use OctopusPress\Bundle\Widget\Pagination;
 use OctopusPress\Bundle\Widget\RSS;
 use OctopusPress\Bundle\Widget\SiteLogo;
 use OctopusPress\Bundle\Widget\Tags;
@@ -158,8 +159,8 @@ class MasterManager
         $post->registerType('post', [
                 'label' => '文章',
                 'labels'=> [
-                    'add_item' => '撰写新文章',
-                    'edit_item'=> '编辑文章',
+                    'addItem' => '撰写新文章',
+                    'editItem'=> '编辑文章',
                 ],
                 'supports' => [
                     'title', 'editor', 'author', 'thumbnail', 'excerpt', 'trackbacks', 'comments'
@@ -168,18 +169,16 @@ class MasterManager
             ->registerType('page', [
                 'label' => '页面',
                 'labels'=> [
-                    'add_item' => '创建页面',
-                    'edit_item'=> '编辑页面',
+                    'addItem' => '创建页面',
+                    'editItem'=> '编辑页面',
                 ],
                 'supports' => [
                     'title', 'editor', 'author', 'thumbnail', 'custom-fields', 'comments'
                 ]
             ])
             ->registerType('attachment', [
-
             ])
             ->registerType('nav_menu_item', [
-
             ])
         ;
     }
@@ -347,6 +346,7 @@ class MasterManager
                 File::class,
                 MediaText::class,
                 Cover::class,
+                Pagination::class,
             ];
             if ($this->bridger->getTheme()->getThemeSupport('custom_logo')) {
                 $defaults[] = SiteLogo::class;

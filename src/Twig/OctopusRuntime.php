@@ -16,11 +16,11 @@ use OctopusPress\Bundle\Repository\RelationRepository;
 use OctopusPress\Bundle\Repository\TaxonomyRepository;
 use OctopusPress\Bundle\Repository\UserRepository;
 use OctopusPress\Bundle\Scalable\Hook;
-use OctopusPress\Bundle\Support\Pagination;
+use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Util\Formatter;
-use OctopusPress\Bundle\Util\Helper;
 use OctopusPress\Bundle\Widget\AbstractWidget;
 use OctopusPress\Bundle\Widget\Navigation;
+use OctopusPress\Bundle\Widget\Pagination;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Error\LoaderError;
@@ -39,6 +39,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
     private RouterInterface $router;
     private array $assetsUrl;
     private UserRepository $user;
+    private ActivatedRoute $activatedRoute;
 
     public function __construct(Bridger $bridger)
     {
@@ -50,6 +51,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
         $this->taxonomy = $this->bridger->get(TaxonomyRepository::class);
         $this->user     = $this->bridger->get(UserRepository::class);
         $this->router   = $this->bridger->getRouter();
+        $this->activatedRoute = $this->bridger->getActivatedRoute();
         $this->assetsUrl = $this->bridger->getAssetsUrl();
     }
 
@@ -114,10 +116,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
         if (empty($obj)) {
             return '';
         }
-        $url = $this->hook->filter('permalink.before', '', $obj, $query);
-        if ($url) {
-            return $url;
-        }
+        $url = '';
         if ($obj instanceof Post) {
             if ($obj->getType() == Post::TYPE_ATTACHMENT) {
             }
@@ -166,6 +165,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
                 'slug' => $obj->getAccount(),
             ]);
         }
+
         if ($url && $query) {
             $url .= (!str_contains($url, '?') ? '?' : '&') . http_build_query($query);
         }
@@ -179,14 +179,13 @@ class OctopusRuntime implements RuntimeExtensionInterface
     public function compareUrl(string $link): bool
     {
         $request = $this->getRequest();
-        $name = $request->attributes->get('_route');
         $pathInfo = $request->getPathInfo();
-        if (Helper::isHome($name) && empty($link)) {
+        if ($this->activatedRoute->isHome() && empty($link)) {
             return true;
         }
         $linkInfo = parse_url($link);
         $idUriQueryExist = stripos($linkInfo['query'] ?? '', 'p=');
-        if (Helper::isHome($name) && isset($linkInfo['path']) && $linkInfo['path'] == '/' && $idUriQueryExist === false) {
+        if ($this->activatedRoute->isHome() && isset($linkInfo['path']) && $linkInfo['path'] == '/' && $idUriQueryExist === false) {
             return true;
         }
 
@@ -303,9 +302,9 @@ class OctopusRuntime implements RuntimeExtensionInterface
     /**
      * @param string $location
      * @param array<string, bool|int|string> $options
-     * @return Navigation
+     * @return Navigation|null
      */
-    public function navigation(string $location, array $options = []): Navigation
+    public function navigation(string $location, array $options = []): ?Navigation
     {
         $options['location'] = $location;
         return $this->widget('navigation', $options);
@@ -410,7 +409,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
      * @param array<string, bool|int|string> $options
      * @return Pagination
      */
-    public function getPosts(array $options = []): Pagination
+    public function getPosts(array $options = []): iterable
     {
         $filter = [
             'type' => Post::TYPE_POST,
@@ -441,7 +440,8 @@ class OctopusRuntime implements RuntimeExtensionInterface
             $records = $query->setMaxResults((int) $options['limit'])->getResult();
             [$limit, $count, $page] = [(int) $options['limit'], count($records), 1];
         } else {
-            [$page, $limit] = $this->getPageLimit();
+            $page = max(1, (int) $this->getRequest()->get('paged', 1));
+            $limit = $this->option->postsPerPage();
             $pagination = new Paginator($query);
             $count = $pagination->count();
             $records = [];
@@ -455,10 +455,13 @@ class OctopusRuntime implements RuntimeExtensionInterface
         if ($records) {
             $this->post->thumbnails($records);
         }
-        $options['limit'] = $limit;
-        $options['total'] = $count;
-        $options['currentPage'] = $page;
-        return new Pagination($records, $options);
+        $this->widget('pagination', [
+            'limit' => $limit,
+            'total' => $count,
+            'currentPage' => $page,
+            'currentCount'=> count($records),
+        ]);
+        return $records;
     }
 
     /**
@@ -468,7 +471,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function getTaxonomyPosts(int $taxonomyId, array $options = []): Pagination
+    public function getTaxonomyPosts(int $taxonomyId, array $options = []): iterable
     {
         $count = $this->relation->getTaxonomyObjectCount($taxonomyId);
         if (isset($options['limit']) && $options['limit'] > 0) {
@@ -481,7 +484,8 @@ class OctopusRuntime implements RuntimeExtensionInterface
             $records = $this->post->createQuery(['id' => $ids])->setMaxResults((int) $options['limit'])->getResult();
             [$limit, $count, $page] = [(int) $options['limit'], count($records), 1];
         } else {
-            [$page, $limit] = $this->getPageLimit();
+            $page = max(1, (int) $this->getRequest()->get('paged', 1));
+            $limit = $this->option->postsPerPage();
             $records = [];
             if ($count > 0 && ceil($count / $limit) >= $page) {
                 $objects = $this->relation->getTaxonomyObjectQuery($taxonomyId)
@@ -497,21 +501,13 @@ class OctopusRuntime implements RuntimeExtensionInterface
         if ($records) {
             $this->post->thumbnails($records);
         }
-        $options['limit'] = $limit;
-        $options['total'] = $count;
-        $options['currentPage'] = $page;
-        return new Pagination($records, $options);
-    }
-
-    /**
-     * @return int[]
-     */
-    private function getPageLimit(): array
-    {
-        return [
-            max((int) $this->getRequest()->get('page', 1), 1),
-            $this->option->postsPerPage(),
-        ];
+        $this->widget('pagination', [
+            'limit' => $limit,
+            'total' => $count,
+            'currentPage' => $page,
+            'currentCount'=> count($records),
+        ]);
+        return $records;
     }
 
     /**

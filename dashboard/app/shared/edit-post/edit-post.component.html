@@ -3,7 +3,7 @@
     <div class="col-12">
       <nb-card class="mb-0">
         <nb-card-header class="d-flex justify-content-between align-items-center">
-          <span *ngIf="this.typeSetting.labels">{{id > 0 ? this.typeSetting.labels.edit_item : this.typeSetting.labels.add_item}}</span>
+          <span *ngIf="this.typeSetting.labels">{{id > 0 ? this.typeSetting.labels.editItem : this.typeSetting.labels.addItem}}</span>
           <div class="d-flex justify-content-end">
             <button nbButton [nbSpinner]="submitted" [disabled]="submitted || formGroup.invalid" (click)="action('draft')" type="button" status="warning">保存草稿</button>
             <div class="mx-2"></div>

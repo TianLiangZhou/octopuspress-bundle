@@ -10,9 +10,9 @@ use OctopusPress\Bundle\Event\OctopusEvent;
 use OctopusPress\Bundle\Event\ViewRenderEvent;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Scalable\Hook;
+use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Support\ArchiveDataSet;
 use OctopusPress\Bundle\Support\ViewFilter;
-use OctopusPress\Bundle\Util\Helper;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -33,6 +33,8 @@ class ViewManager
 
     private Bridger $bridger;
 
+    private ActivatedRoute $activatedRoute;
+
     public function __construct(ThemeManager $themeManager, Bridger $bridger)
     {
         $this->themeManager = $themeManager;
@@ -40,6 +42,7 @@ class ViewManager
         $this->option = $bridger->getOptionRepository();
         $this->hook = $this->bridger->getHook();
         $this->twig = $this->bridger->getTwig();
+        $this->activatedRoute = $this->bridger->getActivatedRoute();
     }
 
 
@@ -53,7 +56,7 @@ class ViewManager
         }
         $this->booted = true;
         $this->registerFilter();
-        if (!Helper::isDashboard($this->getRouteName())) {
+        if (!$this->activatedRoute->isDashboard()) {
             $this->registerGlobal();
         }
         $this->themeManager->boot();
@@ -70,15 +73,15 @@ class ViewManager
         $controllerResult = $this->getControllerResult();
         $context = [
             'title' => $this->getTitle(),
-            'route' => $this->getRouteName(),
+            'route' => $this->getActivatedRoute()->getRouteName(),
             'entity' => null,
-            'pagination'=> null,
+            'collection'=> null,
         ];
         if ($controllerResult instanceof Post) {
             $context['entity'] = $controllerResult;
         } elseif ($controllerResult instanceof ArchiveDataSet) {
             $context['entity'] = $controllerResult->getTaxonomy();
-            $context['pagination'] = $controllerResult->getPagination();
+            $context['collection'] = $controllerResult->getCollection();
         }
         foreach ($context as $name => $value) {
             $this->twig->addGlobal($name, $value);
@@ -121,21 +124,20 @@ class ViewManager
      */
     private function getTemplate(): string
     {
-        $routeName = $this->getRouteName();
         $template = '';
-        if (Helper::isTag($routeName)) {
+        if ($this->activatedRoute->isTag()) {
             $template = $this->getTagTemplate();
-        } elseif (Helper::isCategory($routeName)) {
+        } elseif ($this->activatedRoute->isCategory()) {
             $template = $this->getCategoryTemplate();
-        } elseif (Helper::isArchives($routeName)) {
+        } elseif ($this->activatedRoute->isArchives()) {
             $template = $this->getTaxonomyTemplate();
-        } elseif (Helper::isSingle($routeName)) {
+        } elseif ($this->activatedRoute->isSingle()) {
             $template = $this->getSingleTemplate();
-        } elseif (Helper::isPage($routeName)) {
+        } elseif ($this->activatedRoute->isPage()) {
             $template = $this->getPageTemplate();
-        } elseif (Helper::isHome($routeName)) {
+        } elseif ($this->activatedRoute->isHome()) {
             $template = $this->getHomeTemplate();
-        } elseif (Helper::isPlugin($routeName)) {
+        } elseif ($this->activatedRoute->isPlugin()) {
             $template = $this->getPluginTemplate();
         }
         if (empty($template)) {
@@ -259,7 +261,7 @@ class ViewManager
      */
     private function getPluginTemplate(): string
     {
-        $routeBlocks = explode('_', $this->getRouteName());
+        $routeBlocks = explode('_', $this->getActivatedRoute()->getRouteName());
         if ($routeBlocks[0] === 'octopus') {
             array_shift($routeBlocks);
         }
@@ -340,6 +342,7 @@ class ViewManager
     private function registerGlobal(): void
     {
         $this->twig->addGlobal('now', time());
+        $this->twig->addGlobal('activated_route', $this->activatedRoute);
         foreach ($this->option->getDefaultOptions() as $name => $value) {
             $this->twig->addGlobal($name, $value);
         }
@@ -353,11 +356,10 @@ class ViewManager
     {
         $args = ['title' => '',];
         $siteName = $this->option->title();
-        $routeName = $this->getRouteName();
         $controllerResult = $this->getControllerResult();
-        if (Helper::isHome($routeName)) {
+        if ($this->activatedRoute->isHome()) {
             $args['title'] = $siteName;
-        } elseif (Helper::isArchives($routeName)) {
+        } elseif ($this->activatedRoute->isArchives()) {
             if ($controllerResult instanceof ArchiveDataSet) {
                 $taxonomy = $controllerResult->getTaxonomy();
                 if ($taxonomy instanceof TermTaxonomy) {
@@ -368,12 +370,12 @@ class ViewManager
                     $args['title'] = $taxonomy->title ?? '';
                 }
             }
-        } elseif (Helper::isSingle($routeName)) {
+        } elseif ($this->activatedRoute->isSingle()) {
             $args['title'] = $controllerResult instanceof Post
                 ? $controllerResult->getTitle()
                 : '';
         }
-        if (Helper::isHome($routeName)) {
+        if ($this->activatedRoute->isHome()) {
             $args['subtitle'] = $this->option->subtitle();
         } else {
             $args['site'] = $siteName;
@@ -401,11 +403,11 @@ class ViewManager
     }
 
     /**
-     * @return string
+     * @return ActivatedRoute
      */
-    public function getRouteName(): string
+    public function getActivatedRoute(): ActivatedRoute
     {
-        return $this->getBridger()->getRequest()->attributes->get('_route');
+        return $this->activatedRoute;
     }
 
     /**

@@ -19,7 +19,7 @@ use Twig\TemplateWrapper;
 abstract class AbstractWidget implements WidgetInterface, JsonSerializable
 {
     /**
-     * @var array<int, array>
+     * @var array<string, mixed>
      */
     private array $attributes = [];
     private Bridger $bridger;
@@ -115,6 +115,7 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
         if (!$templateWrapper instanceof TemplateWrapper) {
             $templateWrapper = $twig->createTemplate($templateWrapper, $this->name);
         }
+        $this->attributes = [];
         return $templateWrapper->render($context);
     }
 
@@ -123,10 +124,7 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
      */
     public function getContext(): array
     {
-        $attributes = [];
-        if (count($this->attributes)) {
-            $attributes = array_pop($this->attributes);
-        }
+        $attributes = $this->attributes;
         $context = $this->context($attributes);
         $context['className'] = '';
         if (!empty($attributes['class_name'])) {
@@ -144,7 +142,7 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
      */
     public function put(array $attributes = []): static
     {
-        $this->attributes[] = $attributes;
+        $this->attributes = array_merge($this->attributes, $attributes);
         return $this;
     }
 

@@ -9,12 +9,12 @@ use stdClass;
 class ArchiveDataSet
 {
     private TermTaxonomy|User|stdClass $taxonomy;
-    private Pagination $pagination;
+    private iterable $collection;
 
-    public function __construct(TermTaxonomy|User|stdClass $taxonomy, Pagination $pagination)
+    public function __construct(TermTaxonomy|User|stdClass $taxonomy, iterable $collection)
     {
         $this->taxonomy = $taxonomy;
-        $this->pagination = $pagination;
+        $this->collection = $collection;
     }
 
     /**
@@ -26,10 +26,10 @@ class ArchiveDataSet
     }
 
     /**
-     * @return Pagination
+     * @return iterable
      */
-    public function getPagination(): Pagination
+    public function getCollection(): iterable
     {
-        return $this->pagination;
+        return $this->collection;
     }
 }

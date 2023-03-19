@@ -21,6 +21,7 @@ use OctopusPress\Bundle\Scalable\Post;
 use OctopusPress\Bundle\Scalable\TermTaxonomy;
 use OctopusPress\Bundle\Scalable\Theme;
 use OctopusPress\Bundle\Scalable\Widget;
+use OctopusPress\Bundle\Support\ActivatedRoute;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -205,6 +206,14 @@ final class Bridger
     public function getRequestStack(): RequestStack
     {
         return $this->requestStack;
+    }
+
+    /**
+     * @return ActivatedRoute
+     */
+    public function getActivatedRoute(): ActivatedRoute
+    {
+        return $this->get('activated_route');
     }
 
     /**

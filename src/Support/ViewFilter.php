@@ -9,7 +9,6 @@ use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Model\ViewManager;
 use OctopusPress\Bundle\Scalable\Hook;
 use OctopusPress\Bundle\Twig\OctopusRuntime;
-use OctopusPress\Bundle\Util\Helper;
 use Symfony\Bridge\Twig\Extension\AssetExtension;
 use Twig\Error\RuntimeError;
 use str_ends_with;
@@ -244,21 +243,21 @@ EOF;
         if ($theme->isThemeSupport('nebular')) {
             $class[] = 'nb-theme-default';
         }
-        $routeName = $this->viewManager->getRouteName();
+        $route = $this->viewManager->getActivatedRoute();
         $controllerResult = $this->viewManager->getControllerResult();
-        if (Helper::isHome($routeName)) {
+        if ($route->isHome()) {
             $class[] = 'home';
-        } elseif (Helper::isSingular($routeName)) {
+        } elseif ($route->isSingular()) {
             if ($controllerResult instanceof Post) {
                 $class[] = $controllerResult->getType() . '-template';
             }
-            if (Helper::isSingle($routeName)) {
+            if ($route->isSingle()) {
                 $class[] = 'single';
             }
-            if (Helper::isPage($routeName)) {
+            if ($route->isPage()) {
                 $class[] = 'page';
             }
-        } elseif (Helper::isArchive($routeName)) {
+        } elseif ($route->isArchive()) {
             if ($controllerResult instanceof ArchiveDataSet) {
                 $taxonomy = $controllerResult->getTaxonomy();
                 if ($taxonomy instanceof TermTaxonomy) {
@@ -272,7 +271,7 @@ EOF;
                 }
             }
             $class[] = 'archive';
-        } elseif (Helper::is404($routeName)) {
+        } elseif ($route->is404()) {
             $class[] = 'error404';
         }
         return $class;

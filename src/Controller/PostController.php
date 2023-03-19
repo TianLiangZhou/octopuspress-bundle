@@ -6,12 +6,13 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
+use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Repository\PostRepository;
 use OctopusPress\Bundle\Repository\RelationRepository;
 use OctopusPress\Bundle\Repository\TaxonomyRepository;
 use OctopusPress\Bundle\Repository\UserRepository;
 use OctopusPress\Bundle\Support\ArchiveDataSet;
-use OctopusPress\Bundle\Support\Pagination;
+use OctopusPress\Bundle\Widget\Pagination;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,6 +26,7 @@ class PostController extends Controller
     private TaxonomyRepository $taxonomy;
     private UserRepository $user;
     private RelationRepository $relation;
+    private OptionRepository $option;
 
     public function __construct(Bridger $bridger)
     {
@@ -172,10 +174,10 @@ class PostController extends Controller
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    private function filterTaxonomyResult(TermTaxonomy $taxonomy, Request $request): Pagination
+    private function filterTaxonomyResult(TermTaxonomy $taxonomy, Request $request): iterable
     {
         $limit = $this->option->postsPerPage();
-        $page = max(1, $request->query->getInt('page', 1));
+        $page = max(1, $request->query->getInt('paged', 1));
         $count = $this->relation->getTaxonomyObjectCount($taxonomy->getId());
         $records = [];
         if ($count > 0 && ceil($count / $limit) >= $page) {
@@ -191,11 +193,14 @@ class PostController extends Controller
         if ($records) {
             $this->post->thumbnails($records);
         }
-        return new Pagination($records, [
-            'limit' => $limit,
-            'total' => $count,
-            'currentPage' => $page,
-        ]);
+        $this->bridger->getWidget()->get('pagination')
+            ->put([
+                'limit' => $limit,
+                'total' => $count,
+                'currentPage' => $page,
+                'currentCount'=> count($records),
+            ]);
+        return $records;
     }
 
     /**
@@ -203,10 +208,10 @@ class PostController extends Controller
      * @param Request $request
      * @return Pagination
      */
-    private function filterPostsResult(array $filter, Request $request): Pagination
+    private function filterPostsResult(array $filter, Request $request): iterable
     {
         $limit = $this->option->postsPerPage();
-        $page = max(1, $request->query->getInt('page', 1));
+        $page = max(1, $request->query->getInt('paged', 1));
         $query = $this->post->createQuery($filter);
         $paginator = new Paginator($query);
         $count = $paginator->count();
@@ -220,10 +225,13 @@ class PostController extends Controller
         if ($records) {
             $this->post->thumbnails($records);
         }
-        return new Pagination($records, [
-            'limit' => $limit,
-            'total' => $count,
-            'currentPage' => $page,
-        ]);
+        $this->bridger->getWidget()->get('pagination')
+            ->put([
+                'limit' => $limit,
+                'total' => $count,
+                'currentPage' => $page,
+                'currentCount'=> count($records),
+            ]);
+        return $records;
     }
 }

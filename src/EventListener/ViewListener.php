@@ -2,9 +2,7 @@
 
 namespace OctopusPress\Bundle\EventListener;
 
-use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Model\ViewManager;
-use OctopusPress\Bundle\Util\Helper;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,8 +42,8 @@ class ViewListener implements EventSubscriberInterface
             return;
         }
         $routeName = $request->attributes->get('_route');
-        if (!Helper::isDashboard($routeName)) {
-            if (Helper::isHome($routeName) && $request->query->has('p') && $request->query->getInt('p') > 0) {
+        if (!$this->viewManager->getActivatedRoute()->isDashboard()) {
+            if ($this->viewManager->getActivatedRoute()->isHome() && $request->query->has('p') && $request->query->getInt('p') > 0) {
                 $request->attributes->set('_route', 'post_permalink_normal');
             }
         }

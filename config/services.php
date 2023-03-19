@@ -18,10 +18,12 @@ use OctopusPress\Bundle\Model\MasterManager;
 use OctopusPress\Bundle\Model\PluginManager;
 use OctopusPress\Bundle\Model\ViewManager;
 use OctopusPress\Bundle\Repository\OptionRepository;
+use OctopusPress\Bundle\Scalable\Hook;
 use OctopusPress\Bundle\Scalable\Plugin;
 use OctopusPress\Bundle\Security\PermissionVoter;
 use OctopusPress\Bundle\Service\Requester;
 use OctopusPress\Bundle\Service\ServiceCenter;
+use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Twig\OctopusExtension;
 use OctopusPress\Bundle\Twig\OctopusRuntime;
 use OctopusPress\Bundle\Form\Type\TaxonomyType;
@@ -56,6 +58,13 @@ return static function (ContainerConfigurator $container) {
     $services->load("OctopusPress\\Bundle\\Scalable\\", '../src/Scalable/*.php')
         ->public();
     $services->load("OctopusPress\\Bundle\\Model\\", '../src/Model/*.php');
+
+    $services->set('activated_route', ActivatedRoute::class)
+        ->args([
+            service('request_stack'),
+            service(Hook::class)
+        ])
+        ->public();
 
     $services->set(LogoutListener::class, LogoutListener::class)
         ->tag('kernel.event_subscriber');
