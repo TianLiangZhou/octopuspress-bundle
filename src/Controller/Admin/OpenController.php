@@ -71,8 +71,8 @@ class OpenController extends AdminController
         ]);
     }
 
-    #[Route('/authorized/menu', name: 'authorized_menu')]
-    public function permission(#[CurrentUser] User $user): JsonResponse
+    #[Route('/user', name: 'user')]
+    public function user(#[CurrentUser] User $user): JsonResponse
     {
         $meta = $user->getMeta('roles');
         if (empty($meta) || empty($roles = $meta->getMetaValue())) {
@@ -86,17 +86,24 @@ class OpenController extends AdminController
             if (!isset($roleCapabilities[$roleIndex - 1])) {
                 continue;
             }
-            $capabilities = array_merge($capabilities, $roleCapabilities[$roleIndex - 1]['capabilities']);
+            $capabilities = array_merge($capabilities, $roleCapabilities[$roleIndex - 1]['capabilities'] ?? []);
         }
-        $menus = $this->menuManager->collection();
+        $menus = $this->menuManager->registeredRoutes();
         $collection = [];
         foreach ($capabilities as $p => $v) {
-            if (isset($menus[$p])) {
-                $collection[] = $menus[$p];
+            if (!isset($menus[$p])) {
+                continue;
             }
+            $collection[] = $menus[$p];
+        }
+        $meta = $user->getMeta('rich_editing');
+        $isRichEditor = true;
+        if ($meta) {
+            $isRichEditor = !($value = $meta->getMetaValue()) || !($value === true);
         }
         return $this->json([
-            'menus' => $this->menuManager->tree($collection),
+            'isRichEditor' => $isRichEditor,
+            'capabilities' => $this->menuManager->tree($collection),
         ]);
     }
 
@@ -136,7 +143,7 @@ class OpenController extends AdminController
     {
         return $this->json([
             'menus' => $this->menuManager->tree(
-                $this->menuManager->collection()
+                $this->menuManager->registeredRoutes()
             ),
         ]);
     }

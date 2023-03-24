@@ -101,7 +101,7 @@ export class CKFinderService {
     window.CKFinder.widget(container, options);
   }
 
-  getOptions(width: any) {
+  private getOptions(width: any) {
     let options: Record<string, any> = {
       width: width,
       height: window.outerHeight * 0.8,

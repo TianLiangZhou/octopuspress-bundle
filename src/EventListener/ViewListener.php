@@ -64,7 +64,7 @@ class ViewListener implements EventSubscriberInterface
         if ($event->getRequestType() != HttpKernelInterface::MAIN_REQUEST) {
             return;
         }
-        $event->getRequest()->attributes->set('controller_result', $event->getControllerResult());
+        $event->getRequest()->attributes->set('_controller_result', $event->getControllerResult());
         $event->setResponse($this->viewManager->render());
     }
 

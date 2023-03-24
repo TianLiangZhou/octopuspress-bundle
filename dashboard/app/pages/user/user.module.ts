@@ -7,6 +7,7 @@ import {Angular2SmartTableModule} from "angular2-smart-table";
 import {RouterModule, Routes} from "@angular/router";
 import {NewComponent} from "./new.component";
 import {ControlModule} from "../../shared/control/control.module";
+import {UploadModule} from "../../shared/upload/upload.module";
 
 
 const routes: Routes = [
@@ -46,6 +47,7 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     Angular2SmartTableModule,
     ControlModule,
+    UploadModule,
   ],
 })
 export class UserModule { }

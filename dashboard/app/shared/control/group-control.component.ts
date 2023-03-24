@@ -102,10 +102,10 @@ export class GroupControlComponent implements OnInit, ControlValueAccessor {
       this.editIndex
     );
     this.dialogRef.onClose.subscribe((res: Record<string, any> | undefined) => {
-      this.editIndex = -1;
       if (res != undefined) {
         this.changeValue(res);
       }
+      this.editIndex = -1;
     });
   }
 

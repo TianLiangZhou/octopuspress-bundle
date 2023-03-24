@@ -89,20 +89,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
      * @var string
      */
     #[Column(name: "activation_key", type: "string", length: 255, nullable: false)]
-    private string $activationKey = '';
+    private ?string $activationKey = '';
 
     /**
      * @var string
      */
     #[Column(name: "url", type: "string", length: 100, nullable: false)]
     #[Url]
-    private string $url = '';
+    private ?string $url = '';
 
     /**
      * @var string
      */
     #[Column(name: "remember_token", type: "string", length: 255, nullable: false)]
-    private string $rememberToken = '';
+    private ?string $rememberToken = '';
 
     /**
      * @var int
@@ -214,9 +214,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
         return $this->activationKey;
     }
 
-    public function setActivationKey(string $activationKey): static
+    public function setActivationKey(?string $activationKey): static
     {
-        $this->activationKey = $activationKey;
+        $this->activationKey = $activationKey ?? '';
 
         return $this;
     }
@@ -238,9 +238,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
         return $this->rememberToken;
     }
 
-    public function setRememberToken(string $rememberToken): static
+    public function setRememberToken(?string $rememberToken): static
     {
-        $this->rememberToken = $rememberToken;
+        $this->rememberToken = $rememberToken ?? '';
 
         return $this;
     }

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace OctopusPress\Bundle\PressBundle\Form\Type;
+namespace OctopusPress\Bundle\Form\Type;
 
 
 use Symfony\Component\Form\AbstractType;

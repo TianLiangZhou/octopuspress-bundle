@@ -3,6 +3,7 @@
 namespace OctopusPress\Bundle\Scalable\Features;
 
 use OctopusPress\Bundle\Scalable\TermTaxonomy;
+use function Symfony\Component\String\b;
 
 final class PostType implements \JsonSerializable
 {
@@ -21,6 +22,7 @@ final class PostType implements \JsonSerializable
     private bool $showUi;
 
     private bool $showTableTaxonomy;
+    private bool $showNavigation;
 
     public function __construct(string $name, array $args)
     {
@@ -45,6 +47,7 @@ final class PostType implements \JsonSerializable
             'taxonomies' => [],
             'showUi'   => true,
             'showTableTaxonomy' => true,
+            'showNavigation'    => true,
         ];
 
         $args = array_merge($defaults, $args);
@@ -64,6 +67,7 @@ final class PostType implements \JsonSerializable
         if (is_bool($args['showTableTaxonomy'])) {
             $this->showTableTaxonomy = $args['showTableTaxonomy'];
         }
+        $this->showNavigation = (bool) $args['showNavigation'];
 
         if ($args['label'] && is_string($args['label'])) {
             $this->label = $args['label'];
@@ -128,6 +132,7 @@ final class PostType implements \JsonSerializable
             'visibility' => [
                 'showUi' => $this->showUi,
                 'showTableTaxonomy' => $this->showTableTaxonomy,
+                'showNavigation' => $this->showNavigation,
             ],
         ];
     }
@@ -146,6 +151,10 @@ final class PostType implements \JsonSerializable
      */
     private function setDefaultLabel(): void
     {
+        if (empty($this->labels['singularName'])) {
+            $this->labels['singularName'] = $this->label;
+        }
+
         if (empty($this->labels['addItem'])) {
             $this->labels['addItem'] = '创建' . $this->label;
         }
@@ -153,9 +162,13 @@ final class PostType implements \JsonSerializable
         if (empty($this->labels['editItem'])) {
             $this->labels['editItem'] = '编辑' . $this->label;
         }
+    }
 
-        if (empty($this->labels['singularName'])) {
-            $this->labels['singularName'] = '编辑' . $this->label;
-        }
+    /**
+     * @return bool
+     */
+    public function isShowNavigation(): bool
+    {
+        return $this->showNavigation;
     }
 }

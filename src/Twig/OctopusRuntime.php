@@ -411,31 +411,16 @@ class OctopusRuntime implements RuntimeExtensionInterface
      */
     public function getPosts(array $options = []): iterable
     {
-        $filter = [
+        $filters = [
             'type' => Post::TYPE_POST,
-            'status' => Post::STATUS_PUBLISHED,
+//            'status' => Post::STATUS_PUBLISHED,
         ];
-        if (isset($options['type'])) {
-            $filter['type'] = $options['type'];
-            unset($options['type']);
+        $filters = array_merge($filters, $options);
+        if (!isset($filters['_sort'])) {
+            $filters['_sort'] = 'id';
+            $filters['_order']= 1;
         }
-        if (isset($options['status'])) {
-            $filter['status'] = $options['status'];
-            unset($options['status']);
-        }
-        if (isset($options['id'])) {
-            $filter['id'] = is_array($options['id']) ? array_map('intval', $options['id']) : (int) $options['id'];
-            unset($options['id']);
-        }
-        if (isset($options['author'])) {
-            $filter['author'] = $options['author'];
-            unset($options['author']);
-        }
-        $query = $this->post->createQuery($filter, function (QueryBuilder $builder) use ($options) {
-            if (isset($options['sort']) && !$options['sort']) {
-                $builder->resetDQLPart('orderBy');
-            }
-        });
+        $query = $this->post->createQuery($filters);
         if (isset($options['limit']) && $options['limit'] > 0) {
             $records = $query->setMaxResults((int) $options['limit'])->getResult();
             [$limit, $count, $page] = [(int) $options['limit'], count($records), 1];
@@ -465,38 +450,40 @@ class OctopusRuntime implements RuntimeExtensionInterface
     }
 
     /**
-     * @param int $taxonomyId
+     * @param int|array $taxonomyId
      * @param array<string, bool|int|string> $options
      * @return Pagination
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function getTaxonomyPosts(int $taxonomyId, array $options = []): iterable
+    public function getTaxonomyPosts(int|array $taxonomyId, array $options = []): iterable
     {
+        if (empty($taxonomyId)) {
+            return [];
+        }
         $count = $this->relation->getTaxonomyObjectCount($taxonomyId);
-        if (isset($options['limit']) && $options['limit'] > 0) {
+        $page = max(1, (int) $this->getRequest()->get('paged', 1));
+        $limit = isset($options['limit']) && $options['limit'] > 0
+            ? (int) $options['limit']
+            : $this->option->postsPerPage();
+        $records = [];
+        $filters = [
+            'id' => [],
+        ];
+        if ($count > 0 && ceil($count / $limit) >= $page) {
             $objects = $this->relation->getTaxonomyObjectQuery($taxonomyId)
-                    ->setMaxResults((int) $options['limit'])
-                    ->getArrayResult();
-            $ids = array_map(function ($item) {
+                ->setFirstResult($page * $limit - $limit)
+                ->setMaxResults($limit)
+                ->getArrayResult();
+            $filters['id'] = array_map(function ($item) {
                 return $item['object_id'];
             }, $objects);
-            $records = $this->post->createQuery(['id' => $ids])->setMaxResults((int) $options['limit'])->getResult();
-            [$limit, $count, $page] = [(int) $options['limit'], count($records), 1];
-        } else {
-            $page = max(1, (int) $this->getRequest()->get('paged', 1));
-            $limit = $this->option->postsPerPage();
-            $records = [];
-            if ($count > 0 && ceil($count / $limit) >= $page) {
-                $objects = $this->relation->getTaxonomyObjectQuery($taxonomyId)
-                    ->setFirstResult($page * $limit - $limit)
-                    ->setMaxResults($limit)
-                    ->getArrayResult();
-                $ids = array_map(function ($item) {
-                    return $item['object_id'];
-                }, $objects);
-                $records = $this->post->createQuery(['id' => $ids])->getResult();
+            $filters = array_merge($filters, $options);
+            if (!isset($filters['_sort'])) {
+                $filters['_sort'] = 'id';
+                $filters['_order']= 1;
             }
+            $records = $this->post->createQuery($filters)->getResult();
         }
         if ($records) {
             $this->post->thumbnails($records);

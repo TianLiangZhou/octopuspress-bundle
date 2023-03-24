@@ -105,9 +105,6 @@ class PostManager
             do {
                 $altPostName = $name . "-$suffix";
                 $queryBuilder->setParameter('name', $altPostName);
-                if ($post->getId() != null) {
-                    $queryBuilder->setParameter('id', $post->getId());
-                }
                 $other = $queryBuilder->getQuery()->getOneOrNullResult();
                 $suffix++;
             } while ($other);

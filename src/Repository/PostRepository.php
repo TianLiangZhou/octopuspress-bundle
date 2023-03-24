@@ -108,7 +108,7 @@ class PostRepository extends ServiceEntityRepository
     public function addFilters(QueryBuilder $qb, array $filters): void
     {
         if (isset($filters['_sort']) && $filters['_sort']) {
-            $order = isset($filters['_order']) && $filters['_order'] === 'DESC' ? 'DESC' : 'ASC';
+            $order = isset($filters['_order']) && $filters['_order'] ? 'DESC' : 'ASC';
             switch ($filters['_sort']) {
                 case 'id':
                     $qb->addOrderBy('a.id', $order);

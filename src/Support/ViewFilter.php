@@ -77,31 +77,11 @@ class ViewFilter
                 $extension->getAssetUrl('assets/css/nebular/components.css')
             );
         }
-        $theme = $this->viewManager->getOption()->theme();
-        if ($theme) {
-            $templateDir = $this->bridger->getTemplateDir();
-            $names = $this->hook->filter('load_theme_resource_names', ['common', 'index', $theme]);
-            foreach ($names as $name) {
-                $file = sprintf('%s/%s/css/%s.css', $templateDir, $theme, $name);
-                if (file_exists($file)) {
-                    echo sprintf(
-                        '<link href="%s" rel="stylesheet" />',
-                        $extension->getAssetUrl('css/' . $name . '.css', 'theme')
-                    );
-                }
-            }
-            foreach ($names as $name) {
-                $file = sprintf('%s/%s/js/%s.js', $templateDir, $theme, $name);
-                if (file_exists($file)) {
-                    echo sprintf(
-                        '<script type="text/javascript" src="%s"></script>',
-                        $extension->getAssetUrl('js/' . $name . '.js', 'theme')
-                    );
-                }
-            }
-        }
+        $this->importThemeStyle($this->viewManager->getOption()->theme());
         $this->backgroundImage();
     }
+
+
 
     /**
      * @return void
@@ -125,6 +105,7 @@ class ViewFilter
                 $extension->getAssetUrl('assets/js/bootstrap.js'),
             );
         }
+        $this->importThemeScript($this->viewManager->getOption()->theme());
     }
 
     /**
@@ -181,7 +162,7 @@ class ViewFilter
      * @return void
      * @throws RuntimeError
      */
-    public function backgroundImage(): void
+    private function backgroundImage(): void
     {
         $option = $this->viewManager->getOption();
         $themeModules = $option->themeModules($option->theme());
@@ -228,6 +209,58 @@ class ViewFilter
 body { $css }
 </style>
 EOF;
+    }
+
+    /**
+     * @param string $theme
+     * @return void
+     */
+    private function importThemeStyle(string $theme): void
+    {
+        if (!$theme) {
+            return ;
+        }
+        /**
+         * @var AssetExtension $extension
+         */
+        $extension = $this->bridger->getTwig()->getExtension(AssetExtension::class);
+        $templateDir = $this->bridger->getTemplateDir();
+        $names = $this->hook->filter('load_theme_resource_names', ['common', 'index', $theme]);
+        foreach ($names as $name) {
+            $file = sprintf('%s/%s/css/%s.css', $templateDir, $theme, $name);
+            if (file_exists($file)) {
+                echo sprintf(
+                    '<link href="%s" rel="stylesheet" />',
+                    $extension->getAssetUrl('css/' . $name . '.css', 'theme')
+                );
+            }
+        }
+    }
+
+    /**
+     * @param string $theme
+     * @return void
+     */
+    private function importThemeScript(string $theme): void
+    {
+        if (!$theme) {
+            return ;
+        }
+        /**
+         * @var AssetExtension $extension
+         */
+        $extension = $this->bridger->getTwig()->getExtension(AssetExtension::class);
+        $templateDir = $this->bridger->getTemplateDir();
+        $names = $this->hook->filter('load_theme_resource_names', ['common', 'index', $theme]);
+        foreach ($names as $name) {
+            $file = sprintf('%s/%s/js/%s.js', $templateDir, $theme, $name);
+            if (file_exists($file)) {
+                echo sprintf(
+                    '<script type="text/javascript" src="%s"></script>',
+                    $extension->getAssetUrl('js/' . $name . '.js', 'theme')
+                );
+            }
+        }
     }
 
     /**

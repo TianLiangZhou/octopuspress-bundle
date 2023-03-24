@@ -52,6 +52,17 @@
         </label>
       </div>
       <div class="mb-3 row">
+        <label class="label col-form-label col-12 col-md-2">个性头像</label>
+        <div class="col-12 col-md-5">
+          <div class=" d-flex justify-content-between align-items-center">
+            <img alt="头像" [src]="avatarSrc" width="128">
+            <button type="button" size="medium" nbButton (click)="avatar()">选择头像</button>
+          </div>
+        </div>
+        <label class="label offset-md-2 col-form-label">请使用相同比例正方形图片。</label>
+      </div>
+
+      <div class="mb-3 row">
         <label for="inputRole" class="label col-form-label col-12 col-md-2">角色</label>
         <div class="col-12 col-md-5">
           <nb-select multiple id="inputRole" fullWidth formControlName="roles">
@@ -63,18 +74,18 @@
       <nb-card class="px-0 border-0">
         <nb-card-header class="px-0">其它设置</nb-card-header>
       </nb-card>
-      <div class="mb-3 row">
+      <div class="mb-3 row" [formGroup]="metaGroup">
         <label for="inputEditor" class="label col-form-label col-12 col-md-2">可视化编辑器</label>
         <div class="col-12 col-md-5">
-          <nb-checkbox id="inputEditor">撰写文章时不使用可视化编辑器</nb-checkbox>
+          <nb-checkbox id="inputEditor" formControlName="rich_editing">撰写文章时不使用可视化编辑器</nb-checkbox>
         </div>
       </div>
 
 
-      <div class="mb-3 row">
+      <div class="mb-3 row" [formGroup]="metaGroup">
         <label for="inputDescription" class="label col-form-label col-12 col-md-2">个人说明</label>
         <div class="col-12 col-md-5">
-          <textarea id="inputDescription" fullWidth rows="5" nbInput></textarea>
+          <textarea id="inputDescription" formControlName="description" fullWidth rows="5" nbInput></textarea>
         </div>
       </div>
 

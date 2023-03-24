@@ -12,6 +12,7 @@ import {ConfigurationService} from "../../@core/services/configuration.service";
 import {ActivatedRoute, ActivatedRouteSnapshot, Router} from "@angular/router";
 import {SPINNER} from "../../@core/interceptor/authorization";
 import {User} from "../../@core/definition/user/type";
+import {CKFinderService} from "../../@core/services/ckfinder.service";
 
 @Component({
   selector: 'app-user-new',
@@ -26,6 +27,7 @@ export class NewComponent implements OnInit, OnSpinner {
     url: new FormControl('', [Validators.pattern('')]),
     password: new FormControl('', [Validators.required, Validators.minLength(6), Validators.maxLength(32)]),
     roles: new FormControl<number[]>([]),
+    avatar: new FormControl<string>(''),
     meta: new FormGroup({}),
   });
   spinner: boolean = false;
@@ -38,18 +40,34 @@ export class NewComponent implements OnInit, OnSpinner {
   showPassword = true;
 
   route: ActivatedRouteSnapshot;
+  avatarSrc: string = ""
 
 
   constructor(private http: HttpClient,
               private activatedRoute: ActivatedRoute,
               private router: Router,
+              private ckfinder: CKFinderService,
               private configService: ConfigurationService) {
       this.route = activatedRoute.snapshot;
   }
 
   ngOnInit(): void {
+    this.avatarSrc = this.configService.config.assetsUrl;
     this.roles.push(...this.configService.roles());
-
+    this.ckfinder.subscribe((files) => {
+      let file = files.pop();
+      if (file) {
+        this.formGroup.controls.avatar.setValue(file.url, {
+          onlySelf: true,
+          emitEvent: true,
+          emitModelToViewChange: true,
+          emitViewToModelChange: true,
+        });
+        this.avatarSrc = file.url;
+      }
+    });
+    this.metaGroup.addControl('description', new FormControl(''));
+    this.metaGroup.addControl('rich_editing', new FormControl<boolean>(false));
     this.activatedRoute.paramMap.subscribe(map => {
       if (this.activatedRoute.snapshot.url[0].path !== 'new') {
         let url = USER_SELF_PROFILE;
@@ -104,6 +122,7 @@ export class NewComponent implements OnInit, OnSpinner {
     this.formGroup.controls['account'].disable();
     this.formGroup.patchValue({
       id: user.id,
+      avatar: user.avatar,
       account: user.account,
       nickname: user.nickname,
       email: user.email,
@@ -118,5 +137,12 @@ export class NewComponent implements OnInit, OnSpinner {
     return this.formGroup.controls['id'].value < 1
           ? '添加新用户'
           : '更新' + this.route.title?.replace('编辑', '');
+  }
+
+  avatar() {
+    this.ckfinder.popup({
+      resourceType: 'Images',
+      multi: false,
+    });
   }
 }

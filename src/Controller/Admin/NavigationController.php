@@ -50,34 +50,32 @@ class NavigationController extends AdminController
         $this->theme = $bridger->getTheme();
     }
 
-
-    #[Route('/menu1', name: 'navigation', options: ['name' => '导航', 'parent' => 'appearance', 'sort' => 2, 'link' => '/app/decoration/navigation'])]
-    public function menu(): Response
-    {
-        return new Response();
-    }
-
     #[Route('/structure', name: 'navigation_structure')]
     public function structure(): JsonResponse
     {
         $limit = 20;
         $stdClass = new \stdClass();
-        $stdClass->articles = $this->postRepository->findBy([
-            'type' => Post::TYPE_POST,
-        ], ['id' => 'DESC'], $limit);
-        $stdClass->pages = $this->postRepository->findBy([
-            'type' => Post::TYPE_PAGE,
-        ], ['id' => 'DESC'], $limit);
-        $stdClass->categories = $this->taxonomyRepository->handleRecords(
-            $this->taxonomyRepository->findBy([
-                'taxonomy' => TermTaxonomy::CATEGORY,
-            ], ['id' => 'DESC'], $limit)
-        );
-        $stdClass->tags = $this->taxonomyRepository->handleRecords(
-            $this->taxonomyRepository->findBy([
-                'taxonomy' => TermTaxonomy::TAG,
-            ], ['id' => 'DESC'], $limit)
-        );
+        $stdClass->dataSet = [];
+        $postTypes = $this->bridger->getPost()->getTypes();
+        foreach ($postTypes as $name => $postType) {
+            if (!$postType->isShowNavigation()) {
+                continue;
+            }
+            $stdClass->dataSet['post_' . $name] =$this->postRepository->findBy([
+                'type' => $name,
+            ], ['id' => 'DESC'], $limit);
+        }
+        $taxonomies = $this->bridger->getTaxonomy()->getTaxonomies();
+        foreach ($taxonomies as $name => $taxonomy) {
+            if (!$taxonomy->isShowNavigation()) {
+                continue;
+            }
+            $stdClass->dataSet['taxonomy_' . $name] = $this->taxonomyRepository->handleRecords(
+                $this->taxonomyRepository->findBy([
+                    'taxonomy' => $name,
+                ], ['id' => 'DESC'], $limit)
+            );
+        }
         $stdClass->navigate = $this->taxonomyRepository->handleRecords(
             $this->taxonomyRepository->findBy([
                 'taxonomy' => TermTaxonomy::NAV_MENU,
@@ -102,7 +100,7 @@ class NavigationController extends AdminController
     }
 
 
-    #[Route('/{id}', name: 'navigation_nav', requirements: ['id' => '\d+'], options: ['name' => '导航结构数据', 'parent' => 'appearance_navigation', 'sort' => 2])]
+    #[Route('/{id}', name: 'navigation_structured', requirements: ['id' => '\d+'], options: ['name' => '导航结构数据', 'parent' => 'appearance_navigation', 'sort' => 2])]
     public function navigate(TermTaxonomy $taxonomy): JsonResponse
     {
         $queryBuilder = $this->postRepository->createQueryBuilder('p');

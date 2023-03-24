@@ -6,6 +6,7 @@ namespace OctopusPress\Bundle\Controller\Admin;
 use Doctrine\ORM\AbstractQuery;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\User;
+use OctopusPress\Bundle\Entity\UserMeta;
 use OctopusPress\Bundle\Form\Type\UserType;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Repository\UserRepository;
@@ -34,33 +35,34 @@ class UserController extends AdminController
         $this->userRepository = $bridger->getUserRepository();
         $this->optionRepository = $bridger->getOptionRepository();
         $this->passwordHasher = $passwordHasher;
+        $this->bridger->getMeta()
+            ->registerUser('description')
+            ->registerUser('rich_editing');
     }
 
-
-    #[Route('/menu1', name: 'menu1', options: ['name' => '所有用户', 'parent' => 'user', 'sort' => 0, 'link' => '/app/user'])]
-    #[Route('/menu2', name: 'menu2', options: ['name' => '添加用户', 'parent' => 'user', 'sort' => 1, 'link' => '/app/user/new'])]
-    #[Route('/menu3', name: 'menu3', options: ['name' => '个人资料', 'parent' => 'user', 'sort' => 2, 'link' => '/app/user/profile'])]
-    public function menu(): Response
-    {
-        return new Response();
-    }
-
-    #[Route('', name: 'sets', options: ['name' => '用户列表', 'parent' => 'user_menu1'])]
+    #[Route('', options: ['name' => '用户列表', 'parent' => 'user_all'])]
     public function members(Request $request): JsonResponse
     {
         $pagination = $this->userRepository->pagination($request, AbstractQuery::HYDRATE_OBJECT);
         return $this->json($pagination);
     }
 
-    #[Route('/{id}', name: 'profile', requirements: ['id' => '\d+'])]
+    #[Route('/{id}', requirements: ['id' => '\d+'])]
     public function profile(User $user): JsonResponse
     {
         $jsonSerialize = $user->jsonSerialize();
         $metaStdclass = [];
+        $userMetaSetting = array_column($this->bridger->getMeta()->getUser(), null, 'key');
         foreach ($user->getMetas() as $meta) {
+            if (!isset($userMetaSetting[$meta->getMetaKey()]) || !$userMetaSetting[$meta->getMetaKey()]['showUi']) {
+                continue;
+            }
             $metaStdclass[$meta->getMetaKey()] = $meta->getMetaValue();
         }
         $jsonSerialize['meta'] = (object) $metaStdclass;
+        if ($jsonSerialize['avatar']) {
+            $jsonSerialize['avatar'] = $this->bridger->getAssetUrl() . $jsonSerialize['avatar'];
+        }
         return $this->json($jsonSerialize);
     }
 
@@ -68,19 +70,19 @@ class UserController extends AdminController
      * @param User $user
      * @return JsonResponse
      */
-    #[Route('/profile', name: 'self_profile')]
+    #[Route('/profile')]
     public function current(#[CurrentUser] User $user): JsonResponse
     {
         return $this->profile($user);
     }
 
-    #[Route('/store', name: 'store', options: ['name' => '创建用户', 'parent' => 'user_menu1'], methods: Request::METHOD_POST)]
+    #[Route('/store', name: 'store', options: ['name' => '创建用户', 'parent' => 'user_all'], methods: Request::METHOD_POST)]
     public function store(Request $request): JsonResponse
     {
         return $this->save(new User(), $request);
     }
 
-    #[Route('/{id}/update', name: 'update',requirements: ['id' => '\d+'], options: ['name' => '更新用户', 'parent' => 'user_menu1'], methods: Request::METHOD_POST)]
+    #[Route('/{id}/update', name: 'update',requirements: ['id' => '\d+'], options: ['name' => '更新用户', 'parent' => 'user_all'], methods: Request::METHOD_POST)]
     public function update(User $user, Request $request): JsonResponse
     {
         return $this->save($user, $request);
@@ -90,7 +92,7 @@ class UserController extends AdminController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/delete', name: 'delete', options: ['name' => '删除用户', 'parent' => 'user_menu1'], methods: [Request::METHOD_POST, Request::METHOD_DELETE])]
+    #[Route('/delete', name: 'delete', options: ['name' => '删除用户', 'parent' => 'user_all'], methods: [Request::METHOD_POST, Request::METHOD_DELETE])]
     public function delete(Request $request): JsonResponse
     {
         $idSets = $request->toArray()['id'] ?? [];
@@ -106,7 +108,7 @@ class UserController extends AdminController
         ]);
     }
 
-    #[Route('/reset/email', name: 'reset_email', options: ['name' => '重置密码邮件', 'parent' => 'user_menu1'], methods: Request::METHOD_POST)]
+    #[Route('/reset/email', name: 'reset_email', options: ['name' => '重置密码邮件', 'parent' => 'user_all'], methods: Request::METHOD_POST)]
     public function resetEmail(): JsonResponse
     {
         return $this->json([]);
@@ -125,11 +127,13 @@ class UserController extends AdminController
         $user->setPasswordHasher($this->passwordHasher);
         $user->setUserRepository($this->userRepository);
         $roleMeta = $user->getMeta('roles');
-        if ($response = $this->validResponse(UserType::class, $user, $request->toArray(), [
+        $form = $this->validation(UserType::class, $user, $request->toArray(), [
             'validation_groups' => ['Default', $user->getId() ? 'Update' : 'Create'],
             'is_update' => $user->getId() !== null,
-        ])) {
-            return $response;
+        ]);
+        $avatar = $user->getAvatar();
+        if ($avatar) {
+            $user->setAvatar(parse_url($avatar, PHP_URL_PATH));
         }
         if (empty($user->getNickname())) {
             $user->setNickname($user->getAccount());
@@ -137,7 +141,42 @@ class UserController extends AdminController
         if ($roleMeta != null && !$user->getMetas()->contains($roleMeta)) {
             $this->getEM()->remove($roleMeta);
         }
+        $this->metas($form->get('metas')->getNormData(), $user);
         $this->userRepository->add($user);
         return $this->json($user);
+    }
+
+    /**
+     * @param UserMeta[] $normData
+     * @param User $user
+     * @return void
+     */
+    private function metas(array $normData, User $user): void
+    {
+        /**
+         * @var $normData
+         */
+        if (empty($normData)) {
+            return ;
+        }
+        $keyMaps = [];
+        foreach ($user->getMetas() as $meta) {
+            $keyMaps[$meta->getMetaKey()] = $meta;
+        }
+        $registeredMeta = $this->bridger->getMeta()->getUser();
+        if (empty($registeredMeta)) {
+            return ;
+        }
+        $keyRegisteredMetaMap = array_column($registeredMeta, null, 'key');
+        foreach ($normData as $metaEntity) {
+            $action = isset($keyMaps[$metaEntity->getMetaKey()]) ? 'isUpdated' : 'isCreated';
+            $metaSetting = $keyRegisteredMetaMap[$metaEntity->getMetaKey()] ?? null;
+            if (!is_array($metaSetting) || !$metaSetting['showUi'] || !$metaSetting[$action]) {
+                continue;
+            }
+            isset($keyMaps[$metaEntity->getMetaKey()])
+            ? $keyMaps[$metaEntity->getMetaKey()]->setMetaValue($metaEntity->getMetaValue())
+            : $user->addMeta($metaEntity);
+        }
     }
 }

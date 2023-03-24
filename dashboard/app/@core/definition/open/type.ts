@@ -1,8 +1,8 @@
-export interface Menu {
+export interface Capability {
   name: string;
-  slug: string;
+  route: string;
   path: string;
-  children?: Menu[];
+  children?: Capability[];
   icon?: string;
   hidden?: boolean;
   sort?: number;

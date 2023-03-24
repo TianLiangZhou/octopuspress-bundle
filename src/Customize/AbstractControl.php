@@ -666,7 +666,7 @@ abstract class AbstractControl implements \JsonSerializable
         if ($this->sanitizeCallback) {
             return call_user_func($this->sanitizeCallback, $value, $this->getManager()) ?? $this->default;
         }
-        return $this->default;
+        return $value;
     }
 
     /**

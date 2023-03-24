@@ -37,13 +37,14 @@ import {
   TAXONOMY_STORE
 } from "../../@core/definition/content/api";
 import {SPINNER} from "../../@core/interceptor/authorization";
-import {Observable, ReplaySubject, Subject, Subscription} from "rxjs";
+import {Observable, ReplaySubject, Subject, Subscription, timer} from "rxjs";
 import {User} from "../../@core/definition/user/type";
 import {USER_MEMBER} from "../../@core/definition/user/api";
 import {CkeditorComponent} from "../ckeditor/ckeditor.component";
 import {FormBuilder, FormControl, Validators} from "@angular/forms";
 import {NbTagInputAddEvent} from "@nebular/theme/components/tag/tag-input.directive";
 import {ConfigurationService} from "../../@core/services/configuration.service";
+import {UserService} from "../../@core/services/user.service";
 
 type CheckTermTaxonomy = TermTaxonomy & {
   checked: boolean;
@@ -123,6 +124,7 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
     private sidebarService: NbSidebarService,
     private fb: FormBuilder,
     private config: ConfigurationService,
+    private sessionUser: UserService,
   ) {
   }
 
@@ -195,31 +197,15 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
       }
     });
 
-    this.ckfinder.subscribe((res: any[]) => {
-      this.entity.featuredImage.id = res[0].id;
-      this.entity.featuredImage.url = res[0].url;
-      this.formGroup.controls.featuredImage.setValue(res[0].id);
+    this.ckfinder.subscribe((files: any[]) => {
+      let file = files.pop();
+      if (file) {
+        this.entity.featuredImage.id = file.id;
+        this.entity.featuredImage.url = file.url;
+        this.formGroup.controls.featuredImage.setValue(file.id);
+      }
     });
   }
-
-  private fillFormControlValue() {
-    this.formGroup.controls.title.setValue(this.entity.title);
-    this.formGroup.controls.content.setValue(this.entity.content);
-    this.formGroup.controls.password.setValue(this.entity.password);
-    this.formGroup.controls.excerpt.setValue(this.entity.excerpt);
-    this.formGroup.controls.status.setValue(this.entity.status);
-    this.formGroup.controls.commentStatus.setValue(this.entity.commentStatus);
-    this.formGroup.controls.pingStatus.setValue(this.entity.pingStatus);
-    this.formGroup.controls.name.setValue(this.entity.name);
-    this.formGroup.controls.meta.setValue(this.entity.meta);
-    this.formGroup.controls.relationships.setValue(this.entity.relationships);
-    this.formGroup.controls.author.setValue(this.entity.author?.id ?? null);
-    this.formGroup.controls.parent.setValue(this.entity.parent?.id ?? null);
-    this.formGroup.controls.featuredImage.setValue(this.entity.featuredImage.id ?? null);
-    this.formGroup.controls.authorNickname.setValue(this.entity.author?.nickname ?? "");
-  }
-
-
 
   ngAfterViewInit(): void {
     this.datepicker?.valueChange.subscribe((date: Date) => {
@@ -231,10 +217,10 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
       this.inputBtnElement!.nativeElement.innerHTML = isNow ? "立即" : value;
       this.formGroup.controls.date.setValue(isNow ? null : date);
     });
-    setTimeout(() => {
+    timer(0).subscribe(() => {
       this.sidebarService.toggle(true, 'menu-sidebar');
       this.accordion?.openAll();
-    }, 500);
+    });
   }
 
 
@@ -288,6 +274,10 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
     this.submitted = spinner;
   }
 
+  get isRichEditor() {
+    return this.sessionUser.isRichEditor;
+  }
+
   private bindDocumentTaxonomySetting(type: string) {
     let taxonomyPanels = [];
     const registeredTaxonomies = this.config.taxonomies();
@@ -298,6 +288,23 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
       }
     }
     this.taxonomyPanels = taxonomyPanels;
+  }
+
+  private fillFormControlValue() {
+    this.formGroup.controls.title.setValue(this.entity.title);
+    this.formGroup.controls.content.setValue(this.entity.content);
+    this.formGroup.controls.password.setValue(this.entity.password);
+    this.formGroup.controls.excerpt.setValue(this.entity.excerpt);
+    this.formGroup.controls.status.setValue(this.entity.status);
+    this.formGroup.controls.commentStatus.setValue(this.entity.commentStatus);
+    this.formGroup.controls.pingStatus.setValue(this.entity.pingStatus);
+    this.formGroup.controls.name.setValue(this.entity.name);
+    this.formGroup.controls.meta.setValue(this.entity.meta);
+    this.formGroup.controls.relationships.setValue(this.entity.relationships);
+    this.formGroup.controls.author.setValue(this.entity.author?.id ?? null);
+    this.formGroup.controls.parent.setValue(this.entity.parent?.id ?? null);
+    this.formGroup.controls.featuredImage.setValue(this.entity.featuredImage.id ?? null);
+    this.formGroup.controls.authorNickname.setValue(this.entity.author?.nickname ?? "");
   }
 }
 

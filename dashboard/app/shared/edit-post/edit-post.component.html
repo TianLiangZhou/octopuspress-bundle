@@ -26,7 +26,8 @@
           </div>
           <div class="mb-2" *ngIf="typeSetting.supports && typeSetting.supports.includes('editor')">
             <div class="col-12">
-              <app-ckeditor #ckeditorComponent (contentChange)="updateContent($event)"  [data]="entity.content"></app-ckeditor>
+              <app-ckeditor *ngIf="isRichEditor" #ckeditorComponent (contentChange)="updateContent($event)" [data]="entity.content"></app-ckeditor>
+              <textarea formControlName="content" nbInput fullWidth rows="10" placeholder="内容" *ngIf="!isRichEditor"></textarea>
             </div>
           </div>
         </nb-card-body>

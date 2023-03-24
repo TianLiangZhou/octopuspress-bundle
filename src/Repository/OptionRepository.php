@@ -384,7 +384,7 @@ class OptionRepository extends ServiceEntityRepository
                 $type = 3;
             } elseif (is_array($value)) {
                 $type = 2;
-                if (is_object($value[0])) {
+                if (isset($value[0]) && is_object($value[0])) {
                     $type = 4;
                 }
             } elseif (is_string($value) && str_contains("\n", $value)) {

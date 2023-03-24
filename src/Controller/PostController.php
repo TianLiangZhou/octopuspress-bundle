@@ -188,7 +188,11 @@ class PostController extends Controller
             $ids = array_map(function ($item) {
                 return $item['object_id'];
             }, $objects);
-            $records = $this->post->createQuery(['id' => $ids])->getResult();
+            $records = $this->post->createQuery([
+                'id' => $ids,
+                '_sort' => 'id',
+                '_order'=> 'DESC',
+            ])->getResult();
         }
         if ($records) {
             $this->post->thumbnails($records);
@@ -210,6 +214,8 @@ class PostController extends Controller
      */
     private function filterPostsResult(array $filter, Request $request): iterable
     {
+        $filter['_sort'] = 'id';
+        $filter['_order'] = 'DESC';
         $limit = $this->option->postsPerPage();
         $page = max(1, $request->query->getInt('paged', 1));
         $query = $this->post->createQuery($filter);

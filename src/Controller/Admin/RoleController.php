@@ -26,14 +26,7 @@ class RoleController extends AdminController
         $this->optionRepository = $bridger->getOptionRepository();
     }
 
-
-    #[Route('/menu1', name: 'role', options: ['name' => '角色', 'parent' => 'setting', 'sort' => 2, 'link' => '/app/system/role'])]
-    public function menu(): Response
-    {
-        return new Response();
-    }
-
-    #[Route('', name: 'role_sets', options: ['name' => '角色列表', 'parent' => 'setting_role',  'sort' => 1])]
+    #[Route('')]
     public function roles(Request $request): JsonResponse
     {
         $roles = $this->optionRepository->value('roles');

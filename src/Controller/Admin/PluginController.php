@@ -26,9 +26,12 @@ class PluginController extends AdminController
         $this->tempDir = $bridger->getTempDir();
     }
 
-    #[Route('/menu1', name: 'market', options: ['name' => '插件市场', 'parent' => 'plugin', 'sort' => 0, 'link' => '/app/plugin/market'])]
-    #[Route('/menu2', name: 'installed', options: ['name' => '已安装插件', 'parent' => 'plugin', 'sort' => 0, 'link' => '/app/plugin/installed'])]
-    #[Route('/market', name: 'market_sets', options: ['name' => '插件列表', 'parent' => 'plugin_market', 'sort' => 0])]
+    /**
+     * 插件列表
+     *
+     * @return Response
+     */
+    #[Route('/market')]
     public function market(): Response
     {
         return new Response();
@@ -43,9 +46,11 @@ class PluginController extends AdminController
 
 
     /**
+     * 已安装插件列表
+     *
      * @throws \ReflectionException
      */
-    #[Route('/installed', name: 'installed_sets', options: ['name' => '已安装插件列表', 'parent' => 'plugin_installed', 'sort' => 0])]
+    #[Route('/installed')]
     public function installed(): JsonResponse
     {
         $plugins = $this->pluginManager->plugins();

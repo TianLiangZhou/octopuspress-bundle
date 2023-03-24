@@ -1,4 +1,4 @@
-import {Menu} from "./open/type";
+import {Capability} from "./open/type";
 import {Post, PostTypeSetting, TaxonomySetting} from "./content/type";
 import {Control} from "../../shared/control/type";
 
@@ -39,8 +39,9 @@ export type Records<T> = ResponseBody & {
   records: T[],
 };
 
-export type Menus = ResponseBody & {
-  menus: Menu[],
+export type SessionUser = ResponseBody & {
+  isRichEditor: boolean,
+  capabilities: Capability[],
 }
 
 export type SiteOption = ResponseBody & {

@@ -55,6 +55,7 @@ export interface PostTypeSetting {
   visibility: {
     showUi: boolean;
     showTableTaxonomy: boolean;
+    showNavigation: boolean;
   };
 }
 
@@ -67,6 +68,7 @@ export interface TaxonomySetting {
   visibility: {
     showUi: boolean;
     showPostFilter: boolean;
+    showNavigation: boolean;
   }
 }
 

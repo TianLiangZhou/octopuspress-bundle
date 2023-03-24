@@ -3,14 +3,17 @@ import {ROLE_DELETE, ROLE_STORE, ROLE_UPDATE, ROLES} from "../../@core/definitio
 import {MENUS} from "../../@core/definition/open/api";
 import {Role} from "../../@core/definition/system/type";
 import {HttpClient, HttpContext} from "@angular/common/http";
-import {Menus, OnSpinner} from "../../@core/definition/common";
-import {Menu} from "../../@core/definition/open/type";
+import {SessionUser, OnSpinner, ResponseBody} from "../../@core/definition/common";
+import {Capability} from "../../@core/definition/open/type";
 import {SharedService} from "../../@core/services/shared.service";
 import {ServerDataSource} from "angular2-smart-table";
 import {Settings} from "angular2-smart-table/lib/lib/settings";
 import {DeleteEvent, EditEvent} from "angular2-smart-table/lib/lib/events";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {SPINNER} from "../../@core/interceptor/authorization";
+
+type ResponseMenus = {menus: Capability[]} & ResponseBody;
+
 
 @Component({
   selector: 'app-role',
@@ -19,7 +22,7 @@ import {SPINNER} from "../../@core/interceptor/authorization";
 export class RoleComponent implements OnInit, OnSpinner {
   settings = {};
   source: ServerDataSource | undefined;
-  menus: Menu[] = [];
+  menus: Capability[] = [];
   formGroup = new FormGroup({
     'id': new FormControl<number>(0),
     'name': new FormControl<string>('', Validators.required),
@@ -34,7 +37,7 @@ export class RoleComponent implements OnInit, OnSpinner {
   }
 
   ngOnInit(): void {
-    this.http.get<Menus>(MENUS).subscribe(res => {
+    this.http.get<ResponseMenus>(MENUS).subscribe(res => {
       this.menus = res.menus;
     });
     this.settings = this.buildSettings()

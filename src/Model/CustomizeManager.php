@@ -117,7 +117,6 @@ final class CustomizeManager implements JsonSerializable
         foreach ($persists as $persist) {
             $objectManager->persist($persist);
         }
-
         $hook = $this->getHook();
         foreach ($customControlStorages as $hookName => $value) {
             $hook->action($hookName, $value, $objectManager, $this);

@@ -2,32 +2,23 @@
 
 namespace OctopusPress\Bundle\Event;
 
+use OctopusPress\Bundle\Support\ActivatedRoute;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class ViewRenderEvent extends OctopusEvent
 {
-    private string $routeName;
-    /**
-     * @var mixed|null
-     */
-    private mixed $controllerResult;
-
     private array $context = [];
 
-    private ?Response $response = null;
-
-    private Request $request;
+    private ActivatedRoute $activatedRoute;
 
     /**
      * @param Request $request
-     * @param mixed|null $controllerResult
+     * @param ActivatedRoute $activatedRoute
      */
-    public function __construct(Request $request, mixed $controllerResult = null)
+    public function __construct(Request $request, ActivatedRoute $activatedRoute)
     {
-        $this->request = $request;
-        $this->routeName = $request->attributes->get('_route');
-        $this->controllerResult = $controllerResult;
+        $this->setRequest($request);
+        $this->activatedRoute = $activatedRoute;
     }
 
     /**
@@ -35,15 +26,7 @@ class ViewRenderEvent extends OctopusEvent
      */
     public function getControllerResult(): mixed
     {
-        return $this->controllerResult;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRouteName(): string
-    {
-        return $this->routeName;
+        return $this->getRequest()->attributes->get('_controller_result');
     }
 
     /**
@@ -82,26 +65,10 @@ class ViewRenderEvent extends OctopusEvent
     }
 
     /**
-     * @return Response|null
+     * @return ActivatedRoute
      */
-    public function getResponse(): ?Response
+    public function getActivatedRoute(): ActivatedRoute
     {
-        return $this->response;
-    }
-
-    /**
-     * @param Response $response
-     */
-    public function setResponse(Response $response): void
-    {
-        $this->response = $response;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasResponse(): bool
-    {
-        return $this->response !== null;
+        return $this->activatedRoute;
     }
 }

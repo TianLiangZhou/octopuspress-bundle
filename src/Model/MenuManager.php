@@ -20,11 +20,11 @@ final class MenuManager
     /**
      * @return array
      */
-    public function collection(): array
+    public function registeredRoutes(): array
     {
         $routeCollection = $this->router->getRouteCollection();
         $menus = [];
-        foreach ($routeCollection as $slug => $route) {
+        foreach ($routeCollection as $routeName => $route) {
             $options = $route->getOptions();
             if (empty($options) || empty($options['name'])) {
                 continue;
@@ -33,7 +33,7 @@ final class MenuManager
             $option = [
                 'name' => $options['name'],
                 'path' => $path,
-                'slug' => $slug,
+                'route' => $routeName,
             ];
             if (!empty($options['parent'])) {
                 $option['parent'] = 'backend_' . $options['parent'];
@@ -86,15 +86,15 @@ final class MenuManager
      * @param string $parent
      * @return array<int, mixed>
      */
-    public function treeNode(array &$nodes, array $children, string $parent = ''): array
+    private function treeNode(array &$nodes, array $children, string $parent = ''): array
     {
         $child = [];
         foreach ($nodes as &$node) {
             if (($node['parent']??'') != $parent) {
                 continue;
             }
-            if (isset($children[$node['slug']])) {
-                $node['children'] = self::treeNode($nodes, $children, $node['slug']);
+            if (isset($children[$node['route']])) {
+                $node['children'] = self::treeNode($nodes, $children, $node['route']);
                 $sorts = array_map(function ($item) {
                     return $item['sort'] ?? 0;
                 }, $node['children']);

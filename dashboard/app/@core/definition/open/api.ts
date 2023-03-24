@@ -7,7 +7,7 @@ export const AUTHORIZE_RESET: string  = '/authorize/reset';
 export const CONFIGURATION: string = '/open/configuration';
 
 
-export const AUTHORIZED_MENU: string = '/open/authorized/menu';
+export const SESSION_USER: string = '/open/user';
 
 export const MENUS: string = '/open/menu';
 

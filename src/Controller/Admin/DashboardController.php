@@ -23,12 +23,41 @@ class DashboardController extends AdminController
 {
     #[Route('/menu1', name: 'post', options: ['name' => '文章', 'sort' => 2, 'icon' => 'file-text'])]
     #[Route('/menu2', name: 'page', options: ['name' => '页面',  'sort' => 3, 'icon' => 'file'])]
-    #[Route('/menu8', name: 'comment', options: ['name' => '评论',  'sort' => 4, 'link' => '/app/comment', 'icon' => 'message-square-outline'])]
-    #[Route('/menu3', name: 'appearance', options: ['name' => '外观',  'sort' => 5, 'icon' => 'brush-outline'])]
-    #[Route('/menu4', name: 'media', options: ['name' => '媒体',  'sort' => 6, 'icon' => 'camera'])]
-    #[Route('/menu5', name: 'plugin', options: ['name' => '插件', 'sort' => 7, 'icon' => 'layers'])]
-    #[Route('/menu6', name: 'user', options: ['name' => '用户', 'sort' => 8, 'icon' => 'person'])]
-    #[Route('/menu7', name: 'setting', options: ['name' => '设置', 'sort' => 9, 'icon' => 'settings-2'])]
+    #[Route('/menu3', name: 'comment', options: ['name' => '评论',  'sort' => 4, 'link' => '/app/comment', 'icon' => 'message-square-outline'])]
+    #[Route('/menu4', name: 'appearance', options: ['name' => '外观',  'sort' => 5, 'icon' => 'brush-outline'])]
+    #[Route('/menu5', name: 'media', options: ['name' => '媒体',  'sort' => 6, 'icon' => 'camera'])]
+    #[Route('/menu6', name: 'plugin', options: ['name' => '插件', 'sort' => 7, 'icon' => 'layers'])]
+    #[Route('/menu7', name: 'user', options: ['name' => '用户', 'sort' => 8, 'icon' => 'person'])]
+    #[Route('/menu8', name: 'setting', options: ['name' => '设置', 'sort' => 9, 'icon' => 'settings-2'])]
+
+
+    #[Route('/menu/post', name: 'post_all', options: ['name' => '所有文章', 'parent' => 'post', 'sort' => 0, 'link' => '/app/content/post'])]
+    #[Route('/menu/post-new', name: 'post_new', options: ['name' => '写文章', 'parent' => 'post', 'sort' => 1, 'link' => '/app/content/post-new'])]
+    #[Route('/menu/category', name: 'category', options: ['name' => '分类目录', 'parent' => 'post', 'sort' => 3, 'link' => '/app/taxonomy/category'])]
+    #[Route('/menu/tag', name: 'tag', options: ['name' => '标签', 'parent' => 'post', 'sort' => 3, 'link' => '/app/taxonomy/tag'])]
+
+    #[Route('/menu/page', name: 'page_all', options: ['name' => '所有页面', 'parent' => 'page', 'sort' => 1, 'link' => '/app/content/page'])]
+    #[Route('/menu/page-new', name: 'page_new', options: ['name'=> '新建页面', 'parent' => 'page', 'sort'=> 2, 'link' => '/app/content/post-new/page'])]
+
+    #[Route('/menu/navigation', name: 'appearance_navigation', options: ['name' => '导航', 'parent' => 'appearance', 'sort' => 2, 'link' => '/app/decoration/navigation'])]
+    #[Route('/menu/theme', name: 'appearance_theme', options: ['name' => '主题', 'parent' => 'appearance', 'sort' => 3, 'link' => '/app/decoration/theme'])]
+    #[Route('/menu/widget', name: 'appearance_widget', options: ['name' => '挂件', 'parent' => 'appearance', 'sort' => 3, 'link' => '/app/decoration/widget'])]
+    #[Route('/menu/customize', name: 'appearance_customize', options: ['name' => '自定义', 'parent' => 'appearance', 'sort' => 3, 'link' => '/app/decoration/custom'])]
+
+    #[Route('/menu/plugin_market', name: 'plugin_market', options: ['name' => '插件市场', 'parent' => 'plugin', 'sort' => 0, 'link' => '/app/plugin/market'])]
+    #[Route('/menu/plugin_installed', name: 'plugin_installed', options: ['name' => '已安装插件', 'parent' => 'plugin', 'sort' => 0, 'link' => '/app/plugin/installed'])]
+
+
+    #[Route('/menu/library', name: 'media_library', options: ['name' => '媒体库', 'parent' => 'media', 'link' => '/app/media'])]
+
+    #[Route('/menu/user', name: 'user_all', options: ['name' => '所有用户', 'parent' => 'user', 'sort' => 0, 'link' => '/app/user'])]
+    #[Route('/menu/user-new', name: 'user_new', options: ['name' => '添加用户', 'parent' => 'user', 'sort' => 1, 'link' => '/app/user/new'])]
+    #[Route('/menu/profile', name: 'user_profile', options: ['name' => '个人资料', 'parent' => 'user', 'sort' => 2, 'link' => '/app/user/profile'])]
+
+
+    #[Route('/menu/global', name: 'setting_global', options: ['name' => '全局', 'parent' => 'setting', 'sort' => 0, 'link' => '/app/system/option'])]
+    #[Route('/menu/option', name: 'setting_option', options: ['name' => '站点', 'parent' => 'setting',  'sort' => 0, 'link' => '/app/system/setting'])]
+    #[Route('/menu/role', name: 'setting_role', options: ['name' => '角色', 'parent' => 'setting', 'sort' => 2, 'link' => '/app/system/role'])]
     public function menu(): Response
     {
         return new Response();

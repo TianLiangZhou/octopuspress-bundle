@@ -18,6 +18,7 @@ use OctopusPress\Bundle\Form\Type\TaxonomyType;
 use OctopusPress\Bundle\Repository\TaxonomyRepository;
 use Exception;
 use OctopusPress\Bundle\Repository\TermRepository;
+use OctopusPress\Bundle\Util\Formatter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -86,6 +87,10 @@ class TaxonomyController extends AdminController
             return $this->json([
                 'message' => 'error',
             ], Response::HTTP_FORBIDDEN);
+        }
+        if ($termTaxonomy->isHierarchical()) {
+            $request->query->remove('page');
+            $request->query->remove('size');
         }
         $request->query->set('taxonomy', $taxonomy);
         $sets = $this->repository->pagination($request, AbstractQuery::HYDRATE_OBJECT);
@@ -157,9 +162,10 @@ class TaxonomyController extends AdminController
      * @param Request $request
      * @param string $taxonomy
      * @return JsonResponse
+     * @throws NonUniqueResultException
      */
-    #[Route('/{taxonomy}/store', name: 'store', methods: Request::METHOD_POST)]
-    public function create(string $taxonomy, Request $request): JsonResponse
+    #[Route('/{taxonomy}/store', name: 'store', options: ['name' => '创建类别',  'sort'=>10,  'parent' => 'post_all'], methods: Request::METHOD_POST)]
+    public function store(string $taxonomy, Request $request): JsonResponse
     {
         if (($response = $this->checkTaxonomy($taxonomy))) {
             return $response;
@@ -172,9 +178,10 @@ class TaxonomyController extends AdminController
      * @param Request $request
      * @param string $taxonomy
      * @return JsonResponse
+     * @throws NonUniqueResultException
      */
-    #[Route('/{taxonomy}/{id}/update', name: 'update', requirements: ['id' => '\d+'], methods: Request::METHOD_POST)]
-    public function edit(string $taxonomy, TermTaxonomy $termTaxonomy, Request $request): JsonResponse
+    #[Route('/{taxonomy}/{id}/update', name: 'update', requirements: ['id' => '\d+'], options: ['name' => '更新类别',  'sort'=>11,  'parent' => 'post_all'], methods: Request::METHOD_POST)]
+    public function update(string $taxonomy, TermTaxonomy $termTaxonomy, Request $request): JsonResponse
     {
         if (($response = $this->checkTaxonomy($taxonomy))) {
             return $response;
@@ -190,8 +197,8 @@ class TaxonomyController extends AdminController
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    #[Route('/{taxonomy}/delete', name: 'delete', methods: [Request::METHOD_POST, Request::METHOD_DELETE])]
-    public function remove(string $taxonomy, Request $request): JsonResponse
+    #[Route('/{taxonomy}/delete', name: 'delete', options: ['name' => '删除类别',  'sort'=>12, 'parent' => 'post_all'], methods: [Request::METHOD_POST, Request::METHOD_DELETE])]
+    public function delete(string $taxonomy, Request $request): JsonResponse
     {
         if (($response = $this->checkTaxonomy($taxonomy))) {
             return $response;
@@ -262,7 +269,7 @@ class TaxonomyController extends AdminController
         $name = $form->get('name')->getNormData();
         $slug = $form->get('slug')->getNormData();
         if (empty($slug)) {
-            $slug = (new AsciiSlugger('zh'))->slug($name)->lower()->toString();
+            $slug = Formatter::sanitizeWithDashes($name);
         }
         $slug = $this->bridger->getHook()->filter('taxonomy_slug', $slug, $name);
         $term = $taxonomy->getTerm();
@@ -327,34 +334,28 @@ class TaxonomyController extends AdminController
      */
     private function metas(array $normData, TermTaxonomy $entity): void
     {
-        /**
-         * @var $normData
-         */
         if (empty($normData)) {
             return ;
         }
-        $keys = array_map(function (TermMeta $meta) {
-            return $meta->getMetaKey();
-        }, $normData);
+        $keyMaps = [];
+        $term = $entity->getTerm();
+        foreach ($term->getMetas() as $meta) {
+            $keyMaps[$meta->getMetaKey()] = $meta;
+        }
         $registeredMeta = $this->bridger->getMeta()->getTermTaxonomy($entity->getTaxonomy());
         if (empty($registeredMeta)) {
             return ;
         }
         $keyRegisteredMetaMap = array_column($registeredMeta, null, 'key');
-        foreach ($entity->getTerm()->getMetas() as $metaEntity) {
-            if (($index = array_search($metaEntity->getMetaKey(), $keys)) !== false) {
-                $metaSetting = $keyRegisteredMetaMap[$metaEntity->getMetaKey()] ?? null;
-                if (!is_array($metaSetting) || !$metaSetting['showUi'] || !$metaSetting['isUpdated']) {
-                    continue;
-                }
-                $metaEntity->setMetaValue($normData[$index]->getMetaValue());
-            } else {
-                $metaSetting = $keyRegisteredMetaMap[$normData[$index]->getMetaKey()] ?? null;
-                if (!is_array($metaSetting) || $metaSetting['showUi'] || !$metaSetting['isCreated']) {
-                    continue;
-                }
-                $entity->getTerm()->addMeta($normData[$index]);
+        foreach ($normData as $metaEntity) {
+            $action = isset($keyMaps[$metaEntity->getMetaKey()]) ? 'isUpdated' : 'isCreated';
+            $metaSetting = $keyRegisteredMetaMap[$metaEntity->getMetaKey()] ?? null;
+            if (!is_array($metaSetting) || !$metaSetting['showUi'] || !$metaSetting[$action]) {
+                continue;
             }
+            isset($keyMaps[$metaEntity->getMetaKey()])
+                ? $keyMaps[$metaEntity->getMetaKey()]->setMetaValue($metaEntity->getMetaValue())
+                : $term->addMeta($metaEntity);
         }
     }
 }

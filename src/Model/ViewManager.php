@@ -86,7 +86,7 @@ class ViewManager
         foreach ($context as $name => $value) {
             $this->twig->addGlobal($name, $value);
         }
-        $event = new ViewRenderEvent($this->getBridger()->getRequest(), $context['entity']);
+        $event = new ViewRenderEvent($this->getBridger()->getRequest(), $this->getActivatedRoute());
         $this->getBridger()->getDispatcher()->dispatch($event, OctopusEvent::VIEW_RENDER);
         if ($event->hasResponse()) {
             return $event->getResponse();
@@ -415,7 +415,7 @@ class ViewManager
      */
     public function getControllerResult(): mixed
     {
-        return $this->getBridger()->getRequest()->attributes->get('controller_result');
+        return $this->getBridger()->getRequest()->attributes->get('_controller_result');
     }
 
     /**

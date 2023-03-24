@@ -51,12 +51,13 @@ class Navigation extends AbstractWidget implements IteratorAggregate
         $location = $attributes['location'];
         // TODO: Implement context() method.
         $navigationLocation = $option->themeModuleFeature('navigation_location', $theme);
-        if (empty($navigationLocation) || !isset($navigationLocation[$location])) {
+        $locationId = (int) ($navigationLocation[$location] ?? 0);
+        if ($locationId < 1) {
             return [];
         }
         $objects = $this->getBridger()
             ->getRelationRepository()
-            ->getTaxonomyObjectQuery((int) $navigationLocation[$location])->getArrayResult();
+            ->getTaxonomyObjectQuery($locationId)->getArrayResult();
         if (count($objects) < 1) {
             return $results;
         }

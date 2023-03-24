@@ -40,27 +40,36 @@ class RelationRepository extends ServiceEntityRepository
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getTaxonomyObjectCount(int $taxonomyId): int
+    public function getTaxonomyObjectCount(array|int $taxonomyId): int
     {
-        return (int) $this->createQueryBuilder('r')
-            ->select('count(r.post) as object_id')
-            ->andWhere('r.taxonomy = :taxonomyId')
-            ->setParameter('taxonomyId', $taxonomyId)
-            ->getQuery()
-            ->getSingleScalarResult();
+        $queryBuilder = $this->createQueryBuilder('r')
+            ->select('count(r.post) as object_id');
+        if (is_array($taxonomyId)) {
+            $queryBuilder->andWhere('r.taxonomy IN (:taxonomyId)')
+                ->setParameter('taxonomyId', $taxonomyId);
+        } else {
+            $queryBuilder->andWhere('r.taxonomy = :taxonomyId')
+                ->setParameter('taxonomyId', $taxonomyId);
+        }
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * @param int $taxonomyId
+     * @param array|int $taxonomyId
      * @return Query
      */
-    public function getTaxonomyObjectQuery(int $taxonomyId): Query
+    public function getTaxonomyObjectQuery(array|int $taxonomyId): Query
     {
-        return $this->createQueryBuilder('r')->select('(r.post) as object_id')
-            ->andWhere('r.taxonomy = :taxonomyId')
-            ->setParameter('taxonomyId', $taxonomyId)
-            ->addOrderBy('r.post', 'DESC')
-            ->getQuery();
+        $queryBuilder = $this->createQueryBuilder('r')
+            ->select('(r.post) as object_id');
+        if (is_array($taxonomyId)) {
+            $queryBuilder->andWhere('r.taxonomy IN (:taxonomyId)')
+                ->setParameter('taxonomyId', $taxonomyId);
+        } else {
+            $queryBuilder->andWhere('r.taxonomy = :taxonomyId')
+                ->setParameter('taxonomyId', $taxonomyId);
+        }
+        return $queryBuilder->addOrderBy('r.post', 'DESC')->getQuery();
     }
 
     /**

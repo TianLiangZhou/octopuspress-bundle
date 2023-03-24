@@ -50,7 +50,7 @@ import {CORPORATE_THEME} from './styles/theme.corporate';
 import {DARK_THEME} from './styles/theme.dark';
 import {CKFinderService} from "../@core/services/ckfinder.service";
 import {SharedService} from "../@core/services/shared.service";
-import {MenuService} from "../@core/services/menu.service";
+import {UserService} from "../@core/services/user.service";
 import {RouterLink} from "@angular/router";
 
 
@@ -108,7 +108,7 @@ let NB_THEME_PROVIDERS: any[] = [
   DynamicResourceLoaderService,
   CKFinderService,
   SharedService,
-  MenuService,
+  UserService,
   ...NbThemeModule.forRoot({name: 'default',}, [DEFAULT_THEME, COSMIC_THEME, CORPORATE_THEME, DARK_THEME],).providers || [],
   ...NbSidebarModule.forRoot().providers || [],
   ...NbMenuModule.forRoot().providers || [],

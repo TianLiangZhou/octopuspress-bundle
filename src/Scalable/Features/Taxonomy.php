@@ -30,6 +30,7 @@ final class Taxonomy implements \JsonSerializable
 
     private bool $showUi;
     private bool $showPostFilter;
+    private bool $showNavigation;
 
 
     public function __construct(string $name, array $objectType, array $args = [])
@@ -52,6 +53,7 @@ final class Taxonomy implements \JsonSerializable
             'hierarchical'          => false,
             'showUi'                => true,
             'showPostFilter'        => false,
+            'showNavigation'        => true,
         ];
         $args = array_merge($defaults, $args);
         $this->label = $args['label'] ?? $this->name;
@@ -61,6 +63,7 @@ final class Taxonomy implements \JsonSerializable
         $this->hierarchical = (bool) $args['hierarchical'];
         $this->showUi      = (bool) $args['showUi'];
         $this->showPostFilter      = (bool) $args['showPostFilter'];
+        $this->showNavigation = (bool) $args['showNavigation'];
         if (is_array($args['labels'])) {
             $this->labels = $args['labels'];
         }
@@ -92,6 +95,7 @@ final class Taxonomy implements \JsonSerializable
             'visibility' => [
                 'showUi' => $this->showUi,
                 'showPostFilter' => $this->showPostFilter,
+                'showNavigation' => $this->showNavigation,
             ],
         ];
     }
@@ -126,6 +130,7 @@ final class Taxonomy implements \JsonSerializable
     private function setDefaultLabel(): void
     {
         $defaultLabels = [
+            'singularName' => $this->label,
             'addNewItem'=> '添加新' . $this->label,
             'editItem'  => '编辑' . $this->label,
             'nameField' => '名称',
@@ -144,5 +149,13 @@ final class Taxonomy implements \JsonSerializable
                 unset($this->labels[$name]);
             }
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function isShowNavigation(): bool
+    {
+        return $this->showNavigation;
     }
 }

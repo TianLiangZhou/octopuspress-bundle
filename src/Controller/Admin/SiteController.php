@@ -30,12 +30,6 @@ class SiteController extends AdminController
         $this->repository = $bridger->getOptionRepository();
     }
 
-    #[Route('/menu1', name: 'site', options: ['name' => '站点', 'parent' => 'setting',  'sort' => 0, 'link' => '/app/system/setting'])]
-    public function menu(): Response
-    {
-        return new Response();
-    }
-
     /**
      * @return JsonResponse
      */
@@ -58,7 +52,7 @@ class SiteController extends AdminController
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    #[Route('/basic/save', name: 'site_basic_save', options: ['name' => '保存基础配置', 'parent' => 'setting_site'], methods: Request::METHOD_POST)]
+    #[Route('/basic/save', name: 'site_basic_save', options: ['name' => '保存基础配置', 'parent' => 'setting_option'], methods: Request::METHOD_POST)]
     public function basicSave(Request $request): JsonResponse
     {
         return $this->save($request->toArray(), $this->repository::$defaultGeneralNames);
@@ -81,7 +75,7 @@ class SiteController extends AdminController
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    #[Route('/media/save', name: 'site_media_save', options: ['name' => '保存媒体配置', 'parent' => 'setting_site'], methods: Request::METHOD_POST)]
+    #[Route('/media/save', name: 'site_media_save', options: ['name' => '保存媒体配置', 'parent' => 'setting_option'], methods: Request::METHOD_POST)]
     public function mediaSave(Request $request): JsonResponse
     {
         return $this->save($request->toArray(), $this->repository::$defaultMediaNames);
@@ -108,7 +102,7 @@ class SiteController extends AdminController
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    #[Route('/content/save', name: 'content_save', options: ['name' => '保存站点内容配置', 'parent' => 'setting_site'], methods: Request::METHOD_POST)]
+    #[Route('/content/save', name: 'content_save', options: ['name' => '保存站点内容配置', 'parent' => 'setting_option'], methods: Request::METHOD_POST)]
     public function contentSave(Request $request): JsonResponse
     {
         $names = $this->repository::$defaultContentNames;

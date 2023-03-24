@@ -6,6 +6,8 @@ import {OnSpinner} from "../../../@core/definition/common";
 import {SPINNER} from "../../../@core/interceptor/authorization";
 import {buildFormGroup, Control} from "../../../shared/control/type";
 import {FormGroup} from "@angular/forms";
+import {timer} from "rxjs";
+import {NbSidebarService} from "@nebular/theme";
 
 @Component({
   selector: 'app-theme-custom',
@@ -26,8 +28,15 @@ export class CustomComponent implements OnInit, OnSpinner{
 
   constructor(
     private http: HttpClient,
+    private sidebar: NbSidebarService,
   ) {
 
+  }
+
+  ngAfterViewInit(): void {
+    timer(300).subscribe(val => {
+      this.sidebar.toggle(true, 'menu-sidebar');
+    });
   }
 
   ngOnInit(): void {

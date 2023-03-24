@@ -38,20 +38,13 @@ class ThemeController extends AdminController
         $this->center = $center;
     }
 
-    #[Route('/menu1', name: 'theme', options: ['name' => '主题', 'parent' => 'appearance', 'sort' => 3, 'link' => '/app/decoration/theme'])]
-    #[Route('/menu2', name: 'custom', options: ['name' => '自定义', 'parent' => 'appearance', 'sort' => 3, 'link' => '/app/decoration/custom'])]
-    public function menu(): Response
-    {
-        return new Response();
-    }
-
-    #[Route('/customize', name: 'customize', options: ['name' => '主题自定义', 'parent' => 'appearance_custom'])]
+    #[Route('/customize')]
     public function custom(Request $request): JsonResponse
     {
         return $this->json($this->customizeManager->jsonSerialize());
     }
 
-    #[Route('/customized', name: 'customize_save', options: ['name' => '保存自定义', 'parent' => 'appearance_custom'])]
+    #[Route('/customized', name: 'customize_save', options: ['name' => '保存自定义', 'parent' => 'appearance_customize'])]
     public function customized(Request $request): JsonResponse
     {
         $customizedData = $request->toArray();
@@ -60,9 +53,11 @@ class ThemeController extends AdminController
     }
 
     /**
+     * 已安装的主题列表
+     *
      * @return JsonResponse
      */
-    #[Route(name:'theme_installed', options: ['name' => '主题列表', 'parent' => 'appearance_theme'])]
+    #[Route('')]
     public function themes(): JsonResponse
     {
         $themes = $this->themeManager->themes();
@@ -110,7 +105,7 @@ class ThemeController extends AdminController
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    #[Route('/{name}/activate', name: 'theme_activate', options: ['name' => '开启主题', 'parent' => 'appearance_theme', 'sort' => 0])]
+    #[Route('/{name}/activate', name: 'theme_activate', options: ['name' => '启用主题', 'parent' => 'appearance_theme', 'sort' => 0])]
     public function activate(string $name): JsonResponse
     {
         $this->themeManager->activate($name);

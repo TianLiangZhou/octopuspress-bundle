@@ -4,22 +4,26 @@ declare(strict_types=1);
 namespace OctopusPress\Bundle\Util;
 
 use JsonSerializable;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 final class Formatter
 {
-    const ON = 'on';
-    const OFF = 'off';
+    const ON = 'true';
+    const OFF = 'false';
 
     /**
      * @param string $title
      * @return string
      */
-    public static function sanitizeWithDashes(string $title): string
+    public static function sanitizeWithDashes(string $title, string $locale = 'zh'): string
     {
         $title = strip_tags($title);
         $title = preg_replace('/\s+/', '-', $title);
         if (strlen($title) != mb_strlen($title)) {
-            $title = urlencode($title);
+            $title = (new AsciiSlugger($locale))->slug($title)->lower()->toString();
+            if (strlen($title) != mb_strlen($title)) {
+                $title = urlencode($title);
+            }
         }
         $title = strtolower($title);
         if (strlen($title) > 198) {
@@ -31,7 +35,6 @@ final class Formatter
         $title = str_replace(array('&nbsp;', '&#160;', '&ndash;', '&#8211;', '&mdash;', '&#8212;'), '-', $title);
         // Convert forward slash to hyphen.
         $title = str_replace('/', '-', $title);
-
         // Strip these characters entirely.
         $title = str_replace(
             array(
@@ -121,14 +124,18 @@ final class Formatter
     /**
      * @param string $value
      * @param bool $associative
-     * @return int|array|string
+     * @return int|array|\stdClass|string|bool
      */
-    public static function reverseTransform(string $value, bool $associative = false): mixed
+    public static function reverseTransform(?string $value, bool $associative = false): mixed
     {
-        if (str_starts_with($value, '{') || str_starts_with($value, '[')) {
+        if ($value == null) {
+            return '';
+        } elseif (str_starts_with($value, '{') || str_starts_with($value, '[')) {
             return json_decode($value, $associative);
         } elseif (is_numeric($value)) {
             return (int)$value;
+        } elseif ($value === self::ON || $value === self::OFF) {
+            return $value === self::ON;
         } else {
             return $value;
         }
@@ -140,9 +147,16 @@ final class Formatter
      */
     public static function transform(array|string|bool|int|null|JsonSerializable $value): string
     {
-        return !is_scalar($value)
-            ? (json_encode($value, JSON_UNESCAPED_UNICODE) ?: '')
-            : (is_bool($value) ? ($value ? self::ON : self::OFF) : (string)$value);
+        if (is_null($value)) {
+            return '';
+        }
+        if (is_bool($value)) {
+            return $value ? self::ON : self::OFF;
+        }
+        if (is_array($value) || $value instanceof JsonSerializable) {
+            return json_encode($value, JSON_UNESCAPED_UNICODE) ?: '';
+        }
+        return (string) $value;
     }
 
     /**

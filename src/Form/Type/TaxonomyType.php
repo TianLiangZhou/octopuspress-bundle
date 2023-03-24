@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OctopusPress\Bundle\Form\Type;
 
 use OctopusPress\Bundle\Entity\TermTaxonomy;
+use OctopusPress\Bundle\Util\Formatter;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Event\PreSubmitEvent;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -47,7 +48,7 @@ class TaxonomyType extends AbstractType
                 $data['metas'] = [];
                 if (!empty($data['meta'])) {
                     foreach ($data['meta'] as $name => $value) {
-                        $data['metas'][]  = ['metaKey' => $name, 'metaValue' => $value];
+                        $data['metas'][]  = ['metaKey' => $name, 'metaValue' => Formatter::transform($value)];
                     }
                 }
                 unset($data['meta']);

@@ -27,20 +27,13 @@ class WidgetController extends AdminController
         $this->option = $this->bridger->getOptionRepository();
     }
 
-    #[Route('/menu1', name: 'menu1', options: ['name' => '挂件', 'parent' => 'appearance', 'sort' => 3, 'link' => '/app/decoration/widget'])]
-    public function menu(): Response
-    {
-        return new Response();
-    }
-
-
     /**
      * @param Request $request
      * @return JsonResponse
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    #[Route('/saved', name: 'saved', options: ['name' => '保存区块挂件', 'parent' => 'widget_menu1'], methods: ['POST'])]
+    #[Route('/saved', name: 'saved', options: ['name' => '保存区块挂件', 'parent' => 'appearance_widget'], methods: ['POST'])]
     public function update(Request $request): JsonResponse
     {
         $body = $request->toArray();

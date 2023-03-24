@@ -29,12 +29,6 @@ class MediaController extends AdminController
         $this->manager = $manager;
     }
 
-    #[Route('/menu1', name: 'library', options: ['name' => '媒体库', 'parent' => 'media', 'link' => '/app/media'])]
-    public function menu(): Response
-    {
-        return new Response();
-    }
-
     /**
      * @param Request $request
      * @param User $user

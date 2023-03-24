@@ -73,8 +73,8 @@ final class Meta
         $meta = array_merge([
             'key'    => $key,
             'showUi' => true,
-            'isCreated' => false,
-            'isUpdated' => false,
+            'isCreated' => true,
+            'isUpdated' => true,
             'control'   => null,
         ], $args);
         if (!$meta['control'] instanceof AbstractControl) {
@@ -83,8 +83,8 @@ final class Meta
         if ($meta['control']) {
             $meta['control']->setId($key);
         }
-        if ($meta['control'] == null) {
-            $meta['showUi'] = $meta['isCreated'] = $meta['isUpdated'] = false;
+        if (!$meta['showUi']) {
+            $meta['isUpdated'] = $meta['isCreated'] = false;
         }
         return $meta;
     }

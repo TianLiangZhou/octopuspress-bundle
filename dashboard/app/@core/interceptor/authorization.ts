@@ -9,7 +9,7 @@ import {tap} from 'rxjs/operators';
 import {Router} from '@angular/router';
 import {environment} from "../../../environments/environment";
 import {SharedService} from "../services/shared.service";
-import {MenuService} from "../services/menu.service";
+import {UserService} from "../services/user.service";
 import {OnSpinner} from "../definition/common";
 import {NbToastrService} from "@nebular/theme";
 
@@ -27,7 +27,7 @@ export class Authorization implements HttpInterceptor {
     private authService: NbAuthService,
     private loadingService: SharedService,
     private toastService: NbToastrService,
-    private menuService: MenuService,
+    private menuService: UserService,
     protected tokenService: NbTokenService
   ) {
     this.authService

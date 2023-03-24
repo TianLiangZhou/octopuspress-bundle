@@ -33,15 +33,7 @@ class OptionController extends AdminController
     }
 
 
-
-    #[Route('/menu1', name: 'option', options: ['name' => '全局', 'parent' => 'setting', 'sort' => 0, 'link' => '/app/system/option'])]
-    public function menu(): Response
-    {
-        return new Response();
-    }
-
-
-    #[Route('', name: 'option_sets', options: ['name' => '配置列表',  'parent' => 'setting_option'])]
+    #[Route('')]
     public function options(Request $request): JsonResponse
     {
         return $this->json(
@@ -49,7 +41,7 @@ class OptionController extends AdminController
         );
     }
 
-    #[Route('/store', name: 'option_store', options: ['name' => '添加配置',  'parent' => 'setting_option'])]
+    #[Route('/store', name: 'option_store', options: ['name' => '添加配置',  'parent' => 'setting_global'])]
     public function store(Request $request): JsonResponse
     {
         $option = new Option();
@@ -62,7 +54,7 @@ class OptionController extends AdminController
         ]);
     }
 
-    #[Route('/{id}/update', name: 'option_update', options: ['name' => '更新配置',  'parent' => 'setting_option'])]
+    #[Route('/{id}/update', name: 'option_update', options: ['name' => '更新配置',  'parent' => 'setting_global'])]
     public function update(Option $option, Request $request): JsonResponse
     {
         if ($response = $this->validResponse(OptionType::class, $option, $request->toArray())) {

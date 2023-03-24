@@ -90,7 +90,7 @@ class MasterManager
         $defaultOptions['thumbnail_size_w'] = $defaultOptions['thumbnail_size_h'] = 150;
         $defaultOptions['medium_size_w'] = $defaultOptions['medium_size_h'] = 300;
         $defaultOptions['large_size_w'] = $defaultOptions['large_size_h'] = 1024;
-        $menus = array_keys($this->menuManager->collection());
+        $menus = array_keys($this->menuManager->registeredRoutes());
         $defaultOptions['roles'] = [
             ["name" => 'Administrator', 'capabilities' => array_combine($menus, array_fill(0, count($menus), 1))],
         ];
@@ -146,6 +146,7 @@ class MasterManager
             ->registerTaxonomy('nav_menu_item', 'nav_menu_item', [
                 'label' => '导航',
                 'showUi' => false,
+                'showNavigation' => false,
             ])
         ;
     }
@@ -177,8 +178,12 @@ class MasterManager
                 ]
             ])
             ->registerType('attachment', [
+                'label' => '附件',
+                'showNavigation' => false,
             ])
             ->registerType('nav_menu_item', [
+                'label' => '导航条目',
+                'showNavigation' => false,
             ])
         ;
     }

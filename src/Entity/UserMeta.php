@@ -86,7 +86,6 @@ class UserMeta
     public function setMetaValue(array|string|int|bool|JsonSerializable|null $value): self
     {
         $this->metaValue = Formatter::transform($value);
-
         return $this;
     }
 

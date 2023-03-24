@@ -1,10 +1,10 @@
-import { Component, Inject, OnInit, ViewEncapsulation} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, Component, Inject, OnInit, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
-import {HttpClient, HttpContext} from "@angular/common/http";
+import {HttpClient, HttpContext, HttpParams} from "@angular/common/http";
 import {DOCUMENT} from "@angular/common";
-import {Observable, of} from "rxjs";
+import {Observable, of, timer} from "rxjs";
 import {debounceTime, distinctUntilChanged, filter, map, switchMap} from "rxjs/operators";
-import {FormControl} from "@angular/forms";
+import {FormControl, FormGroup} from "@angular/forms";
 import {OnSpinner, Records, ResponseBody} from "../../../@core/definition/common";
 import {PAGES, POSTS, TAXONOMIES} from "../../../@core/definition/content/api";
 import {
@@ -16,6 +16,8 @@ import {
 } from "../../../@core/definition/decoration/api";
 import {Post, TermTaxonomy} from "../../../@core/definition/content/type";
 import {SPINNER} from "../../../@core/interceptor/authorization";
+import {ConfigurationService} from "../../../@core/services/configuration.service";
+import {NbSidebarService} from "@nebular/theme";
 
 interface TreeNode {
   id?: number;
@@ -25,37 +27,29 @@ interface TreeNode {
   url?: string
   children: TreeNode[];
   type: string,
-  isExpanded?:boolean;
+  isExpanded?: boolean;
 }
 
-type CheckArticle = Post & {checked: boolean};
-type CheckTermTaxonomy = TermTaxonomy & {checked: boolean};
+type CheckArticle = Post & { checked: boolean };
+type CheckTermTaxonomy = TermTaxonomy & { checked: boolean };
 
 type NavigateStructure = ResponseBody & {
-  articles: CheckArticle[],
-  pages: CheckArticle[],
-  categories: CheckTermTaxonomy[],
-  tags: CheckTermTaxonomy[],
+  dataSet: Record<string, CheckArticle[] | CheckTermTaxonomy[]>,
   navigate: CheckTermTaxonomy[],
-  themeNavigation: {alias: string, name: string}[],
-  themeNavigationLocation: {[key:string]:number},
+  themeNavigation: { alias: string, name: string }[],
+  themeNavigationLocation: { [key: string]: number },
 }
 
 type Navigation = {
   id: number,
   name: string,
   nodes: TreeNode[],
-  themeNavigationLocation?: {[key:string]:boolean},
+  themeNavigationLocation?: { [key: string]: boolean },
 };
 
 type NavigationResponse = ResponseBody & {
   navigation: Navigation
 };
-
-
-
-
-
 
 interface DropInfo {
   targetId: string;
@@ -66,21 +60,17 @@ interface DropInfo {
   selector: 'app-navigation',
   templateUrl: './navigation.component.html',
   styleUrls: ['./navigation.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
-export class NavigationComponent implements OnInit, OnSpinner {
-  title: string = "";
-  pages: CheckArticle[] = [];
-  articles: CheckArticle[] = [];
-  categories: CheckTermTaxonomy[] = [];
-  tags: CheckTermTaxonomy[] = [];
+export class NavigationComponent implements OnInit, OnSpinner, AfterViewInit {
+  private searchResult: Record<string, object|undefined> = {};
   navigate: TermTaxonomy[] = [];
-  themeNavigation:{alias: string, name: string}[] = [];
-  themeNavigationLocation: {[key:string]:number} = {};
+  themeNavigation: { alias: string, name: string }[] = [];
+  themeNavigationLocation: { [key: string]: number } = {};
 
   // ids for connected drop lists
   dropTargetIds: string[] = [];
-  nodeLookup: {[key: string]: TreeNode} = {};
+  nodeLookup: { [key: string]: TreeNode } = {};
   dropActionTodo: DropInfo | undefined;
   submitted = false;
 
@@ -99,8 +89,7 @@ export class NavigationComponent implements OnInit, OnSpinner {
     nodeId: 'demo',
     title: '示例1',
     type: 'custom',
-    children:[
-    ]
+    children: []
   };
   nav: Navigation = {
     id: 0,
@@ -110,20 +99,23 @@ export class NavigationComponent implements OnInit, OnSpinner {
     ],
     themeNavigationLocation: {},
   };
-
-  pageFilteredSearch: Observable<any> | undefined;
-  postsFilteredSearch: Observable<any> | undefined;
-  taxonomyFilteredSearch: Observable<any> | undefined;
-
-  pageInputFormControl: FormControl | undefined;
-  postsInputFormControl: FormControl | undefined;
-  taxonomyInputFormControl: FormControl | undefined;
+  searchGroups = new FormGroup<any>({});
+  searchGroupResult: Record<string, Observable<Record<string, any>[]>> = {};
+  accordionItems: Record<string, any>[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
     @Inject(DOCUMENT) private document: Document,
+    private config: ConfigurationService,
+    protected sidebar: NbSidebarService,
   ) {
+  }
+
+  ngAfterViewInit(): void {
+    timer(300).subscribe(val => {
+      this.sidebar.toggle(true, 'menu-sidebar');
+    });
   }
 
   onSpinner(spinner: boolean): void {
@@ -131,43 +123,58 @@ export class NavigationComponent implements OnInit, OnSpinner {
   }
 
   ngOnInit(): void {
-    this.route.data.subscribe((data) => {
-      this.title = data['title'];
-    })
+    let taxonomySettings = this.config.taxonomies();
+    let postTypeSettings = this.config.postTypes();
+    let accordionItems = [];
+    for (let key in postTypeSettings) {
+      if (!postTypeSettings[key].visibility.showNavigation) {
+        continue;
+      }
+      accordionItems.push({
+        label: postTypeSettings[key].label,
+        type: 'post',
+        name: key,
+        typeName: 'post_' + key,
+        defaultOptions: [],
+      });
+      this.searchGroups.addControl('post_' + key, new FormControl<string>(''));
+    }
+    for (let key in taxonomySettings) {
+      if (!taxonomySettings[key].visibility.showNavigation) {
+        continue;
+      }
+      accordionItems.push({
+        label: taxonomySettings[key].label,
+        type: 'taxonomy',
+        name: key,
+        typeName: 'taxonomy_' + key,
+        defaultOptions: [],
+      });
+      this.searchGroups.addControl('taxonomy_' + key, new FormControl<string>(''));
+    }
+    for (let accordionItem of accordionItems) {
+      let control = this.searchGroups.controls[accordionItem.typeName];
+      this.searchGroupResult[accordionItem.typeName] = control.valueChanges.pipe(
+        distinctUntilChanged(),
+        debounceTime(500),
+        filter((value) => !!value),
+        switchMap(value => this.getObjects(value, accordionItem.name, accordionItem.type))
+      )
+    }
+    this.accordionItems = accordionItems;
     this.http.get<NavigateStructure>(NAVIGATE_STRUCTURE).subscribe(res => {
-      this.pages = res.pages
-      this.articles = res.articles
-      this.categories = res.categories;
+      for (let dataSetKey in res.dataSet) {
+        this.accordionItems.forEach(item => {
+          if (item.typeName === dataSetKey) {
+            item.defaultOptions = res.dataSet[dataSetKey];
+          }
+        });
+      }
       this.themeNavigation = res.themeNavigation;
       this.themeNavigationLocation = res.themeNavigationLocation;
-      this.navigate  = res.navigate;
-      this.tags = res.tags;
+      this.navigate = res.navigate;
     });
     this.prepareDragDrop(this.nav.nodes);
-    this.pageInputFormControl = new FormControl();
-    this.postsInputFormControl = new FormControl();
-    this.taxonomyInputFormControl = new FormControl();
-    this.pageFilteredSearch = this.pageInputFormControl.valueChanges
-      .pipe(
-        distinctUntilChanged(),
-        debounceTime(500),
-        filter((name) => !!name),
-        switchMap(name => this.getObjects<Post>(name, 'page'))
-      );
-    this.postsFilteredSearch = this.postsInputFormControl.valueChanges
-      .pipe(
-        distinctUntilChanged(),
-        debounceTime(500),
-        filter((name) => !!name),
-        switchMap(name => this.getObjects<Post>(name, 'posts'))
-      );
-    this.taxonomyFilteredSearch = this.taxonomyInputFormControl.valueChanges
-      .pipe(
-        distinctUntilChanged(),
-        debounceTime(500),
-        filter((name) => !!name),
-        switchMap(name => this.getObjects<TermTaxonomy>(name, 'taxonomy'))
-      );
   }
 
   editor() {
@@ -200,7 +207,7 @@ export class NavigationComponent implements OnInit, OnSpinner {
     of(evt).pipe(
       debounceTime(50)
     ).subscribe(event => {
-      let e = this.document.elementFromPoint(event.pointerPosition.x,event.pointerPosition.y);
+      let e = this.document.elementFromPoint(event.pointerPosition.x, event.pointerPosition.y);
       if (!e) {
         this.clearDragInfo();
         return;
@@ -267,6 +274,7 @@ export class NavigationComponent implements OnInit, OnSpinner {
 
     this.clearDragInfo(true)
   }
+
   getParentNodeId(id: string, nodesToSearch: TreeNode[], parentId: string): string {
     for (let node of nodesToSearch) {
       if (node.nodeId == id) return parentId;
@@ -275,12 +283,14 @@ export class NavigationComponent implements OnInit, OnSpinner {
     }
     return "";
   }
+
   showDragInfo() {
     this.clearDragInfo();
     if (this.dropActionTodo) {
       document.getElementById("node-" + this.dropActionTodo.targetId)?.classList.add("drop-" + this.dropActionTodo.action);
     }
   }
+
   clearDragInfo(dropped = false) {
     if (dropped) {
       this.dropActionTodo = undefined;
@@ -307,49 +317,53 @@ export class NavigationComponent implements OnInit, OnSpinner {
 
   save() {
     this.http.post(NAVIGATE_SAVE, this.nav, {context: new HttpContext().set(SPINNER, this)}).subscribe(res => {
-
     });
   }
 
   saveLocation() {
     this.http.post(NAVIGATE_SAVE_LOCATION, {location: this.themeNavigationLocation}, {context: new HttpContext().set(SPINNER, this)}).subscribe(res => {
-
     });
   }
 
   addToNav(type: string) {
-    switch (type) {
-      case 'custom':
-        let id = "custom-" + this.custom.title;
-        let node = {
-          nodeId: id,
-          title: this.custom.title,
-          type: type,
-          url: this.custom.link,
-          children: [],
+    if (type === 'custom') {
+      let id = "custom-" + this.custom.title;
+      let node = {
+        nodeId: id,
+        title: this.custom.title,
+        type: type,
+        url: this.custom.link,
+        children: [],
+      }
+      this.custom.title = "";
+      this.custom.link = "";
+      this.nav.nodes.push(node);
+      this.dropTargetIds.push(id);
+      this.nodeLookup[id] = node;
+    } else {
+      this.accordionItems.forEach(item => {
+        if (item.typeName != type) {
+          return ;
         }
-        this.custom.title = "";
-        this.custom.link = "";
-        this.nav.nodes.push(node);
-        this.dropTargetIds.push(id);
-        this.nodeLookup[id] = node;
-        break;
-      case 'page':
-        this.pages.forEach(this.selectedItem.bind(this));
-        break;
-      case 'post':
-        this.articles.forEach(this.selectedItem.bind(this));
-        break;
-      case 'category':
-        this.categories.forEach(this.selectedItem.bind(this));
-        break;
+        item.defaultOptions.forEach((option: any) => {
+          if (option.checked) {
+            this.selectedItem(option);
+            option.checked = false;
+          }
+        });
+      });
+      if (this.searchResult[type]) {
+        this.selectedItem(this.searchResult[type]);
+        this.searchResult[type] = undefined;
+        this.searchGroups.controls[type].setValue('');
+      }
     }
   }
 
   private selectedItem(item: any) {
     let type = item.type || item.taxonomy;
     let nodeId = 'node-' + type + '-' + item.id;
-    if (item.checked && this.nodeLookup[nodeId] == undefined) {
+    if (this.nodeLookup[nodeId] == undefined) {
       let node: TreeNode = {
         nodeId: nodeId,
         title: item.title || item.name,
@@ -360,7 +374,6 @@ export class NavigationComponent implements OnInit, OnSpinner {
       this.nav.nodes.push(node);
       this.dropTargetIds.push(nodeId);
       this.nodeLookup[nodeId] = node;
-      item.checked = false;
     }
   }
 
@@ -394,20 +407,60 @@ export class NavigationComponent implements OnInit, OnSpinner {
     this.prepareDragDrop(this.nav.nodes);
   }
 
-  private getObjects<T>(name: String, type: 'posts' | 'page' | 'taxonomy'): Observable<T[]> {
-    let url = {
-      posts: POSTS,
-      page: PAGES,
-      taxonomy: TAXONOMIES,
+  private getObjects(value: string, name: string, type: string): Observable<Record<string, any>[]> {
+    switch (type) {
+      case 'taxonomy':
+        return this.http.get<Records<TermTaxonomy>>(TAXONOMIES, {
+          params: {
+            "taxonomy": name,
+            "name": value,
+            page: 1,
+            size: 50
+          }
+        }).pipe(
+          map(response => {
+            return response.records;
+          })
+        );
+      case 'post':
+        return this.http.get<Records<Post>>(POSTS, {params: {"type": name, "title": value, page: 1, size: 50}}).pipe(
+          map(response => {
+            return response.records;
+          })
+        );
+      default:
+        return of([]);
     }
-    return this.http.get<Records<T>>(url[type] + "?name=" + name).pipe(
-      map(response => {
-        return response.records;
-      })
-    );
   }
 
   navigationLocation(alias: any) {
     console.log(alias);
+  }
+
+
+  displaySearch(option: any): string {
+    if (typeof option === 'string') {
+      return option;
+    }
+    return option.title || option.name;
+  }
+
+  selectSearchItem(typeName: string, $event: any) {
+    this.searchResult[typeName] = $event;
+  }
+
+  disabled(typeName: any): boolean {
+    let disabled = true;
+    this.accordionItems.forEach(item => {
+      item.defaultOptions.forEach((option: any) => {
+        if (option.checked) {
+          disabled = false;
+        }
+      });
+    });
+    if (this.searchResult[typeName]) {
+      disabled = false;
+    }
+    return disabled;
   }
 }

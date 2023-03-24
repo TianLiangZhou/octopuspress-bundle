@@ -45,18 +45,17 @@ class PostController extends AdminController
         $this->postManager = $postManager;
     }
 
-    #[Route('/menu1', name: 'all', options: ['name' => '所有文章', 'parent' => 'post', 'sort' => 0, 'link' => '/app/content/post'])]
-    #[Route('/menu2', name: 'new', options: ['name' => '写文章', 'parent' => 'post', 'sort' => 1, 'link' => '/app/content/post-new'])]
-    public function menu(): Response
-    {
-        return new Response();
-    }
 
-
-    #[Route('', name: 'sets', options: ['name' => '文章列表', 'parent' => 'post_all'])]
+    #[Route('', name: 'sets')]
     public function main(Request $request): JsonResponse
     {
         $this->filterRequest($request);
+        if (!$request->query->get('_sort', '')) {
+            $request->query->set('_sort', 'id');
+        }
+        if (!$request->query->get('_order', '')) {
+            $request->query->set('_order', 'DESC');
+        }
         return $this->json(
             $this->repository->pagination($request, AbstractQuery::HYDRATE_OBJECT)
         );
@@ -210,7 +209,7 @@ class PostController extends AdminController
      * @param User $user
      * @return JsonResponse
      */
-    #[Route('/store', name: 'store', options: ['name' => '创建文章', 'parent' => 'post_all'], methods: Request::METHOD_POST)]
+    #[Route('/store', name: 'store', options: ['name' => '创建文章', 'sort'=> 0, 'parent' => 'post_all'], methods: Request::METHOD_POST)]
     public function store(Request $request, #[CurrentUser] User $user): JsonResponse
     {
         $post = new Post();
@@ -223,7 +222,7 @@ class PostController extends AdminController
      * @param User $user
      * @return JsonResponse
      */
-    #[Route('/{id}/update', name: 'update', options: ['name' => '更新文章', 'parent' => 'post_all'], methods: Request::METHOD_POST)]
+    #[Route('/{id}/update', name: 'update', options: ['name' => '更新文章', 'sort'=>1, 'parent' => 'post_all'], methods: Request::METHOD_POST)]
     public function update(Post $post, Request $request, #[CurrentUser] User $user): JsonResponse
     {
         $data = $request->toArray();
@@ -256,7 +255,7 @@ class PostController extends AdminController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/delete', name: 'delete', options: ['name' => '删除文章', 'parent' => 'post_all'], methods: [Request::METHOD_POST, Request::METHOD_DELETE])]
+    #[Route('/delete', name: 'delete', options: ['name' => '删除文章', 'sort'=>2,  'parent' => 'post_all'], methods: [Request::METHOD_POST, Request::METHOD_DELETE])]
     public function delete(Request $request): JsonResponse
     {
         $sets = $request->toArray()['sets'] ?? [];
@@ -273,7 +272,7 @@ class PostController extends AdminController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/trash', name: 'trash', options: ['name' => '移至回收站', 'parent' => 'post_all'], methods: [Request::METHOD_POST])]
+    #[Route('/trash', name: 'trash', options: ['name' => '移至回收站',  'sort'=>3,  'parent' => 'post_all'], methods: [Request::METHOD_POST])]
     public function trash(Request $request): JsonResponse
     {
         return $this->updateStatus($request, Post::STATUS_TRASH);
@@ -284,7 +283,7 @@ class PostController extends AdminController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/undo', name: 'undo', options: ['name' => '移出回收站', 'parent' => 'post_all'], methods: [Request::METHOD_POST])]
+    #[Route('/undo', name: 'undo', options: ['name' => '移出回收站',  'sort'=>4,  'parent' => 'post_all'], methods: [Request::METHOD_POST])]
     public function undo(Request $request): JsonResponse
     {
         return $this->updateStatus($request, Post::STATUS_DRAFT);
@@ -346,28 +345,24 @@ class PostController extends AdminController
         if (empty($normData)) {
             return;
         }
-        $keys = array_map(function (PostMeta $meta) {
-            return $meta->getMetaKey();
-        }, $normData);
+        $keyMaps = [];
+        foreach ($post->getMetas() as $meta) {
+            $keyMaps[$meta->getMetaKey()] = $meta;
+        }
         $registeredMeta = $this->bridger->getMeta()->getPostType($post->getType());
         if (empty($registeredMeta)) {
             return ;
         }
         $keyRegisteredMetaMap = array_column($registeredMeta, null, 'key');
-        foreach ($post->getMetas() as $meta) {
-            if (($index = array_search($meta->getMetaKey(), $keys)) !== false) {
-                $metaSetting = $keyRegisteredMetaMap[$meta->getMetaKey()] ?? null;
-                if (!is_array($metaSetting) || !$metaSetting['showUi'] || !$metaSetting['isUpdated']) {
-                    continue;
-                }
-                $meta->setMetaValue($normData[$index]->getMetaValue());
-            } else {
-                $metaSetting = $keyRegisteredMetaMap[$normData[$index]->getMetaKey()] ?? null;
-                if (!is_array($metaSetting) || !$metaSetting['showUi'] || !$metaSetting['isCreated']) {
-                    continue;
-                }
-                $post->addMeta($normData[$index]);
+        foreach ($normData as $metaEntity) {
+            $action = isset($keyMaps[$metaEntity->getMetaKey()]) ? 'isUpdated' : 'isCreated';
+            $metaSetting = $keyRegisteredMetaMap[$metaEntity->getMetaKey()] ?? null;
+            if (!is_array($metaSetting) || !$metaSetting['showUi'] || !$metaSetting[$action]) {
+                continue;
             }
+            isset($keyMaps[$metaEntity->getMetaKey()])
+                ? $keyMaps[$metaEntity->getMetaKey()]->setMetaValue($metaEntity->getMetaValue())
+                : $post->addMeta($metaEntity);
         }
     }
 
