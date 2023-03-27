@@ -40,6 +40,7 @@ class UserMeta
      * @var User
      */
     #[ManyToOne(targetEntity: User::class, fetch: "EAGER", inversedBy: "metas")]
+    #[JoinColumn(name: "user_id", referencedColumnName: "id", nullable: false)]
     private User $user;
 
     /**

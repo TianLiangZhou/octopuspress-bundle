@@ -67,7 +67,7 @@ class TermTaxonomy implements JsonSerializable
     /**
      * @var string
      */
-    #[Column(name: "description", type: "text", length: 0, nullable: false)]
+    #[Column(name: "description", type: "text", length: 0, nullable: false, options: ['default' => ''])]
     private string $description = '';
 
 
@@ -80,7 +80,7 @@ class TermTaxonomy implements JsonSerializable
     /**
      * @var int
      */
-    #[Column(name: "count", type: "bigint", nullable: false)]
+    #[Column(name: "count", type: "bigint", nullable: false, options: ['default' => '0'])]
     private int $count = 0;
 
     /**

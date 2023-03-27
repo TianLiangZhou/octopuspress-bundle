@@ -232,11 +232,10 @@ class PluginManager
     {
         $pluginClassName = $this->getNameForClass($name);
         $classString = sprintf('OctopusPress\\Plugin\\%s\\%s', $pluginClassName, $pluginClassName);
+        $this->registerPlugin($name);
+        // 不直接判断存不存在，如果真得不存，直接判断会被composer标记为不存在。
         if (!class_exists($classString)) {
-            $this->registerPlugin($name);
-            if (!class_exists($classString)) {
-                return null;
-            }
+            return null;
         }
         /**
          * @var PluginInterface $class
@@ -276,7 +275,7 @@ class PluginManager
         }
         $pluginPath = dirname($composerFile);
         foreach ($composer['autoload'] as $type => $maps) {
-            switch ($type) {
+            switch (strtolower($type)) {
                 case 'psr-4':
                     foreach ($maps as $namespace => $path) {
                         $loader->addPsr4($namespace, $pluginPath . '/' . $path);

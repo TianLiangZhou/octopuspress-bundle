@@ -11,14 +11,14 @@ interface PluginInterface
      */
     public static function manifest(): Manifest;
 
-    public function launcher(Bridger $bridge): void;
+    public function launcher(Bridger $bridger): void;
 
-    public function activate(Bridger $bridge): void;
+    public function activate(Bridger $bridger): void;
 
-    public function uninstall(Bridger $bridge): void;
+    public function uninstall(Bridger $bridger): void;
 
     /**
      * @return object[]
      */
-    public function getServices(Bridger $bridge): array;
+    public function getServices(Bridger $bridger): array;
 }

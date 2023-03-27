@@ -21,7 +21,7 @@ final class Manifest implements JsonSerializable
     /**
      * @var array<int, array{name: string, homepage:string}>
      */
-    private array $author;
+    private array $author = [];
 
     /**
      * @var string
@@ -108,7 +108,7 @@ final class Manifest implements JsonSerializable
      */
     public function getPluginDir(): string
     {
-        return $this->pluginDir;
+        return $this->pluginDir ?? __DIR__;
     }
 
     /**

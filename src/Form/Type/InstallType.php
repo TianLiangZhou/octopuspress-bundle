@@ -30,8 +30,6 @@ class InstallType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => InstallRequest::class,
-            'csrf_token_id'   => 'install',
-            'csrf_field_name' => '_token',
         ]);
     }
 }

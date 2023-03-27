@@ -43,7 +43,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
      */
     #[Column(name: "id", type: "bigint", nullable: false, options: ['unsigned' => true])]
     #[Id]
-    #[GeneratedValue(strategy: "NONE")]
+    #[GeneratedValue(strategy: "IDENTITY")]
     private ?int $id = null;
 
     /**
@@ -76,7 +76,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     /**
      * @var string
      */
-    #[Column(name: "avatar", type: "string", length: 255, nullable: false)]
+    #[Column(name: "avatar", type: "string", length: 255, nullable: false, options: ['default' => ''])]
     private string $avatar = '';
 
     /**
@@ -88,26 +88,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     /**
      * @var string
      */
-    #[Column(name: "activation_key", type: "string", length: 255, nullable: false)]
+    #[Column(name: "activation_key", type: "string", length: 255, nullable: false, options: ['default' => ''])]
     private ?string $activationKey = '';
 
     /**
      * @var string
      */
-    #[Column(name: "url", type: "string", length: 100, nullable: false)]
+    #[Column(name: "url", type: "string", length: 100, nullable: false, options: ['default' => ''])]
     #[Url]
     private ?string $url = '';
 
     /**
      * @var string
      */
-    #[Column(name: "remember_token", type: "string", length: 255, nullable: false)]
+    #[Column(name: "remember_token", type: "string", length: 255, nullable: false, options: ['default' => ''])]
     private ?string $rememberToken = '';
 
     /**
      * @var int
      */
-    #[Column(name: "status", type: "integer", nullable: false)]
+    #[Column(name: "status", type: "integer", nullable: false, options: ['default' => '0'])]
     private int $status = 0;
 
     /**

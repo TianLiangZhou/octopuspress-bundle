@@ -55,7 +55,7 @@ class Term implements JsonSerializable
     /**
      * @var int
      */
-    #[Column(name: "term_group", type: "bigint", nullable: false)]
+    #[Column(name: "term_group", type: "bigint", nullable: false, options: ['default' => 0])]
     private int $termGroup = 0;
 
 

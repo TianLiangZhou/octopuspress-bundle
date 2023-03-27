@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Index;
+use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 use JsonSerializable;
@@ -37,6 +38,7 @@ class PostMeta
      * @var Post
      */
     #[ManyToOne(targetEntity: Post::class, fetch: "EAGER", inversedBy: "metas")]
+    #[JoinColumn(name: "post_id", referencedColumnName: "id", nullable: false)]
     private Post $post;
 
 

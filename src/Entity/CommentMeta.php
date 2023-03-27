@@ -7,6 +7,8 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Index;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 use JsonSerializable;
 use OctopusPress\Bundle\Repository\CommentMetaRepository;
@@ -33,6 +35,7 @@ class CommentMeta
      * @var Comment
      */
     #[ManyToOne(targetEntity: Comment::class, fetch: "EAGER", inversedBy: "metas")]
+    #[JoinColumn(name: "comment_id", referencedColumnName: "id", nullable: false)]
     private Comment $comment;
 
     /**

@@ -36,7 +36,7 @@ class TermRelationship
     /**
      * @var int
      */
-    #[Column(name: "term_order", type: "integer", nullable: false)]
+    #[Column(name: "term_order", type: "integer", nullable: false, options: ['default' => '0'])]
     private int $termOrder = 0;
 
 

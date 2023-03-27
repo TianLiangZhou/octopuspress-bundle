@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 use OctopusPress\Bundle\Repository\CommentRepository;
 use Symfony\Component\Validator\Constraints\Email;
@@ -58,7 +59,7 @@ class Comment implements \JsonSerializable
      * @var ?User
      */
     #[ManyToOne(targetEntity: User::class)]
-//    #[JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true, onDelete: "CASCADE")]
+    #[JoinColumn(name: "user_id", referencedColumnName: "id", nullable: true)]
     private ?User $user = null;
 
 

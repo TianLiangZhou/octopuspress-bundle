@@ -84,7 +84,7 @@ class Post implements JsonSerializable
      * @var ?User
      */
     #[ManyToOne(targetEntity: User::class)]
-    #[JoinColumn(name: 'author', referencedColumnName: 'id')]
+    #[JoinColumn(name: 'author', referencedColumnName: 'id', nullable: false)]
     private ?User $author = null;
 
 
@@ -138,26 +138,26 @@ class Post implements JsonSerializable
     /**
      * @var string
      */
-    #[Column(name: "password", type: "string", length: 255, nullable: false)]
+    #[Column(name: "password", type: "string", length: 255, nullable: false, options: ['default' => ''])]
     private string $password = '';
 
 
     /**
      * @var string
      */
-    #[Column(name: "to_ping", type: "text", length: 65535, nullable: false)]
+    #[Column(name: "to_ping", type: "text", length: 65535, nullable: false, options: ['default' => ''])]
     private string $toPing = '';
 
     /**
      * @var string
      */
-    #[Column(name: "pinged", type: "text", length: 65535, nullable: false)]
+    #[Column(name: "pinged", type: "text", length: 65535, nullable: false, options: ['default' => ''])]
     private string $pinged = '';
 
     /**
      * @var string
      */
-    #[Column(name: "filtered", type: "text", length: 0, nullable: false)]
+    #[Column(name: "filtered", type: "text", length: 0, nullable: false, options: ['default' => ''])]
     private string $filtered = '';
 
     /**
@@ -169,7 +169,7 @@ class Post implements JsonSerializable
     /**
      * @var int
      */
-    #[Column(name: "menu_order", type: "integer", nullable: false)]
+    #[Column(name: "menu_order", type: "integer", nullable: false, options: ['default' => '0'])]
     private int $menuOrder = 0;
 
     /**
@@ -181,13 +181,13 @@ class Post implements JsonSerializable
     /**
      * @var string
      */
-    #[Column(name: "mime_type", type: "string", length: 100, nullable: false)]
+    #[Column(name: "mime_type", type: "string", length: 100, nullable: false, options: ['default' => ''])]
     private string $mimeType = '';
 
     /**
      * @var int
      */
-    #[Column(name: "comment_count", type: "bigint", nullable: false)]
+    #[Column(name: "comment_count", type: "bigint", nullable: false, options: ['default' => '0'])]
     private int $commentCount = 0;
 
     /**
