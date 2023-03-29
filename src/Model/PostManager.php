@@ -47,9 +47,10 @@ class PostManager
 
     /**
      * @param Post $post
+     * @param string $oldStatus
      * @return bool
      */
-    public function save(Post $post): bool
+    public function save(Post $post, string $oldStatus): bool
     {
         try {
             if ($post->getId() != null) {
@@ -61,7 +62,7 @@ class PostManager
                     $post->setStatus(Post::STATUS_FUTURE);
                 }
             }
-            $postSaveBeforeEvent = new PostEvent($post);
+            $postSaveBeforeEvent = new PostEvent($post, $oldStatus);
             $this->dispatcher->dispatch($postSaveBeforeEvent, OctopusEvent::POST_SAVE_BEFORE);
             $name = $post->getName();
             if (empty($name)) {
@@ -76,7 +77,7 @@ class PostManager
             $doctrine = $this->managerRegistry->getManager();
             $doctrine->persist($post);
             $doctrine->flush();
-            $postSaveAfterEvent = new PostEvent($post);
+            $postSaveAfterEvent = new PostEvent($post, $oldStatus);
             $this->dispatcher->dispatch($postSaveAfterEvent, OctopusEvent::POST_SAVE_AFTER);
             return true;
         } catch (\Exception $_) {
@@ -124,7 +125,7 @@ class PostManager
         }
         try {
             foreach ($posts as $i => $post) {
-                $postDeleteEvent = new PostEvent($post);
+                $postDeleteEvent = new PostEvent($post, '');
                 $this->dispatcher->dispatch($postDeleteEvent, OctopusEvent::POST_DELETE);
                 $this->repository->remove($post, (count($posts) - 1) === $i);
             }
@@ -154,7 +155,7 @@ class PostManager
         $post->setStatus(Post::STATUS_INHERIT);
         $post->setGuid($filename);
         $post->setParent(null);
-        if ($this->save($post)) {
+        if ($this->save($post, '')) {
             $metadata = $this->generateAttachmentMetadata($post, $file);
             $meta = new PostMeta();
             $meta->setPost($post)

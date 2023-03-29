@@ -10,6 +10,9 @@ use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\PostMeta;
 use OctopusPress\Bundle\Entity\TermRelationship;
 use OctopusPress\Bundle\Entity\User;
+use OctopusPress\Bundle\Event\OctopusEvent;
+use OctopusPress\Bundle\Event\PostEvent;
+use OctopusPress\Bundle\Event\PostStatusUpdateEvent;
 use OctopusPress\Bundle\Form\Type\PostType;
 use OctopusPress\Bundle\Model\PostManager;
 use OctopusPress\Bundle\Repository\PostRepository;
@@ -232,6 +235,7 @@ class PostController extends AdminController
         if ($postType == null || !$postType->isShowUi()) {
             return $this->json(null, Response::HTTP_NOT_ACCEPTABLE);
         }
+        $oldStatus = $post->getStatus();
         try {
             $form = $this->validation(PostType::class, $post, $data, [
                 'types' => array_combine($types, $types)
@@ -243,7 +247,7 @@ class PostController extends AdminController
         } catch (\Throwable $exception) {
             return $this->json(['message' => $exception->getMessage()], Response::HTTP_NOT_ACCEPTABLE);
         }
-        if (!$this->postManager->save($post)) {
+        if (!$this->postManager->save($post, $oldStatus)) {
             return $this->json(['message' => '保存内容发生错误，请查看日志文件修复!'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         return $this->json([
@@ -309,6 +313,9 @@ class PostController extends AdminController
             ->update()
             ->getQuery()
             ->execute();
+        $event = new PostStatusUpdateEvent($sets);
+        $this->bridger->getDispatcher()
+            ->dispatch($event, OctopusEvent::POST_STATUS_UPDATE);
         return $this->json(null);
     }
 

@@ -49,6 +49,7 @@ class PostType extends AbstractType
                 'mapped' => false,
             ])
             ->add('excerpt', TextType::class, ['required' => false, 'empty_data' => ''])
+            ->add('name', TextType::class, ['required' => false, 'empty_data' => ''])
             ->add('status', ChoiceType::class, [
                 'choices' => array_combine(Post::STATUS, Post::STATUS),
                 'data' => Post::STATUS_PUBLISHED,

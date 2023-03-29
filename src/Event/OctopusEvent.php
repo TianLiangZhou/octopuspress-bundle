@@ -14,6 +14,8 @@ class OctopusEvent extends Event
 
     const POST_DELETE = 'post.delete';
 
+    const POST_STATUS_UPDATE = 'post.status.update';
+
     const TAXONOMY_SAVE_AFTER = 'taxonomy.save.after';
 
     const TAXONOMY_DELETE = 'taxonomy.delete';

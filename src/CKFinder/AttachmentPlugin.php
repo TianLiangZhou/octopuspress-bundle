@@ -129,7 +129,7 @@ class AttachmentPlugin implements PluginInterface, UserAwareInterface
         $attachment->setTitle($title)
             ->setContent($newFile)
             ->setGuid($newFile);
-        $this->postManager->save($attachment);
+        $this->postManager->save($attachment, $attachment->getStatus());
     }
 
     /**
@@ -258,6 +258,7 @@ class AttachmentPlugin implements PluginInterface, UserAwareInterface
      * @param ViewEvent $event
      * @return void
      * @throws ORMException
+     * @throws \Doctrine\ORM\ORMException
      */
     public function onAttachmentCopyFileResponse(ViewEvent $event): void
     {
@@ -344,6 +345,7 @@ class AttachmentPlugin implements PluginInterface, UserAwareInterface
      * @param ViewEvent $event
      * @return void
      * @throws ORMException
+     * @throws \Doctrine\ORM\ORMException
      */
     public function onAttachmentSaveImageResponse(ViewEvent $event): void
     {
