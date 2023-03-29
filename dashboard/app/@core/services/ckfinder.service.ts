@@ -1,6 +1,7 @@
 import {EventEmitter, Injectable} from "@angular/core";
 import {DynamicResourceLoaderService} from "./dynamic-resource-loader.service";
 import {CookieService} from "ngx-cookie-service";
+import {BehaviorSubject, ReplaySubject } from "rxjs";
 
 export declare type CKFinderPopupArgument = {
   resourceType: string;
@@ -21,7 +22,7 @@ export declare type File = {
 
 @Injectable()
 export class CKFinderService {
-  private finderFileChoose = new EventEmitter<File[]>();
+  private finderFileChoose = new BehaviorSubject<File[]>([]);
 
   private selectedFiles: Record<number, string> = {};
 
@@ -32,8 +33,8 @@ export class CKFinderService {
     }
   }
 
-  subscribe(func: (files: File[]) => void) {
-    this.finderFileChoose.subscribe(func);
+  onChoose() {
+    return this.finderFileChoose.pipe();
   }
 
   public getAttachmentUrl(id: number) {
@@ -54,7 +55,7 @@ export class CKFinderService {
       if (config.cropped) {
         finder.on('crop:image:confirm', function (evt: any) {
           const file = evt.data.file;
-          _this.finderFileChoose.emit([{
+          _this.finderFileChoose.next([{
             id: file.get('id') ?? 0,
             source: config.source ?? '',
             name: file.name,
@@ -86,7 +87,7 @@ export class CKFinderService {
           });
           _this.selectedFiles[item.get('id') ?? 0] = item.getUrl();
         });
-        _this.finderFileChoose.emit(files);
+        _this.finderFileChoose.next(files);
         document.dispatchEvent(new MouseEvent('click'));
         if (config.element) {
           (<HTMLInputElement>document.getElementById(config.element)).value = evt.data.files.last().getUrl();

@@ -197,7 +197,7 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
       }
     });
 
-    this.ckfinder.subscribe((files: any[]) => {
+    this.ckfinder.onChoose().subscribe((files: any[]) => {
       let file = files.pop();
       if (file) {
         this.entity.featuredImage.id = file.id;

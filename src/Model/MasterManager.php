@@ -75,6 +75,8 @@ class MasterManager
             'site_url' => $request->getSchemeAndHttpHost(),
             'admin_email' => $model->getEmail(),
             'timezone' => date_default_timezone_get(),
+            'lang'     => 'zh',
+            'charset'  => 'UTF-8',
             'installed_time' => time(),
             'active_plugins' => [],
             'posts_per_page' => 50,

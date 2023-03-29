@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {
   USER_CREATE_MEMBER,
   USER_MEMBER_PROFILE,
@@ -13,12 +13,13 @@ import {ActivatedRoute, ActivatedRouteSnapshot, Router} from "@angular/router";
 import {SPINNER} from "../../@core/interceptor/authorization";
 import {User} from "../../@core/definition/user/type";
 import {CKFinderService} from "../../@core/services/ckfinder.service";
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-user-new',
   templateUrl: './new.component.html',
 })
-export class NewComponent implements OnInit, OnSpinner {
+export class NewComponent implements OnInit, OnSpinner, OnDestroy {
   formGroup: FormGroup = new FormGroup<any>({
     id: new FormControl<number>(0),
     account: new FormControl('', [Validators.required]),
@@ -41,6 +42,7 @@ export class NewComponent implements OnInit, OnSpinner {
 
   route: ActivatedRouteSnapshot;
   avatarSrc: string = ""
+  private subscription: Subscription | undefined;
 
 
   constructor(private http: HttpClient,
@@ -51,20 +53,22 @@ export class NewComponent implements OnInit, OnSpinner {
       this.route = activatedRoute.snapshot;
   }
 
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
   ngOnInit(): void {
     this.avatarSrc = this.configService.config.assetsUrl;
     this.roles.push(...this.configService.roles());
-    this.ckfinder.subscribe((files) => {
-      let file = files.pop();
-      if (file) {
-        this.formGroup.controls.avatar.setValue(file.url, {
-          onlySelf: true,
-          emitEvent: true,
-          emitModelToViewChange: true,
-          emitViewToModelChange: true,
-        });
-        this.avatarSrc = file.url;
+    this.subscription = this.ckfinder.onChoose().subscribe((files) => {
+      if (files.length < 1) {
+        return ;
       }
+      let file = files.pop();
+      this.formGroup.controls.avatar.setValue(file!.url);
+      this.avatarSrc = file!.url;
     });
     this.metaGroup.addControl('description', new FormControl(''));
     this.metaGroup.addControl('rich_editing', new FormControl<boolean>(false));

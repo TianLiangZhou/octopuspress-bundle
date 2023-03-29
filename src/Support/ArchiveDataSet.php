@@ -8,21 +8,21 @@ use stdClass;
 
 class ArchiveDataSet
 {
-    private TermTaxonomy|User|stdClass $taxonomy;
+    private TermTaxonomy|User|stdClass $archiveTaxonomy;
     private iterable $collection;
 
-    public function __construct(TermTaxonomy|User|stdClass $taxonomy, iterable $collection)
+    public function __construct(TermTaxonomy|User|stdClass $archiveTaxonomy, iterable $collection)
     {
-        $this->taxonomy = $taxonomy;
+        $this->archiveTaxonomy = $archiveTaxonomy;
         $this->collection = $collection;
     }
 
     /**
      * @return stdClass|TermTaxonomy|User
      */
-    public function getTaxonomy(): stdClass|TermTaxonomy|User
+    public function getArchiveTaxonomy(): stdClass|TermTaxonomy|User
     {
-        return $this->taxonomy;
+        return $this->archiveTaxonomy;
     }
 
     /**

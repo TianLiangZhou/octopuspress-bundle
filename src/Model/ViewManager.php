@@ -80,7 +80,7 @@ class ViewManager
         if ($controllerResult instanceof Post) {
             $context['entity'] = $controllerResult;
         } elseif ($controllerResult instanceof ArchiveDataSet) {
-            $context['entity'] = $controllerResult->getTaxonomy();
+            $context['entity'] = $controllerResult->getArchiveTaxonomy();
             $context['collection'] = $controllerResult->getCollection();
         }
         foreach ($context as $name => $value) {
@@ -154,7 +154,7 @@ class ViewManager
         $templates = [];
         $controllerResult = $this->getControllerResult();
         if ($controllerResult instanceof ArchiveDataSet) {
-            $term = $controllerResult->getTaxonomy()->getTerm();
+            $term = $controllerResult->getArchiveTaxonomy()->getTerm();
             $templates[] = 'tag-' . $term->getSlug();
             $templates[] = 'tag-' . $term->getId();
         }
@@ -171,7 +171,7 @@ class ViewManager
         $templates = [];
         $controllerResult = $this->getControllerResult();
         if ($controllerResult instanceof ArchiveDataSet) {
-            $term = $controllerResult->getTaxonomy()->getTerm();
+            $term = $controllerResult->getArchiveTaxonomy()->getTerm();
             $templates[] = 'category-' . $term->getSlug();
             $templates[] = 'category-' . $term->getId();
         }
@@ -188,7 +188,7 @@ class ViewManager
         $templates = [];
         $controllerResult = $this->getControllerResult();
         if ($controllerResult instanceof ArchiveDataSet) {
-            $taxonomy = $controllerResult->getTaxonomy();
+            $taxonomy = $controllerResult->getArchiveTaxonomy();
             if ($taxonomy instanceof TermTaxonomy) {
                 $templates[] = $taxonomy->getTaxonomy();
                 $slug = $taxonomy->getTerm()->getSlug();
@@ -343,8 +343,15 @@ class ViewManager
     {
         $this->twig->addGlobal('now', time());
         $this->twig->addGlobal('activated_route', $this->activatedRoute);
-        foreach ($this->option->getDefaultOptions() as $name => $value) {
+        $options = $this->option->getDefaultOptions();
+        foreach ($options as $name => $value) {
             $this->twig->addGlobal($name, $value);
+        }
+        if (!isset($options['lang'])) {
+            $this->twig->addGlobal('lang', 'zh');
+        }
+        if (!isset($options['charset'])) {
+            $this->twig->addGlobal('charset', 'UTF-8');
         }
     }
 
@@ -361,7 +368,7 @@ class ViewManager
             $args['title'] = $siteName;
         } elseif ($this->activatedRoute->isArchives()) {
             if ($controllerResult instanceof ArchiveDataSet) {
-                $taxonomy = $controllerResult->getTaxonomy();
+                $taxonomy = $controllerResult->getArchiveTaxonomy();
                 if ($taxonomy instanceof TermTaxonomy) {
                     $args['title'] = $taxonomy->getTerm()->getName();
                 } elseif ($taxonomy instanceof User) {

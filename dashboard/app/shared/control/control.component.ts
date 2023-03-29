@@ -68,7 +68,7 @@ export class ControlComponent implements OnInit, OnChanges, AfterViewInit, Contr
     formControl?.statusChanges.subscribe(res => {
       this.invalid = res == 'INVALID' && formControl.dirty;
     });
-    this.ckfinder.subscribe((files) => {
+    this.ckfinder.onChoose().subscribe((files) => {
       if (!['file', 'image', 'video', 'audio'].includes(this.control.type)) {
         return ;
       }

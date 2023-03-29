@@ -31,7 +31,9 @@ class OptionRepository extends ServiceEntityRepository
         'site_static_url',
         'site_description',
         'site_keyword',
-        'timezone'
+        'timezone',
+        'lang',
+        'charset',
     ];
 
     /**

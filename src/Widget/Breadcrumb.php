@@ -52,7 +52,7 @@ class Breadcrumb extends AbstractWidget implements \IteratorAggregate
                 break;
             }
         } elseif ($controllerResult instanceof ArchiveDataSet) {
-            $taxonomy = $controllerResult->getTaxonomy();
+            $taxonomy = $controllerResult->getArchiveTaxonomy();
             if ($taxonomy instanceof TermTaxonomy) {
                 $crumbs[] = $taxonomy;
                 $this->taxonomyCrumbs($taxonomy, $crumbs);

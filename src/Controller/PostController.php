@@ -113,10 +113,10 @@ class PostController extends Controller
     #[Route('/{year}/{month}/{name}', name: 'post_permalink_date', requirements: [
         'year' => '\d{4}',
         'month' => '\d{2}',
-        'name' => '[a-z0-9\-%_]{8,}'
+        'name' => '[a-z0-9\-%_]{2,}'
     ], methods: Request::METHOD_GET)]
     #[Route('/{name}', name: 'post_permalink_name', requirements: [
-        'name' => '[a-z0-9\-%_]{8,}'
+        'name' => '[a-z0-9\-%_]{2,}'
     ], methods: Request::METHOD_GET, priority: -127)]
     public function show(Request $request): Post
     {

@@ -292,7 +292,7 @@ EOF;
             }
         } elseif ($route->isArchive()) {
             if ($controllerResult instanceof ArchiveDataSet) {
-                $taxonomy = $controllerResult->getTaxonomy();
+                $taxonomy = $controllerResult->getArchiveTaxonomy();
                 if ($taxonomy instanceof TermTaxonomy) {
                     $prefix = $taxonomy->getTaxonomy();
                     $class[] = $prefix;

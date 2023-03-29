@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="{{ lang }}" class="{{ hook_filter('base_class', [])|join(' ') }}" {{ hook_filter('html_attributes', [])|join(' ')|raw }}>
     <head>
-        <meta charset="UTF-8">
+        <meta charset="{{ charset }}">
         <title>{% block title %}{{ title|default(site_title is defined ? site_title : '') }}{% endblock %}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         {{ hook_action('head') }}
