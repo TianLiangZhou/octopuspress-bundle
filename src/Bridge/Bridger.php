@@ -2,6 +2,8 @@
 
 namespace OctopusPress\Bundle\Bridge;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use OctopusPress\Bundle\Repository\CommentMetaRepository;
 use OctopusPress\Bundle\Repository\CommentRepository;
 use OctopusPress\Bundle\Repository\OptionRepository;
@@ -375,6 +377,23 @@ final class Bridger
     public function getDispatcher(): EventDispatcherInterface
     {
         return $this->get('event_dispatcher');
+    }
+
+    /**
+     * @return ManagerRegistry
+     */
+    public function getDoctrine(): ManagerRegistry
+    {
+        return $this->get('doctrine');
+    }
+
+    /**
+     * @param string $name
+     * @return EntityManagerInterface
+     */
+    public function getEntityManager(string $name = 'default'): EntityManagerInterface
+    {
+        return $this->getDoctrine()->getManager($name);
     }
 
     /**
