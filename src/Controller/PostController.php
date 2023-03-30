@@ -2,6 +2,8 @@
 
 namespace OctopusPress\Bundle\Controller;
 
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Post;
@@ -12,10 +14,12 @@ use OctopusPress\Bundle\Repository\RelationRepository;
 use OctopusPress\Bundle\Repository\TaxonomyRepository;
 use OctopusPress\Bundle\Repository\UserRepository;
 use OctopusPress\Bundle\Support\ArchiveDataSet;
+use OctopusPress\Bundle\Twig\OctopusRuntime;
 use OctopusPress\Bundle\Widget\Pagination;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Twig\Error\RuntimeError;
 
 /**
  *
@@ -41,47 +45,38 @@ class PostController extends Controller
     /**
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\NoResultException
+     * @throws RuntimeError
      */
     #[Route('/tag/{slug}', name: 'tag', requirements: [
         'slug' => '[a-z0-9\-_%]{2,}'
     ])]
-    public function tag(string $slug, Request $request): ArchiveDataSet
+    public function tag(string $slug): ArchiveDataSet
     {
-        $taxonomy = $this->taxonomy->slug($slug, TermTaxonomy::TAG);
-        if ($taxonomy == null) {
-            throw new NotFoundHttpException();
-        }
-        return new ArchiveDataSet(
-            $taxonomy,
-            $this->filterTaxonomyResult($taxonomy, $request)
-        );
+        return $this->taxonomy('tag', $slug);
     }
 
     /**
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\NoResultException
+     * @throws RuntimeError
      */
     #[Route('/category/{slug}', name: 'category', requirements: [
         'slug' => '[a-z0-9\-_%]{2,}'
     ])]
-    public function category(string $slug, Request $request): ArchiveDataSet
+    public function category(string $slug): ArchiveDataSet
     {
-        $taxonomy = $this->taxonomy->slug($slug, TermTaxonomy::CATEGORY);
-        if ($taxonomy == null) {
-            throw new NotFoundHttpException();
-        }
-        return new ArchiveDataSet(
-            $taxonomy,
-            $this->filterTaxonomyResult($taxonomy, $request)
-        );
+        return $this->taxonomy('category', $slug);
     }
 
     /**
      * @param string $slug
      * @param Request $request
      * @return ArchiveDataSet
+     * @throws RuntimeError
      */
-    #[Route('/author/{slug}', name: 'author', requirements: [])]
+    #[Route('/author/{slug}', name: 'author', requirements: [
+        'slug' => '[a-zA-Z0-9\-%_]{2,}'
+    ])]
     public function author(string $slug, Request $request): ArchiveDataSet
     {
         $user = $this->user->findOneBy(['account' => $slug,]);
@@ -90,7 +85,7 @@ class PostController extends Controller
         }
         return new ArchiveDataSet(
             $user,
-            $this->filterPostsResult(['author' => $user], $request)
+            $this->filterPostsResult(['author' => $user->getId()])
         );
     }
 
@@ -99,13 +94,14 @@ class PostController extends Controller
      * @param int $month
      * @param Request $request
      * @return ArchiveDataSet
+     * @throws RuntimeError
      */
     #[Route('/archives/{year}-{month}', name: 'archives', requirements: ['year' => '[\d+]{4}', 'month' => '[\d+]{2}'])]
     public function archives(int $year, int $month, Request $request): ArchiveDataSet
     {
         return new ArchiveDataSet(
             new \stdClass(),
-            $this->filterPostsResult(['date' => $year . '-' . $month], $request)
+            $this->filterPostsResult(['date' => $year . '-' . $month])
         );
     }
 
@@ -146,12 +142,13 @@ class PostController extends Controller
     /**
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\NoResultException
+     * @throws RuntimeError
      */
     #[Route('/{taxonomy}/{slug}', name: 'taxonomy', requirements: [
         'taxonomy' => '[a-z_]{2,}',
         'slug' => '[a-z0-9\-_%]{2,}'
     ], priority: -127)]
-    public function taxonomy(string $taxonomy, string $slug, Request $request): ArchiveDataSet
+    public function taxonomy(string $taxonomy, string $slug): ArchiveDataSet
     {
         $termTaxonomy = $this->bridger->getTaxonomy();
         if (!$termTaxonomy->exists($taxonomy)) {
@@ -163,81 +160,38 @@ class PostController extends Controller
         }
         return new ArchiveDataSet(
             $taxonomy,
-            $this->filterTaxonomyResult($taxonomy, $request)
+            $this->filterTaxonomyResult($taxonomy)
         );
     }
 
     /**
      * @param TermTaxonomy $taxonomy
      * @param Request $request
-     * @return array
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @return iterable
+     * @throws RuntimeError
      */
-    private function filterTaxonomyResult(TermTaxonomy $taxonomy, Request $request): iterable
+    private function filterTaxonomyResult(TermTaxonomy $taxonomy): iterable
     {
-        $limit = $this->option->postsPerPage();
-        $page = max(1, $request->query->getInt('paged', 1));
-        $count = $this->relation->getTaxonomyObjectCount($taxonomy->getId());
-        $records = [];
-        if ($count > 0 && ceil($count / $limit) >= $page) {
-            $objects = $this->relation->getTaxonomyObjectQuery($taxonomy->getId())
-                ->setFirstResult($page * $limit - $limit)
-                ->setMaxResults($limit)
-                ->getArrayResult();
-            $ids = array_map(function ($item) {
-                return $item['object_id'];
-            }, $objects);
-            $records = $this->post->createQuery([
-                'id' => $ids,
-                '_sort' => 'id',
-                '_order'=> 'DESC',
-            ])->getResult();
-        }
-        if ($records) {
-            $this->post->thumbnails($records);
-        }
-        $this->bridger->getWidget()->get('pagination')
-            ->put([
-                'limit' => $limit,
-                'total' => $count,
-                'currentPage' => $page,
-                'currentCount'=> count($records),
-            ]);
-        return $records;
+        /**
+         * @var $runtime OctopusRuntime
+         */
+        $runtime = $this->bridger->getTwig()->getRuntime(OctopusRuntime::class);
+        return $runtime->getTaxonomyPosts($taxonomy->getId(), []);
     }
 
     /**
-     * @param array $filter
-     * @param Request $request
-     * @return Pagination
+     * @param array $filters
+     * @return iterable
+     * @throws RuntimeError
      */
-    private function filterPostsResult(array $filter, Request $request): iterable
+    private function filterPostsResult(array $filters): iterable
     {
-        $filter['_sort'] = 'id';
-        $filter['_order'] = 'DESC';
-        $limit = $this->option->postsPerPage();
-        $page = max(1, $request->query->getInt('paged', 1));
-        $query = $this->post->createQuery($filter);
-        $paginator = new Paginator($query);
-        $count = $paginator->count();
-        $records = [];
-        if ($count > 0 && ceil($count / $limit) >= $page) {
-            $records = $paginator->getQuery()
-                ->setFirstResult($page * $limit - $limit)
-                ->setMaxResults($limit)
-                ->getResult();
-        }
-        if ($records) {
-            $this->post->thumbnails($records);
-        }
-        $this->bridger->getWidget()->get('pagination')
-            ->put([
-                'limit' => $limit,
-                'total' => $count,
-                'currentPage' => $page,
-                'currentCount'=> count($records),
-            ]);
-        return $records;
+        /**
+         * @var $runtime OctopusRuntime
+         */
+        $filters['_sort'] = 'id';
+        $filters['_order'] = 'DESC';
+        $runtime = $this->bridger->getTwig()->getRuntime(OctopusRuntime::class);
+        return $runtime->getPosts($filters);
     }
 }

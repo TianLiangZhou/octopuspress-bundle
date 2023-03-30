@@ -50,13 +50,31 @@ class PostRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('a');
         $queryBuilder->leftJoin(PostMeta::class, 'm', Join::WITH, 'a.id = m.post');
-        if ($filters) {
-            $this->addFilters($queryBuilder, $filters);
+        if (empty($filters['status'])) {
+            $filters['status'] = Post::STATUS_PUBLISHED;
         }
+        if (empty($filters['type']) && empty($filters['id'])) {
+            $filters['type'] = Post::TYPE_POST;
+        }
+        $this->addFilters($queryBuilder, $filters);
         if ($closure != null) {
             call_user_func($closure, $queryBuilder);
         }
         return $queryBuilder->getQuery();
+    }
+
+    /**
+     * @param array $filters
+     * @param callable|null $closure
+     * @return array
+     */
+    public function createThumbnailQuery(array $filters = [], callable $closure = null): array
+    {
+        $records = $this->createQuery($filters, $closure)->getResult();
+        if ($records) {
+            $this->thumbnails($records);
+        }
+        return $records;
     }
 
 
@@ -118,59 +136,70 @@ class PostRepository extends ServiceEntityRepository
                     break;
             }
         }
-
-        // TODO: Implement addFilters() method.
-        foreach ($filters as $name => $value) {
-            if ('' === $value) {
-                continue;
+        // Priority setting conditions
+        if (!empty($filters['id'])) {
+            if (is_array($filters['id'])) {
+                $qb->andWhere('a.id IN (:id)')->setParameter('id', array_map('intval', $filters['id']));
+            }  else {
+                $qb->andWhere('a.id = :id')->setParameter('id', (int) $filters['id']);
             }
-            switch ($name) {
-                case 'id':
-                    is_array($value) ? $qb->andWhere("a.id IN (:id)") : $qb->andWhere("a.id = :id");
-                    break;
-                case 'type':
-                    $qb->andWhere("a.type = :type");
-                    break;
-                case 'author':
-                    $qb->andWhere("a.author = :author");
-                    break;
-                case 'status':
-                    is_array($value) ? $qb->andWhere("a.status IN (:status)") : $qb->andWhere("a.status = :status");
-                    break;
-                case 'date':
-                    $yearMonth = explode('-', $value);
-                    if (count($yearMonth) !== 2) {
-                        continue 2;
-                    }
-                    $year = (int) $yearMonth[0];
-                    $month = (int) $yearMonth[1];
-                    [$cYear, $cMonth] = explode('|', date('Y|m'));
-                    if ($year < 1970 || $year > $cYear) {
-                        $year = (int) $cYear;
-                    }
-                    if ($month < 1 || $month > 12) {
-                        $month = (int) $cMonth;
-                    }
-                    $nextMonth = $month + 1;
-                    if ($nextMonth > 12) {
-                        $nextMonth = 1;
-                    }
-                    $qb->andWhere(
-                      'a.createdAt >= :start AND a.createdAt < :end'
-                    );
-                    $qb->setParameter('start', sprintf('%d-%d-1 00:00:00', $year, $month))
-                        ->setParameter('end', sprintf('%d-%d-1 00:00:00', $year, $nextMonth));
-                    continue 2;
-                case 'title':
-                    $qb->andWhere($qb->expr()->like('a.title', ':title'));
-                    $value = '%' . $value . '%';
-                    break;
-                default:
-                    continue 2;
-            }
-            $qb->setParameter($name, $value);
         }
-
+        if (!empty($filters['author'])) {
+            if (is_array($filters['author'])) {
+                $qb->andWhere('a.author IN (:author)')->setParameter('author', array_map('intval', $filters['author']));
+            }  else {
+                $qb->andWhere('a.author = :author')->setParameter('author', (int) $filters['author']);
+            }
+        }
+        if (!empty($filters['type'])) {
+            if (is_array($filters['type'])) {
+                $qb->andWhere('a.type IN (:type)')->setParameter('type', $filters['type']);
+            }  else {
+                $qb->andWhere('a.type = :type')->setParameter('type',  $filters['type']);
+            }
+        }
+        if (!empty($filters['status'])) {
+            if (is_array($filters['status'])) {
+                $qb->andWhere('a.status IN (:status)')->setParameter('status', $filters['status']);
+            }  else {
+                if ($filters['status'] === Post::STATUS_PUBLISHED) {
+                    $qb->andWhere('(a.status = :publish OR a.status = :private OR (a.status = :future AND a.createdAt < :date))');
+                    $qb->setParameter('publish', Post::STATUS_PUBLISHED)
+                        ->setParameter('private', Post::STATUS_PRIVATE)
+                        ->setParameter('future', Post::STATUS_FUTURE)
+                        ->setParameter('date', date('Y-m-m H:i:s'));
+                } else {
+                    $qb->andWhere('a.status = :status')->setParameter('status',  $filters['status']);
+                }
+            }
+        }
+        if (!empty($filters['date'])) {
+            $yearMonth = explode('-', $filters['date']);
+            if (count($yearMonth) === 2) {
+                $year = (int) $yearMonth[0];
+                $month = (int) $yearMonth[1];
+                [$cYear, $cMonth] = explode('|', date('Y|m'));
+                if ($year < 1970 || $year > $cYear) {
+                    $year = (int) $cYear;
+                }
+                if ($month < 1 || $month > 12) {
+                    $month = (int) $cMonth;
+                }
+                $nextMonth = $month + 1;
+                if ($nextMonth > 12) {
+                    $nextMonth = 1;
+                }
+                $qb->andWhere(
+                    'a.createdAt >= :start AND a.createdAt < :end'
+                );
+                $qb->setParameter('start', sprintf('%d-%d-1 00:00:00', $year, $month))
+                    ->setParameter('end', sprintf('%d-%d-1 00:00:00', $year, $nextMonth));
+            }
+        }
+        if (!empty($filters['title'])) {
+            $qb->andWhere($qb->expr()->like('a.title', ':title'))
+                ->setParameter('title', $filters['title'] . '%');
+        }
     }
 
     /**
@@ -183,15 +212,6 @@ class PostRepository extends ServiceEntityRepository
         $items = [];
         foreach ($records as $record) {
             $author = $record->getAuthor();
-//            $termRelationships = $record->getTermRelationships();
-            $taxonomies = [];
-//            foreach ($termRelationships as $relationship) {
-//                $taxonomy = $relationship->getTaxonomy();
-//                $taxonomies[] = array_merge(
-//                    $taxonomy->jsonSerialize(),
-//                    $taxonomy->getTerm()->jsonSerialize()
-//                );
-//            }
             $items[] = array_merge(
                 $record->jsonSerialize(),
                 [
@@ -200,7 +220,7 @@ class PostRepository extends ServiceEntityRepository
                         'account'  => $author->getAccount(),
                         'nickname' => $author->getNickname(),
                     ],
-                    'relationships' => $taxonomies,
+                    'relationships' => [],
                     'createdAt' => $record->getCreatedAt()->format('Y-m-d H:i'),
                     'modifiedAt' => $record->getModifiedAt()->format('Y-m-d H:i'),
                 ]

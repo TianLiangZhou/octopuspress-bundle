@@ -125,9 +125,9 @@ class PostManager
         }
         try {
             foreach ($posts as $i => $post) {
+                $this->repository->remove($post, (count($posts) - 1) === $i);
                 $postDeleteEvent = new PostEvent($post, '');
                 $this->dispatcher->dispatch($postDeleteEvent, OctopusEvent::POST_DELETE);
-                $this->repository->remove($post, (count($posts) - 1) === $i);
             }
         } catch (\Throwable $throwable) {
             $this->logger->error('Delete failed: ' . $throwable->getMessage());

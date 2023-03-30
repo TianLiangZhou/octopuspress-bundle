@@ -114,25 +114,13 @@ class PostController extends AdminController
             $request->query->set('type', 'post');
         }
         $status = $request->query->get('status', '');
-        switch ($status) {
-            case Post::STATUS_PUBLISHED:
-                $request->query->set('status', [
-                    Post::STATUS_PUBLISHED,
-                    Post::STATUS_FUTURE,
-                    Post::STATUS_PRIVATE,
-                ]);
-                break;
-            case Post::STATUS_DRAFT:
-            case Post::STATUS_TRASH:
-            case Post::STATUS_PRIVATE:
-                break;
-            default:
-                $request->query->set('status', [
-                    Post::STATUS_PUBLISHED,
-                    Post::STATUS_DRAFT,
-                    Post::STATUS_FUTURE,
-                    Post::STATUS_PRIVATE,
-                ]);
+       if (empty($status)) {
+            $request->query->set('status', [
+                Post::STATUS_PUBLISHED,
+                Post::STATUS_DRAFT,
+                Post::STATUS_FUTURE,
+                Post::STATUS_PRIVATE,
+            ]);
         }
         $taxonomyId = $request->query->getInt('taxonomy', 0);
         if ($taxonomyId > 0) {
@@ -305,6 +293,7 @@ class PostController extends AdminController
         if (empty($sets)) {
             return $this->json(['message' => ''], Response::HTTP_NOT_ACCEPTABLE);
         }
+        $posts = $this->repository->findBy(['id' => $sets]);
         $this->repository->createQueryBuilder('a')
             ->set('a.status', ':status')
             ->andWhere('a.id IN (:sets)')
@@ -313,7 +302,7 @@ class PostController extends AdminController
             ->update()
             ->getQuery()
             ->execute();
-        $event = new PostStatusUpdateEvent($sets);
+        $event = new PostStatusUpdateEvent($posts, $status);
         $this->bridger->getDispatcher()
             ->dispatch($event, OctopusEvent::POST_STATUS_UPDATE);
         return $this->json(null);

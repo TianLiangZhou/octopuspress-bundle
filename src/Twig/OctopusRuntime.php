@@ -4,10 +4,12 @@ namespace OctopusPress\Bundle\Twig;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\Query\AST\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Post;
+use OctopusPress\Bundle\Entity\TermRelationship;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
 use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Repository\OptionRepository;
@@ -21,6 +23,7 @@ use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Widget\AbstractWidget;
 use OctopusPress\Bundle\Widget\Navigation;
 use OctopusPress\Bundle\Widget\Pagination;
+use Symfony\Component\Filesystem\Path;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Error\LoaderError;
@@ -395,7 +398,11 @@ class OctopusRuntime implements RuntimeExtensionInterface
         return $container;
     }
 
-    public function getPost(int $id)
+    /**
+     * @param int $id
+     * @return Post|null
+     */
+    public function getPost(int $id): ?Post
     {
         $post = $this->post->find($id);
         if ($post == null) {
@@ -407,30 +414,29 @@ class OctopusRuntime implements RuntimeExtensionInterface
 
     /**
      * @param array<string, bool|int|string> $options
-     * @return Pagination
+     * @return iterable
      */
     public function getPosts(array $options = []): iterable
     {
-        $filters = [
+        $filters = array_merge([
             'type' => Post::TYPE_POST,
-//            'status' => Post::STATUS_PUBLISHED,
-        ];
-        $filters = array_merge($filters, $options);
-        if (!isset($filters['_sort'])) {
+            'status' => Post::STATUS_PUBLISHED,
+        ], $options);
+        if (!isset($filters['_sort']) && empty($filters['id'])) {
             $filters['_sort'] = 'id';
-            $filters['_order']= 1;
+            $filters['_order']= 'DESC';
         }
         $query = $this->post->createQuery($filters);
-        if (isset($options['limit']) && $options['limit'] > 0) {
-            $records = $query->setMaxResults((int) $options['limit'])->getResult();
-            [$limit, $count, $page] = [(int) $options['limit'], count($records), 1];
+        if (!empty($filters['id']) && is_array($filters['id'])) {
+            $records = $query->getResult();
+            [$limit, $count, $page] = [count($filters['id']), count($records), 1];
         } else {
             $page = max(1, (int) $this->getRequest()->get('paged', 1));
             $limit = $this->option->postsPerPage();
             $pagination = new Paginator($query);
             $count = $pagination->count();
             $records = [];
-            if ($count > 0 && ceil($count / $limit) >= $page) {
+            if (($page * $limit - $limit) < $count) {
                 $records = $pagination->getQuery()
                     ->setFirstResult($page * $limit - $limit)
                     ->setMaxResults($limit)
@@ -452,38 +458,36 @@ class OctopusRuntime implements RuntimeExtensionInterface
     /**
      * @param int|array $taxonomyId
      * @param array<string, bool|int|string> $options
-     * @return Pagination
-     * @throws NoResultException
-     * @throws NonUniqueResultException
+     * @return iterable
      */
     public function getTaxonomyPosts(int|array $taxonomyId, array $options = []): iterable
     {
         if (empty($taxonomyId)) {
             return [];
         }
-        $count = $this->relation->getTaxonomyObjectCount($taxonomyId);
+        $queryBuilder = $this->post->createQueryBuilder('a')
+            ->leftJoin(
+                TermRelationship::class, 'r', \Doctrine\ORM\Query\Expr\Join::WITH, 'a.id = r.post'
+            );
+        $this->post->addFilters($queryBuilder, array_merge([
+            'status' => Post::STATUS_PUBLISHED,
+        ], $options));
+        if (is_array($taxonomyId)) {
+            $queryBuilder->andWhere('r.taxonomy IN (:taxonomyId)');
+        } else {
+            $queryBuilder->andWhere('r.taxonomy = :taxonomyId');
+        }
+        $query = $queryBuilder->setParameter('taxonomyId', $taxonomyId)->getQuery();
+        $paginator = new Paginator($query);
+        $count = $paginator->count();
         $page = max(1, (int) $this->getRequest()->get('paged', 1));
-        $limit = isset($options['limit']) && $options['limit'] > 0
-            ? (int) $options['limit']
-            : $this->option->postsPerPage();
+        $limit = $this->option->postsPerPage();
         $records = [];
-        $filters = [
-            'id' => [],
-        ];
-        if ($count > 0 && ceil($count / $limit) >= $page) {
-            $objects = $this->relation->getTaxonomyObjectQuery($taxonomyId)
+        if (($page * $limit - $limit) < $count) {
+            $records = $paginator->getQuery()
                 ->setFirstResult($page * $limit - $limit)
                 ->setMaxResults($limit)
-                ->getArrayResult();
-            $filters['id'] = array_map(function ($item) {
-                return $item['object_id'];
-            }, $objects);
-            $filters = array_merge($filters, $options);
-            if (!isset($filters['_sort'])) {
-                $filters['_sort'] = 'id';
-                $filters['_order']= 1;
-            }
-            $records = $this->post->createQuery($filters)->getResult();
+                ->getResult();
         }
         if ($records) {
             $this->post->thumbnails($records);
