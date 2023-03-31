@@ -431,17 +431,17 @@ class OctopusRuntime implements RuntimeExtensionInterface
             $records = $query->getResult();
             [$limit, $count, $page] = [count($filters['id']), count($records), 1];
         } else {
-            $page = max(1, (int) $this->getRequest()->get('paged', 1));
-            $limit = $this->option->postsPerPage();
             $pagination = new Paginator($query);
             $count = $pagination->count();
-            $records = [];
-            if (($page * $limit - $limit) < $count) {
-                $records = $pagination->getQuery()
-                    ->setFirstResult($page * $limit - $limit)
-                    ->setMaxResults($limit)
-                    ->getResult();
+            $page = max(1, (int) $this->getRequest()->get('paged', 1));
+            $limit = $this->option->postsPerPage();
+            if (($page * $limit - $limit) > $count) {
+                return [];
             }
+            $records = $pagination->getQuery()
+                ->setFirstResult($page * $limit - $limit)
+                ->setMaxResults($limit)
+                ->getResult();
         }
         if ($records) {
             $this->post->thumbnails($records);
@@ -465,38 +465,41 @@ class OctopusRuntime implements RuntimeExtensionInterface
         if (empty($taxonomyId)) {
             return [];
         }
-        $queryBuilder = $this->post->createQueryBuilder('a')
-            ->leftJoin(
-                TermRelationship::class, 'r', \Doctrine\ORM\Query\Expr\Join::WITH, 'a.id = r.post'
-            );
-        $this->post->addFilters($queryBuilder, array_merge([
-            'status' => Post::STATUS_PUBLISHED,
-        ], $options));
-        if (is_array($taxonomyId)) {
-            $queryBuilder->andWhere('r.taxonomy IN (:taxonomyId)');
-        } else {
-            $queryBuilder->andWhere('r.taxonomy = :taxonomyId');
-        }
-        $query = $queryBuilder->setParameter('taxonomyId', $taxonomyId)->getQuery();
+        $queryBuilder = $this->relation->createQueryBuilder('r');
+        is_array($taxonomyId)
+            ? $queryBuilder->andWhere('r.taxonomy IN (:taxonomyId)')
+            : $queryBuilder->andWhere('r.taxonomy = :taxonomyId');
+        $queryBuilder->setParameter('taxonomyId', $taxonomyId)
+            ->addOrderBy('r.post', 'DESC');
+        $query = $queryBuilder->getQuery();
         $paginator = new Paginator($query);
         $count = $paginator->count();
+        if ($count < 1) {
+            return [];
+        }
         $page = max(1, (int) $this->getRequest()->get('paged', 1));
         $limit = $this->option->postsPerPage();
-        $records = [];
-        if (($page * $limit - $limit) < $count) {
-            $records = $paginator->getQuery()
-                ->setFirstResult($page * $limit - $limit)
-                ->setMaxResults($limit)
-                ->getResult();
+        if (($page * $limit - $limit) > $count) {
+            return [];
         }
-        if ($records) {
-            $this->post->thumbnails($records);
+        $records = $paginator->getQuery()
+            ->setFirstResult($page * $limit - $limit)
+            ->setMaxResults($limit)
+            ->getArrayResult();
+        $objectIds = array_map(function ($item) {return (int)$item['object_id'];}, $records);
+        $records = $this->post->createThumbnailQuery(array_merge([
+            'id' => $objectIds,
+        ], $options));
+        $currentPageCount = count($records);
+        if ($currentPageCount < 1) {
+            $pageCount = ceil($count / $limit);
+            $count = $count - (($pageCount - $page) * $limit);
         }
         $this->widget('pagination', [
             'limit' => $limit,
             'total' => $count,
             'currentPage' => $page,
-            'currentCount'=> count($records),
+            'currentCount'=> $currentPageCount,
         ]);
         return $records;
     }

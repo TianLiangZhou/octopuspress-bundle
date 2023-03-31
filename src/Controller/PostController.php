@@ -166,7 +166,6 @@ class PostController extends Controller
 
     /**
      * @param TermTaxonomy $taxonomy
-     * @param Request $request
      * @return iterable
      * @throws RuntimeError
      */

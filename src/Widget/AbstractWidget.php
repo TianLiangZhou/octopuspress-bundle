@@ -124,7 +124,7 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
      */
     public function getContext(): array
     {
-        $attributes = $this->attributes;
+        $attributes = $this->get();
         $context = $this->context($attributes);
         $context['className'] = '';
         if (!empty($attributes['class_name'])) {
@@ -144,6 +144,14 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
     {
         $this->attributes = array_merge($this->attributes, $attributes);
         return $this;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function get(): array
+    {
+        return $this->attributes;
     }
 
     /**
