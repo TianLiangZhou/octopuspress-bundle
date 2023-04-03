@@ -180,6 +180,25 @@ class ThemeManager
     }
 
     /**
+     * @param string $name
+     * @return void
+     */
+    public function uninstall(string $name): void
+    {
+        $currentTheme = $this->optionRepository->findOneByName('theme');
+        if ($name == $currentTheme) {
+            throw new InvalidArgumentException("Invalid `$name` params");
+        }
+        if (!file_exists($this->getThemePath($name))) {
+            throw new InvalidArgumentException("Invalid `$name` params, It's not exists");
+        }
+        $this->filesystem->remove([$this->getThemePath($name)]);
+        if ($this->targetDir($name)) {
+            $this->filesystem->remove([$this->targetDir($name)]);
+        }
+    }
+
+    /**
      * @param string $theme
      * @return string
      */
@@ -245,7 +264,7 @@ class ThemeManager
             '*.html', '*.css', '*.js', '*.jpg', '*.jpeg', '*.png', '*.webp', '*.svg', '*.bmp', '*.ico', '*.gif',
             '*.flv', '*.mp4', '*.wav', '*.mp3', '*.ogg', '*.webm', '*.flac'
         ];
-        $iterator = Finder::create()->name($allowExt)->in($themeDir)->getIterator();
+        $iterator = Finder::create()->name($allowExt)->in($themeDir)->exclude(['dev'])->getIterator();
         $this->filesystem->mirror($themeDir, $themeTargetDir, $iterator);
     }
 

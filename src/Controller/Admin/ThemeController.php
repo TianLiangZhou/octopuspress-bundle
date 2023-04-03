@@ -71,7 +71,7 @@ class ThemeController extends AdminController
      * @throws \Exception
      * @throws TransportExceptionInterface
      */
-    #[Route('/upload', name:'theme_upload', options: ['name' => '上传主题', 'parent' => 'appearance_theme'], methods: Request::METHOD_POST)]
+    #[Route('/upload', name:'theme_upload', requirements: ['name' => '[a-z-A-Z0-9\-_]{2,}'], options: ['name' => '上传主题', 'parent' => 'appearance_theme'], methods: Request::METHOD_POST)]
     public function upload(Request $request): JsonResponse
     {
         $jsonArray = $request->toArray();
@@ -105,7 +105,7 @@ class ThemeController extends AdminController
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    #[Route('/{name}/activate', name: 'theme_activate', options: ['name' => '启用主题', 'parent' => 'appearance_theme', 'sort' => 0])]
+    #[Route('/{name}/activate', name: 'theme_activate', requirements: ['name' => '[a-z-A-Z0-9\-_]{2,}'], options: ['name' => '启用主题', 'parent' => 'appearance_theme', 'sort' => 0])]
     public function activate(string $name): JsonResponse
     {
         $this->themeManager->activate($name);
@@ -115,7 +115,7 @@ class ThemeController extends AdminController
     /**
      * @throws \Exception
      */
-    #[Route('/{name}/setup', name:'theme_setup', options: ['name' => '安装主题', 'parent' => 'appearance_theme'])]
+    #[Route('/{name}/setup', name:'theme_setup', requirements: ['name' => '[a-z-A-Z0-9\-_]{2,}'], options: ['name' => '安装主题', 'parent' => 'appearance_theme'])]
     public function setup(string $name): JsonResponse
     {
         $this->themeManager->setup($name);
@@ -126,12 +126,22 @@ class ThemeController extends AdminController
     /**
      * @throws \Exception
      */
-    #[Route('/{name}/upgrade', name:'theme_upgrade', options: ['name' => '更新主题', 'parent' => 'appearance_theme'])]
-    public function upgrade(string $name)
+    #[Route('/{name}/upgrade', name:'theme_upgrade', requirements: ['name' => '[a-z-A-Z0-9\-_]{2,}'], options: ['name' => '更新主题', 'parent' => 'appearance_theme'])]
+    public function upgrade(string $name): JsonResponse
     {
         $this->themeManager->setup($name);
         return $this->json([
         ]);
     }
 
+    /**
+     * @throws \Exception
+     */
+    #[Route('/{name}/delete', name:'theme_delete', requirements: ['name' => '[a-z-A-Z0-9\-_]{2,}'], options: ['name' => '卸载主题', 'parent' => 'appearance_theme'])]
+    public function delete(string $name): JsonResponse
+    {
+        $this->themeManager->uninstall($name);
+        return $this->json([
+        ]);
+    }
 }
