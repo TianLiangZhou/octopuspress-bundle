@@ -31,7 +31,7 @@ import {
 import {
   POST_DELETE, POST_SHOW,
   POST_STORE,
-  POST_TYPE_SETTING, POST_UPDATE,
+  POST_TYPE_SETTING, POST_UPDATE, POSTS,
   TAXONOMIES,
   TAXONOMY_REGISTERED,
   TAXONOMY_STORE
@@ -41,10 +41,11 @@ import {Observable, ReplaySubject, Subject, Subscription, timer} from "rxjs";
 import {User} from "../../@core/definition/user/type";
 import {USER_MEMBER} from "../../@core/definition/user/api";
 import {CkeditorComponent} from "../ckeditor/ckeditor.component";
-import {FormBuilder, FormControl, Validators} from "@angular/forms";
+import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {NbTagInputAddEvent} from "@nebular/theme/components/tag/tag-input.directive";
 import {ConfigurationService} from "../../@core/services/configuration.service";
 import {UserService} from "../../@core/services/user.service";
+import {buildFormGroup} from "../control/type";
 
 type CheckTermTaxonomy = TermTaxonomy & {
   checked: boolean;
@@ -89,6 +90,7 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
     parent: new FormControl<null|number>(null),
     author: new FormControl<null|number>(null),
     authorNickname: new FormControl<string>(""),
+    parentInput: new FormControl<string>(""),
     content: new FormControl<string>(""),
     excerpt: new FormControl<string>(""),
     name: new FormControl<string>(""),
@@ -101,9 +103,10 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
     featuredImage: new FormControl<null|number>(null),
     visible: new FormControl<string>("open"),
     relationships: new FormControl<TermTaxonomy[]>([]),
-    meta: new FormControl<Record<string, any>>({}),
+    meta: new FormGroup<Record<string, FormControl>>({}),
   });
   filteredAuthorOptions$: Observable<User[]> | undefined;
+  filteredParentOptions$: Observable<Post[]> | undefined;
 
   @ViewChild("accordionComponent", {static: false}) accordion: NbAccordionComponent | undefined;
   @ViewChild("dateTimePicker") datepicker: NbDateTimePickerComponent<any> | undefined;
@@ -113,6 +116,7 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
   @ViewChild("ckeditorComponent") editor!: CkeditorComponent;
   private postTypeChange$ = new ReplaySubject<string>(1);
   typeSetting: Partial<PostTypeSetting> = {};
+  controls: any[] = [];
 
   constructor(
     private http: HttpClient,
@@ -143,6 +147,17 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
       if (!this.typeSetting.visibility!.showUi) {
         return;
       }
+      let metas = this.config.postMeta(type);
+      let controls: any[] = [];
+      metas.forEach((meta) => {
+       if (meta.showUi && (meta.isCreated || meta.isUpdated) && meta.control) {
+         controls.push(meta.control);
+       }
+      });
+      if (controls) {
+        this.formGroup.controls['meta'] = buildFormGroup(controls);
+        this.controls = controls;
+      }
       this.type = type;
       this.formGroup.controls.type.setValue(this.type);
       this.bindDocumentTaxonomySetting(type);
@@ -159,8 +174,8 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
           next: res => {
             this.id = id;
             this.entity = res;
-            this.fillFormControlValue();
             this.postTypeChange$.next(this.entity.type)
+            this.fillFormControlValue();
           },
           error: err => {
             if (err instanceof HttpErrorResponse && err.status == 404) {
@@ -181,6 +196,15 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
         return this.http.get<Records<User>>(USER_MEMBER + '?nickname=' + value + '&size=30').pipe(map(result => result.records))
       })
     );
+    this.filteredParentOptions$ = this.formGroup.controls.parentInput.valueChanges.pipe(
+      filter(value => value != '[object Object]' && value != ''),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap(value => {
+        return this.http.get<Records<Post>>(POSTS+ '?type=' + this.type + '&title='+value+'&size=30').pipe(map(result => result.records))
+      })
+    );
+
     this.formGroup.controls.visible.valueChanges.subscribe(value => {
       if (!this.visibleBtnElement) {
         return ;
@@ -270,12 +294,22 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
     }
   }
 
+  selectParent($event: Post|string) {
+    if (typeof $event == 'object') {
+      this.formGroup.controls.parent.setValue($event.id);
+      this.formGroup.controls.parentInput.setValue($event.title);
+    }
+  }
+
   onSpinner(spinner: boolean): void {
     this.submitted = spinner;
   }
 
   get isRichEditor() {
     return this.sessionUser.isRichEditor;
+  }
+  get metaGroup() {
+    return this.formGroup.controls['meta'] as FormGroup;
   }
 
   private bindDocumentTaxonomySetting(type: string) {
@@ -299,12 +333,19 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
     this.formGroup.controls.commentStatus.setValue(this.entity.commentStatus);
     this.formGroup.controls.pingStatus.setValue(this.entity.pingStatus);
     this.formGroup.controls.name.setValue(this.entity.name);
-    this.formGroup.controls.meta.setValue(this.entity.meta);
     this.formGroup.controls.relationships.setValue(this.entity.relationships);
     this.formGroup.controls.author.setValue(this.entity.author?.id ?? null);
     this.formGroup.controls.parent.setValue(this.entity.parent?.id ?? null);
     this.formGroup.controls.featuredImage.setValue(this.entity.featuredImage.id ?? null);
     this.formGroup.controls.authorNickname.setValue(this.entity.author?.nickname ?? "");
+    this.formGroup.controls.parent.setValue(this.entity.parent?.id ?? null);
+    this.formGroup.controls.parentInput.setValue(this.entity.parent?.title ?? "");
+
+    for (let key in this.entity.meta) {
+      if (this.metaGroup.contains(key)) {
+        this.metaGroup.controls[key].setValue(this.entity.meta[key]);
+      }
+    }
   }
 }
 
@@ -418,12 +459,8 @@ export class FlatTermSelectorComponent implements OnInit {
         return this.http.get<Records<TermTaxonomy>>(TAXONOMIES + '?name=' + value, {params: {taxonomy: this.taxonomySetting?.slug!}}).pipe(map(result => result.records))
       })
     );
-    this.control?.valueChanges.subscribe(relationships => {
-      if (relationships != null) {
-        this.related = relationships.filter(item => item.taxonomy == this.taxonomySetting?.slug);
-      }
-    });
-
+    let relationships = this.control?.value ?? [];
+    this.related = relationships.filter(item => item.taxonomy == this.taxonomySetting?.slug);
   }
 
 

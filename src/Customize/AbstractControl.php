@@ -697,7 +697,7 @@ abstract class AbstractControl implements \JsonSerializable
                 }
                 return $child->jsonSerialize();
             }, $this->getChildren()),
-            'settings' => $this->getSettings(),
+            'settings' => (object) $this->getSettings(),
         ];
     }
 }

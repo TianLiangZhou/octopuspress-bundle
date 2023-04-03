@@ -22,6 +22,7 @@ use Symfony\Component\Validator\Constraints\Regex;
  */
 #[Table(name: "post_metas", )]
 #[Entity(repositoryClass: PostMetaRepository::class)]
+#[ORM\UniqueConstraint(columns: ['post_id', 'meta_key'])]
 #[Index(columns: ['post_id'], name: 'post_id')]
 #[Index(columns: ['meta_key'], name: 'meta_key')]
 class PostMeta
@@ -29,7 +30,7 @@ class PostMeta
     /**
      * @var int
      */
-    #[Column(name: "meta_id", type: "bigint", nullable: false, options: ['unsigned' => true])]
+    #[Column(name: "meta_id", type: "integer", nullable: false, options: ['unsigned' => true])]
     #[Id]
     #[GeneratedValue(strategy: "IDENTITY")]
     private int $metaId;
@@ -45,7 +46,7 @@ class PostMeta
     /**
      * @var string
      */
-    #[Column(name: "meta_key", type: "string", length: 255, nullable: true)]
+    #[Column(name: "meta_key", type: "string", length: 191, nullable: false)]
     #[NotBlank]
     #[Regex(pattern: "/^[\w]+(?:[-\w]+)*$/")]
     private string $metaKey;

@@ -216,8 +216,8 @@ export class PostComponent implements OnInit, OnSpinner {
         title: '标题',
         type: IColumnType.Custom,
         filter: true,
-        renderComponent: PostActionComponent,
-        onComponentInitFunction: (component: PostActionComponent) => {
+        renderComponent: PostActionsComponent,
+        onComponentInitFunction: (component: PostActionsComponent) => {
           component.onClick().subscribe(action => {
             this.executeAction(action.action, [action.id], component.rowData.title)
           });
@@ -347,10 +347,10 @@ export class EditPostComponent {
       </strong>
     </div>
     <nb-actions>
-      <nb-action [link]="action.value == 'edit'?'/app/content/edit-post/'+rowData.id:''" [title]="action.title"
+      <nb-action [class.ps-0]="i==0" [link]="action.value == 'edit'?'/app/content/edit-post/'+rowData.id:''" [title]="action.title"
                  (click)="click(action.value)"
                  [icon]="action.icon"
-                 *ngFor="let action of actions"></nb-action>
+                 *ngFor="let action of actions;  index as i"></nb-action>
     </nb-actions>
   `,
   styles: [
@@ -368,7 +368,7 @@ export class EditPostComponent {
     `
   ]
 })
-export class PostActionComponent {
+export class PostActionsComponent {
   private actionClick: EventEmitter<{action:string, id: number}> = new EventEmitter();
 
   @Input() value!: string;

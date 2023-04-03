@@ -137,26 +137,33 @@ class TaxonomyRepository extends ServiceEntityRepository
     {
         // TODO: Implement addFilters() method.
         $qb->leftJoin(Term::class, 't', Join::WITH, 'a.term = t.id');
-        $qb->addOrderBy('a.id', 'DESC');
-        foreach ($filters as $name => $value) {
-            if ('' === $value) {
-                continue;
+        if (!empty($filters['_sort'])) {
+            $qb->addOrderBy('a.id', 'DESC');
+        }
+        if (!empty($filters['id'])) {
+            if (is_array($filters['id'])) {
+                $qb->andWhere('a.id IN (:id)');
+            }  else {
+                $qb->andWhere('a.id = :id');
             }
-            switch ($name) {
-                case 'taxonomy':
-                    $qb->andWhere($qb->expr()->eq('a.taxonomy', ':' . $name));
-                    break;
-                case 'name':
-                    $qb->andWhere($qb->expr()->like('t.name', ':' . $name));
-                    $value = '%' . $value . '%';
-                    break;
-                case 'parent':
-                    $qb->andWhere('a.parent = :parent');
-                    break;
-                default:
-                    continue 2;
+            $qb->setParameter('id', is_array($filters['id']) ? array_map('intval', $filters['id']) : (int)$filters['id']);
+        }
+        if (!empty($filters['taxonomy'])) {
+            if (is_array($filters['taxonomy'])) {
+                $qb->andWhere('a.taxonomy IN (:taxonomies)');
+            }  else {
+                $qb->andWhere('a.taxonomy = :taxonomies');
             }
-            $qb->setParameter($name, $value);
+            $qb->setParameter('taxonomies', $filters['taxonomy']);
+        }
+        if (!empty($filters['parent']) && (is_integer($filters['parent']) || $filters['parent'] instanceof TermTaxonomy)) {
+            $qb->andWhere('a.parent =:parent')->setParameter('parent', $filters['parent']);
+        }
+        if (!empty($filters['slug'])) {
+            $qb->andWhere('t.slug = :slug')->setParameter('slug', $filters['slug']);
+        }
+        if (!empty($filters['name'])) {
+            $qb->andWhere('t.name LIKE :name')->setParameter('name', $filters['name'] . '%');
         }
     }
 

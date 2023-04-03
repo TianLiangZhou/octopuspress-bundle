@@ -32,7 +32,7 @@ class Term implements JsonSerializable
     /**
      * @var ?int
      */
-    #[Column(name: "term_id", type: "bigint", nullable: false, options: ['unsigned' => true])]
+    #[Column(name: "term_id", type: "integer", nullable: false, options: ['unsigned' => true])]
     #[Id]
     #[GeneratedValue(strategy: "AUTO")]
     private ?int $id = null;
@@ -55,7 +55,7 @@ class Term implements JsonSerializable
     /**
      * @var int
      */
-    #[Column(name: "term_group", type: "bigint", nullable: false, options: ['default' => 0])]
+    #[Column(name: "term_group", type: "integer", nullable: false, options: ['default' => 0])]
     private int $termGroup = 0;
 
 

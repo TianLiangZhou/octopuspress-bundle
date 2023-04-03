@@ -3,7 +3,6 @@
 namespace OctopusPress\Bundle\Scalable\Features;
 
 use OctopusPress\Bundle\Scalable\TermTaxonomy;
-use function Symfony\Component\String\b;
 
 final class PostType implements \JsonSerializable
 {
@@ -22,7 +21,10 @@ final class PostType implements \JsonSerializable
     private bool $showUi;
 
     private bool $showTableTaxonomy;
+
     private bool $showNavigation;
+
+    private array $parentType = [];
 
     public function __construct(string $name, array $args)
     {
@@ -48,6 +50,7 @@ final class PostType implements \JsonSerializable
             'showUi'   => true,
             'showTableTaxonomy' => true,
             'showNavigation'    => true,
+            'parentType' => [$this->name],
         ];
 
         $args = array_merge($defaults, $args);
@@ -67,6 +70,10 @@ final class PostType implements \JsonSerializable
         if (is_bool($args['showTableTaxonomy'])) {
             $this->showTableTaxonomy = $args['showTableTaxonomy'];
         }
+        if (is_array($args['parentType'])) {
+            $this->parentType = $args['parentType'];
+        }
+
         $this->showNavigation = (bool) $args['showNavigation'];
 
         if ($args['label'] && is_string($args['label'])) {
@@ -129,6 +136,7 @@ final class PostType implements \JsonSerializable
             'label'  => $this->label,
             'labels' => $this->labels,
             'supports'=> array_keys($this->features),
+            'parentType' => $this->parentType,
             'visibility' => [
                 'showUi' => $this->showUi,
                 'showTableTaxonomy' => $this->showTableTaxonomy,

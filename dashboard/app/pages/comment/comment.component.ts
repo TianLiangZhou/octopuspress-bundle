@@ -160,10 +160,10 @@ export class CommentComponent implements OnInit, OnSpinner {
   template: `
     <div class="py-3">{{value}}</div>
     <nb-actions>
-      <nb-action [link]="action.value == 'edit'?'/app/comment/'+rowData.id:''" [title]="action.title"
+      <nb-action [class.ps-0]="i==0" [link]="action.value == 'edit'?'/app/comment/'+rowData.id:''" [title]="action.title"
                  (click)="click(action.value)"
                  [icon]="action.icon"
-                 *ngFor="let action of actions"></nb-action>
+                 *ngFor="let action of actions; index as i"></nb-action>
     </nb-actions>
   `,
   styles: [

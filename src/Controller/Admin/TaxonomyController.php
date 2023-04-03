@@ -189,6 +189,45 @@ class TaxonomyController extends AdminController
         return $this->save($termTaxonomy, $request);
     }
 
+    /**
+     * @param TermTaxonomy $taxonomy
+     * @param Request $request
+     * @return JsonResponse
+     * @throws OptimisticLockException
+     * @throws \Doctrine\ORM\ORMException
+     */
+    #[Route('/{id}/convert', name: 'convert', requirements: ['id' => '\d+'], options: ['name' => '类型转换',  'sort'=>12,  'parent' => 'post_all'], methods: Request::METHOD_POST)]
+    public function convert(TermTaxonomy $taxonomy, Request $request): JsonResponse
+    {
+        $toTaxonomy = $request->toArray()['toTaxonomy'];
+        if (empty($toTaxonomy)) {
+            return $this->json([
+                'message' => 'convert taxonomy not empty',
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
+        if ($toTaxonomy === $taxonomy->getTaxonomy()) {
+            return $this->json(null);
+        }
+        $toTaxonomyObj = $this->bridger->getTaxonomy()->getTaxonomy($toTaxonomy);
+        if ($toTaxonomyObj == null || !$toTaxonomyObj->isShowUi()) {
+            return $this->json([
+                'message' => 'convert taxonomy not acceptable',
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
+        $toTaxonomyExists = $this->repository->findOneBy([
+            'term' => $taxonomy->getTerm(),
+            'taxonomy' => $toTaxonomy,
+        ]);
+        if ($toTaxonomyExists) {
+            return $this->json([
+                'message' => 'Convert taxonomy not acceptable!, It exists',
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
+        $taxonomy->setTaxonomy($toTaxonomy);
+        $this->repository->add($taxonomy);
+        return $this->json([]);
+    }
+
 
     /**
      * @param string $taxonomy
@@ -268,9 +307,7 @@ class TaxonomyController extends AdminController
         }
         $name = $form->get('name')->getNormData();
         $slug = $form->get('slug')->getNormData();
-        if (empty($slug)) {
-            $slug = Formatter::sanitizeWithDashes($name);
-        }
+        $slug = Formatter::sanitizeWithDashes(empty($slug) ? $name : $slug);
         $slug = $this->bridger->getHook()->filter('taxonomy_slug', $slug, $name);
         $term = $taxonomy->getTerm();
         $existSource = $this->termRepository->findOneBy([

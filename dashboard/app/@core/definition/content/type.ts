@@ -52,6 +52,7 @@ export interface PostTypeSetting {
   label: string,
   labels: Record<string, any>;
   supports: string[],
+  parentType: string[],
   visibility: {
     showUi: boolean;
     showTableTaxonomy: boolean;

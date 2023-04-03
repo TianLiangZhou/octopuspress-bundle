@@ -3,13 +3,19 @@
 namespace OctopusPress\Bundle\Model;
 
 use InvalidArgumentException;
+use OctopusPress\Bundle\Controller\Controller;
 use OctopusPress\Bundle\OctopusPressKernel;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Plugin\PluginInterface;
+use OctopusPress\Bundle\Plugin\PluginProviderInterface;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Util\Formatter;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -24,6 +30,11 @@ class PluginManager
 {
     private Bridger $bridger;
     private OptionRepository $optionRepository;
+
+    /**
+     * @var array
+     */
+    private array $registered = [];
 
     public function __construct(Bridger $bridger)
     {
@@ -198,7 +209,7 @@ class PluginManager
      */
     public function getNameForClass(string $name): string
     {
-        return ucfirst(u($name)->camel()->toString());
+        return u($name)->camel()->title()->toString();
     }
 
     /**
@@ -215,6 +226,78 @@ class PluginManager
         $this->bridger->getHook()->action('plugin.activation', $name);
         return true;
     }
+
+    /**
+     * @param ContainerInterface $container
+     * @param Application|null $application
+     * @return void
+     */
+    public function launchers(ContainerInterface $container, ?Application $application = null): void
+    {
+        $dispatcher = $this->bridger->getDispatcher();
+        $activePlugins = $this->getActivatedPlugins();
+        $pluginDir = $this->getPluginDir();
+        $doctrine = $this->bridger->getDoctrine();
+        foreach ($activePlugins as $name) {
+            $plugin = $this->getPlugin($name);
+            if ($plugin == null) {
+                continue;
+            }
+            $alias = u($name)->snake()->lower()->toString();
+            $manifest = $plugin::manifest();
+            if (empty($manifest->getAlias())) {
+                $manifest->setAlias($alias);
+            }
+            if (empty($manifest->getPluginDir())) {
+                $manifest->setPluginDir($pluginDir . DIRECTORY_SEPARATOR . $name);
+            }
+            if ($plugin instanceof EventSubscriberInterface) {
+                $dispatcher->addSubscriber($plugin);
+            }
+            $services = $plugin->getServices($this->bridger);
+            foreach ($services as $service) {
+                $className = get_class($service);
+                if ($container->has($className)) {
+                    continue;
+                }
+                if ($service instanceof Command && $application) {
+                    $application->add($service);
+                } elseif ($application == null && $service instanceof Controller) {
+                    $service->setDeps($doctrine);
+                    $service->setContainer($container);
+                    $container->set($className, $service);
+                }
+                if ($service instanceof EventSubscriberInterface) {
+                    $dispatcher->addSubscriber($service);
+                }
+            }
+            $this->registered[$manifest->getAlias()] = [
+                'plugin'   => $plugin,
+                'manifest' => $manifest,
+                'provider' => $plugin->provider($this->bridger),
+            ];
+            $plugin->launcher($this->bridger);
+        }
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function isRegistered(string $name): bool
+    {
+        return isset($this->registered[$name]);
+    }
+
+    /**
+     * @param string $name
+     * @return PluginProviderInterface|null
+     */
+    public function provider(string $name): ?PluginProviderInterface
+    {
+        return $this->registered[$name]['provider'] ?? null;
+    }
+
 
     /**
      * @return Bridger

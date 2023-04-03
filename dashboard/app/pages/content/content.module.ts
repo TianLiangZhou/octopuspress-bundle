@@ -7,7 +7,7 @@ import {ControlModule} from "../../shared/control/control.module";
 import {
   PostComponent,
   EditPostComponent,
-  PostActionComponent,
+  PostActionsComponent,
   PostTaxonomyComponent,
   PostAuthorComponent
 } from "./post.component";
@@ -43,7 +43,7 @@ let routes: Routes = [
   declarations: [
     PostComponent,
     EditPostComponent,
-    PostActionComponent,
+    PostActionsComponent,
     PostTaxonomyComponent,
     PostAuthorComponent,
   ],

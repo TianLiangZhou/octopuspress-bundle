@@ -176,7 +176,7 @@ class MasterManager
                     'editItem'=> '编辑页面',
                 ],
                 'supports' => [
-                    'title', 'editor', 'author', 'thumbnail', 'custom-fields', 'comments'
+                    'title', 'editor', 'author', 'thumbnail', 'comments', 'parent'
                 ]
             ])
             ->registerType('attachment', [

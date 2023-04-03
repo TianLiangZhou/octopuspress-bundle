@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use JsonSerializable;
 use OctopusPress\Bundle\Repository\TermMetaRepository;
 use OctopusPress\Bundle\Util\Formatter;
@@ -21,6 +22,7 @@ use Symfony\Component\Validator\Constraints\Regex;
  */
 #[Table(name: "term_metas", )]
 #[Entity(repositoryClass: TermMetaRepository::class)]
+#[UniqueConstraint(columns: ['term_id', 'meta_key'])]
 #[Index(columns: ['term_id'], name: 'term_id')]
 #[Index(columns: ['meta_key'], name: 'meta_key')]
 class TermMeta
@@ -29,7 +31,7 @@ class TermMeta
      * @var int
      */
     #[Id]
-    #[Column(name: "meta_id", type: "bigint", nullable: false, options: ['unsigned' => true])]
+    #[Column(name: "meta_id", type: "integer", nullable: false, options: ['unsigned' => true])]
     #[GeneratedValue(strategy: "IDENTITY")]
     private int $metaId;
 
@@ -44,7 +46,7 @@ class TermMeta
     /**
      * @var string
      */
-    #[Column(name: "meta_key", type: "string", length: 255, nullable: true)]
+    #[Column(name: "meta_key", type: "string", length: 191, nullable: false)]
     #[NotBlank]
     #[Regex(pattern: "/^[\w]+(?:[-\w]+)*$/")]
     private string $metaKey;

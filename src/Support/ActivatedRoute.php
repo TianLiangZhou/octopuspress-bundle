@@ -142,6 +142,6 @@ final class ActivatedRoute
      */
     public function getRouteName(): string
     {
-        return $this->requestStack->getMainRequest()->attributes->get('_route');
+        return $this->requestStack->getMainRequest()->attributes->get('_route') ?? '';
     }
 }

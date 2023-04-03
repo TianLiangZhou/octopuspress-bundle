@@ -3,6 +3,7 @@
 namespace OctopusPress\Bundle\Scalable;
 
 use OctopusPress\Bundle\Customize\AbstractControl;
+use OctopusPress\Bundle\Customize\Control;
 
 final class Meta
 {
@@ -16,10 +17,10 @@ final class Meta
      * @param string $taxonomy
      * @param string $key
      * @param array $args
-     * @param AbstractControl|null $control
+     * @param AbstractControl|array|null $control
      * @return $this
      */
-    public function registerTaxonomy(string $taxonomy, string $key, array $args = [], AbstractControl $control = null): Meta
+    public function registerTaxonomy(string $taxonomy, string $key, array $args = [], AbstractControl|array $control = null): Meta
     {
         $this->taxonomy[$taxonomy][] = $this->register($key, $args, $control);
         return $this;
@@ -29,10 +30,10 @@ final class Meta
      * @param string $type
      * @param string $key
      * @param array $args
-     * @param AbstractControl|null $control
+     * @param AbstractControl|array|null $control
      * @return $this
      */
-    public function registerPost(string $type, string $key, array $args = [], AbstractControl $control = null): Meta
+    public function registerPost(string $type, string $key, array $args = [], AbstractControl|array $control = null): Meta
     {
         $this->post[$type][] = $this->register($key, $args, $control);
         return $this;
@@ -41,10 +42,10 @@ final class Meta
     /**
      * @param string $key
      * @param array $args
-     * @param AbstractControl|null $control
+     * @param AbstractControl|array|null $control
      * @return $this
      */
-    public function registerUser(string $key, array $args = [], AbstractControl $control = null): Meta
+    public function registerUser(string $key, array $args = [], AbstractControl|array $control = null): Meta
     {
         $this->user[] = $this->register($key, $args, $control);
         return $this;
@@ -53,10 +54,10 @@ final class Meta
     /**
      * @param string $key
      * @param array $args
-     * @param AbstractControl|null $control
+     * @param AbstractControl|array|null $control
      * @return $this
      */
-    public function registerComment(string $key, array $args = [], AbstractControl $control = null): Meta
+    public function registerComment(string $key, array $args = [], AbstractControl|array $control = null): Meta
     {
         $this->comment[] = $this->register($key, $args, $control);
         return $this;
@@ -65,10 +66,10 @@ final class Meta
     /**
      * @param string $key
      * @param array $args
-     * @param AbstractControl|null $control
+     * @param AbstractControl|array|null $control
      * @return array
      */
-    private function register(string $key, array $args = [], AbstractControl $control = null): array
+    private function register(string $key, array $args = [], AbstractControl|array $control = null): array
     {
         $meta = array_merge([
             'key'    => $key,
@@ -77,6 +78,9 @@ final class Meta
             'isUpdated' => true,
             'control'   => null,
         ], $args);
+        if (!empty($control) && is_array($control)) {
+            $control = new Control($key, $control);
+        }
         if (!$meta['control'] instanceof AbstractControl) {
             $meta['control'] = $control;
         }

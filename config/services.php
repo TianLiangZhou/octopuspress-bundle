@@ -1,9 +1,7 @@
 <?php
 
 
-use Doctrine\ORM\EntityManagerInterface;
 use OctopusPress\Bundle\Asset\ThemePackage;
-use OctopusPress\Bundle\Asset\ThemeStaticVersionStrategy;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Command\AutoloadCommand;
 use OctopusPress\Bundle\Command\InstallCommand;
@@ -12,7 +10,6 @@ use OctopusPress\Bundle\EventListener\BootstrapListener;
 use OctopusPress\Bundle\EventListener\LogoutListener;
 use OctopusPress\Bundle\EventListener\ViewListener;
 use OctopusPress\Bundle\Model\ThemeManager;
-use OctopusPress\Bundle\OctopusPressKernel;
 use OctopusPress\Bundle\Model\CustomizeManager;
 use OctopusPress\Bundle\Model\MasterManager;
 use OctopusPress\Bundle\Model\PluginManager;
@@ -26,7 +23,6 @@ use OctopusPress\Bundle\Service\ServiceCenter;
 use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Twig\OctopusExtension;
 use OctopusPress\Bundle\Twig\OctopusRuntime;
-use OctopusPress\Bundle\Form\Type\TaxonomyType;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -94,12 +90,9 @@ return static function (ContainerConfigurator $container) {
 
     $services->set('twig.runtime.octopus', OctopusRuntime::class);
 
-    $services->set('assets.theme_static_version_strategy', ThemeStaticVersionStrategy::class)
-        ->args([OctopusPressKernel::OCTOPUS_PRESS_VERSION, '%%s?v=%%s']);
     $services->set(ThemePackage::class, ThemePackage::class)
         ->args([
             service('octopus_press.bridger'),
-            service('assets.theme_static_version_strategy'),
         ])
         ->tag('assets.package', ['package' => 'theme']);
 

@@ -122,7 +122,7 @@ export class ControlComponent implements OnInit, OnChanges, AfterViewInit, Contr
     return control?.dirty ? (control.invalid ? 'danger' : 'success') : 'primary';
   }
 
-  error() {
+  get error() {
     const error = this.getControl()?.errors;
     if (error == null || error.nbDatepickerParse) {
       return "";

@@ -41,7 +41,6 @@ export class NewComponent implements OnInit, OnSpinner, OnDestroy {
   showPassword = true;
 
   route: ActivatedRouteSnapshot;
-  avatarSrc: string = ""
   private subscription: Subscription | undefined;
 
 
@@ -60,15 +59,12 @@ export class NewComponent implements OnInit, OnSpinner, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.avatarSrc = this.configService.config.assetsUrl;
     this.roles.push(...this.configService.roles());
     this.subscription = this.ckfinder.onChoose().subscribe((files) => {
       if (files.length < 1) {
         return ;
       }
-      let file = files.pop();
-      this.formGroup.controls.avatar.setValue(file!.url);
-      this.avatarSrc = file!.url;
+      this.formGroup.controls.avatar.setValue(files[0].url);
     });
     this.metaGroup.addControl('description', new FormControl(''));
     this.metaGroup.addControl('rich_editing', new FormControl<boolean>(false));
@@ -102,7 +98,7 @@ export class NewComponent implements OnInit, OnSpinner, OnDestroy {
     }
     this.http.post(url, body, {
       context: new HttpContext().set(SPINNER, this)
-    }).subscribe(response => {
+    }).subscribe(() => {
       this.router.navigateByUrl("/app/user").then();
     });
   }

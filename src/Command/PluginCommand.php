@@ -122,18 +122,11 @@ class PluginCommand extends Command implements EventSubscriberInterface
      */
     private function registerCommands(): void
     {
-        $activatedPlugins = $this->manager->getActivatedPlugins();
-        foreach ($activatedPlugins as $pluginName) {
-            $plugin = $this->manager->getPlugin($pluginName);
-            if ($plugin == null) {
-                continue;
-            }
-            foreach ($plugin->getServices($this->bridger) as $command) {
-                if ($command instanceof Command) {
-                    $this->getApplication()->add($command);
-                }
-            }
-        }
+        /**
+         * @var $application Application
+         */
+        $application = $this->getApplication();
+        $this->manager->launchers($application->getKernel()->getContainer(), $application);
     }
 
     /**

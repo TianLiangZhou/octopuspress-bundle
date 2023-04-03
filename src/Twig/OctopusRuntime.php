@@ -12,6 +12,8 @@ use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\TermRelationship;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
 use OctopusPress\Bundle\Entity\User;
+use OctopusPress\Bundle\Model\PluginManager;
+use OctopusPress\Bundle\Plugin\PluginProviderInterface;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Repository\PostRepository;
 use OctopusPress\Bundle\Repository\RelationRepository;
@@ -43,8 +45,9 @@ class OctopusRuntime implements RuntimeExtensionInterface
     private array $assetsUrl;
     private UserRepository $user;
     private ActivatedRoute $activatedRoute;
+    private PluginManager $pluginManager;
 
-    public function __construct(Bridger $bridger)
+    public function __construct(Bridger $bridger, PluginManager $pluginManager)
     {
         $this->bridger = $bridger;
         $this->hook = $this->bridger->getHook();
@@ -56,6 +59,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
         $this->router   = $this->bridger->getRouter();
         $this->activatedRoute = $this->bridger->getActivatedRoute();
         $this->assetsUrl = $this->bridger->getAssetsUrl();
+        $this->pluginManager = $pluginManager;
     }
 
     /**
@@ -97,6 +101,15 @@ class OctopusRuntime implements RuntimeExtensionInterface
     public function exist(string $name): bool
     {
         return $this->option->findOneBy(['name' => $name]) != null;
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function isPluginActivated(string $name): bool
+    {
+        return $this->pluginManager->isRegistered($name);
     }
 
     /**
@@ -247,6 +260,15 @@ class OctopusRuntime implements RuntimeExtensionInterface
     }
 
     /**
+     * @param string $name
+     * @return PluginProviderInterface|null
+     */
+    public function getPlugin(string $name): ?PluginProviderInterface
+    {
+        return $this->pluginManager->provider($name);
+    }
+
+    /**
      * @param int $attachmentId
      * @return array|null
      */
@@ -313,6 +335,10 @@ class OctopusRuntime implements RuntimeExtensionInterface
         return $this->widget('navigation', $options);
     }
 
+    /**
+     * @param array $idSets
+     * @return User[]|null
+     */
     public function getUsers(array $idSets)
     {
         $ids = array_filter($idSets, function ($id) {
@@ -459,6 +485,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
      * @param int|array $taxonomyId
      * @param array<string, bool|int|string> $options
      * @return iterable
+     * @throws NonUniqueResultException
      */
     public function getTaxonomyPosts(int|array $taxonomyId, array $options = []): iterable
     {
@@ -466,14 +493,25 @@ class OctopusRuntime implements RuntimeExtensionInterface
             return [];
         }
         $queryBuilder = $this->relation->createQueryBuilder('r');
-        is_array($taxonomyId)
-            ? $queryBuilder->andWhere('r.taxonomy IN (:taxonomyId)')
-            : $queryBuilder->andWhere('r.taxonomy = :taxonomyId');
-        $queryBuilder->setParameter('taxonomyId', $taxonomyId)
-            ->addOrderBy('r.post', 'DESC');
-        $query = $queryBuilder->getQuery();
-        $paginator = new Paginator($query);
-        $count = $paginator->count();
+        $queryBuilder->select('COUNT(r.post) as cnt');
+        $taxonomies = is_array($taxonomyId) ? array_map('intval', $taxonomyId) : [(int) $taxonomyId];
+        $queryBuilder->andWhere('r.taxonomy IN (:taxonomyId)')
+            ->setParameter('taxonomyId', $taxonomies);
+        if (empty($options['type'])) {
+            $options['type'] = Post::TYPE_POST;
+        }
+        if (empty($options['status'])) {
+            $options['status'] = Post::STATUS_PUBLISHED;
+        }
+        is_array($options['type'])
+            ? $queryBuilder->andWhere('r.type IN (:type)')
+            : $queryBuilder->andWhere('r.type = :type');
+        $queryBuilder->setParameter('type', $options['type']);
+        is_array($options['status'])
+            ? $queryBuilder->andWhere('r.status IN (:status)')
+            : $queryBuilder->andWhere('r.status = :status');
+        $queryBuilder->setParameter('status', $options['status']);
+        $count = $queryBuilder->getQuery()->getOneOrNullResult()['cnt'] ?? 0;
         if ($count < 1) {
             return [];
         }
@@ -482,7 +520,9 @@ class OctopusRuntime implements RuntimeExtensionInterface
         if (($page * $limit - $limit) > $count) {
             return [];
         }
-        $records = $paginator->getQuery()
+        $queryBuilder->select('(r.post) as object_id')
+            ->addOrderBy('r.createdAt', 'DESC');
+        $records = $queryBuilder->getQuery()
             ->setFirstResult($page * $limit - $limit)
             ->setMaxResults($limit)
             ->getArrayResult();
@@ -491,7 +531,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
             'id' => $objectIds,
         ], $options));
         $currentPageCount = count($records);
-        if ($currentPageCount < 1) {
+        if ($currentPageCount < $limit) {
             $pageCount = ceil($count / $limit);
             $count = $count - (($pageCount - $page) * $limit);
         }

@@ -21,15 +21,16 @@
         <nb-card-body>
           <div class="mb-2" *ngIf="typeSetting.supports && typeSetting.supports.includes('title')">
             <div class="col-12">
-              <input formControlName="title" type="text" nbInput fullWidth placeholder="标题" (keydown.enter)="$event.preventDefault()">
+              <input status="primary" formControlName="title" type="text" nbInput fullWidth placeholder="标题" (keydown.enter)="$event.preventDefault()">
             </div>
           </div>
           <div class="mb-2" *ngIf="typeSetting.supports && typeSetting.supports.includes('editor')">
             <div class="col-12">
               <app-ckeditor *ngIf="isRichEditor" #ckeditorComponent (contentChange)="updateContent($event)" [data]="entity.content"></app-ckeditor>
-              <textarea formControlName="content" nbInput fullWidth rows="10" placeholder="内容" *ngIf="!isRichEditor"></textarea>
+              <textarea status="primary" formControlName="content" nbInput fullWidth rows="10" placeholder="内容" *ngIf="!isRichEditor"></textarea>
             </div>
           </div>
+          <control-container [controls]="controls" [form]="metaGroup"></control-container>
         </nb-card-body>
       </nb-card>
     </div>
@@ -111,6 +112,16 @@
             <button type="button" nbButton fullWidth status="primary"
                     (click)="ckfinder.popup({resourceType: 'Images', multi: false, source: 'attachment'})">设置特色图像
             </button>
+          </nb-accordion-item-body>
+        </nb-accordion-item>
+        <nb-accordion-item *ngIf="typeSetting.supports && typeSetting.supports.includes('parent')">
+          <nb-accordion-item-header>父级</nb-accordion-item-header>
+          <nb-accordion-item-body>
+            <input formControlName="parentInput" placeholder="父级对象" type="text" nbInput fullWidth status="primary" [nbAutocomplete]="parent"/>
+            <nb-autocomplete #parent (selectedChange)="selectParent($event)">
+              <nb-option *ngFor="let option of filteredParentOptions$ | async"
+                         [value]="option">{{ option.title }}</nb-option>
+            </nb-autocomplete>
           </nb-accordion-item-body>
         </nb-accordion-item>
         <nb-accordion-item *ngIf="typeSetting.supports && typeSetting.supports.includes('excerpt')">

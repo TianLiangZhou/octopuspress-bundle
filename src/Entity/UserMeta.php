@@ -6,7 +6,6 @@ use Doctrine\ORM\Mapping\JoinColumn;
 use JsonSerializable;
 use OctopusPress\Bundle\Repository\UserMetaRepository;
 use OctopusPress\Bundle\Util\Formatter;
-use OctopusPress\Bundle\Util\MetaValue;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
@@ -23,6 +22,7 @@ use Symfony\Component\Validator\Constraints\Regex;
  */
 #[Table(name: "user_metas", )]
 #[Entity(repositoryClass: UserMetaRepository::class)]
+#[ORM\UniqueConstraint(columns: ['user_id', 'meta_key'])]
 #[Index(columns: ['user_id'], name: 'user_id')]
 #[Index(columns: ['meta_key'], name: 'meta_key')]
 class UserMeta
@@ -31,7 +31,7 @@ class UserMeta
      * @var int|null
      */
     #[Id]
-    #[Column(name: "meta_id", type: "bigint", nullable: false, options: ['unsigned' => true])]
+    #[Column(name: "meta_id", type: "integer", nullable: false, options: ['unsigned' => true])]
     #[GeneratedValue(strategy: "IDENTITY")]
     private ?int $metaId = null;
 
@@ -46,7 +46,7 @@ class UserMeta
     /**
      * @var string
      */
-    #[Column(name: "meta_key", type: "string", length: 255, nullable: true)]
+    #[Column(name: "meta_key", type: "string", length: 191, nullable: false)]
     #[NotBlank]
     #[Regex(pattern: "/^[\w]+(?:[-\w]+)*$/")]
     private string $metaKey = '';

@@ -7,25 +7,22 @@ use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use Symfony\Component\Asset\Context\ContextInterface;
 use Symfony\Component\Asset\Exception\RuntimeException;
-use Symfony\Component\Asset\UrlPackage;
+use Symfony\Component\Asset\Package;
+use Symfony\Component\Asset\VersionStrategy\StaticVersionStrategy;
 
-class ThemePackage extends UrlPackage
+class ThemePackage extends Package
 {
-    private string $templateDir;
     private OptionRepository $repository;
-
-    private static bool $isLoaderVersion = false;
+    private string $templateDir;
     private static ?string $theme = null;
+    private string $assetUrl;
 
-    public function __construct(
-        Bridger $bridger,
-        ThemeStaticVersionStrategy $versionStrategy,
-        ContextInterface $context = null,
-    )
+    public function __construct(Bridger $bridger, ContextInterface $context = null)
     {
         $this->templateDir = $bridger->getTemplateDir();
         $this->repository = $bridger->getOptionRepository();
-        parent::__construct($bridger->getAssetsUrl(), $versionStrategy, $context);
+        $this->assetUrl = $bridger->getAssetUrl();
+        parent::__construct(new StaticVersionStrategy($this->loaderThemeVersion(), '%s?v=%s'), $context);
     }
 
     /**
@@ -37,13 +34,10 @@ class ThemePackage extends UrlPackage
     }
 
     /**
-     * @return void
+     * @return string
      */
-    private function loaderThemeVersion()
+    private function loaderThemeVersion(): string
     {
-        if (self::$isLoaderVersion) {
-            return ;
-        }
         $packagePath = $this->templateDir. DIRECTORY_SEPARATOR . $this->getTheme() . DIRECTORY_SEPARATOR . 'package.json';
         if (!file_exists($packagePath)) {
             throw new RuntimeException(sprintf('Asset manifest file "%s" does not exist. Did you forget to build the assets with npm or yarn?', $packagePath));
@@ -53,24 +47,27 @@ class ThemePackage extends UrlPackage
         } catch (JsonException $e) {
             throw new RuntimeException(sprintf('Error parsing JSON from asset manifest file "%s": ', $packagePath).$e->getMessage(), previous: $e);
         }
-        if (($version = $this->getVersionStrategy()) instanceof ThemeStaticVersionStrategy) {
-            $version->setVersion($manifestData['version'] ?? 'v1.0.0');
-        }
-        self::$isLoaderVersion = true;
+        return $manifestData['version'] ?? 'v1.0.0';
     }
 
 
+    /**
+     * @param string $path
+     * @return string
+     */
     public function getVersion(string $path): string
     {
         // TODO: Implement getVersion() method.
-        $this->loaderThemeVersion();
-        return parent::getVersion('themes' . DIRECTORY_SEPARATOR . $this->getTheme(). DIRECTORY_SEPARATOR . $path);
+        return $this->assetUrl . parent::getVersion('themes' . DIRECTORY_SEPARATOR . $this->getTheme(). DIRECTORY_SEPARATOR . $path);
     }
 
+    /**
+     * @param string $path
+     * @return string
+     */
     public function getUrl(string $path): string
     {
         // TODO: Implement getUrl() method.
-        $this->loaderThemeVersion();
-        return parent::getUrl('themes' . DIRECTORY_SEPARATOR . $this->getTheme(). DIRECTORY_SEPARATOR . $path);
+        return $this->assetUrl . parent::getUrl('themes' . DIRECTORY_SEPARATOR . $this->getTheme(). DIRECTORY_SEPARATOR . $path);
     }
 }

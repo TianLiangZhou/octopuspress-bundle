@@ -1,12 +1,12 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, Inject, OnInit, ViewEncapsulation} from '@angular/core';
+import {AfterViewInit, Component, Inject, OnInit, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
-import {HttpClient, HttpContext, HttpParams} from "@angular/common/http";
+import {HttpClient, HttpContext} from "@angular/common/http";
 import {DOCUMENT} from "@angular/common";
 import {Observable, of, timer} from "rxjs";
 import {debounceTime, distinctUntilChanged, filter, map, switchMap} from "rxjs/operators";
 import {FormControl, FormGroup} from "@angular/forms";
 import {OnSpinner, Records, ResponseBody} from "../../../@core/definition/common";
-import {PAGES, POSTS, TAXONOMIES} from "../../../@core/definition/content/api";
+import {POSTS, TAXONOMIES} from "../../../@core/definition/content/api";
 import {
   NAVIGATE,
   NAVIGATE_DELETE,

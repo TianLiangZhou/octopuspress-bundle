@@ -21,4 +21,10 @@ interface PluginInterface
      * @return object[]
      */
     public function getServices(Bridger $bridger): array;
+
+    /**
+     * @param Bridger $bridger
+     * @return PluginProviderInterface|null
+     */
+    public function provider(Bridger $bridger): ?PluginProviderInterface;
 }

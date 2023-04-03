@@ -7,16 +7,7 @@ export const TAXONOMY_REGISTERED: string = "/taxonomy/registered";
 export const TAXONOMY_STORE: string = '/taxonomy/{taxonomy}/store';
 export const TAXONOMY_UPDATE: string = '/taxonomy/{taxonomy}/{id}/update';
 export const TAXONOMY_DELETE: string = '/taxonomy/{taxonomy}/delete';
-
-
-
-
-
-export const PAGES: string = '/page';
-export const PAGE_SHOW: string = '/page/{id}';
-export const PAGE_STORE: string = '/page/store';
-export const PAGE_UPDATE: string = '/page/{id}/update';
-export const PAGE_DELETE: string = '/page/{id}/delete';
+export const TAXONOMY_CONVERT: string = '/taxonomy/{id}/convert';
 
 
 export const POSTS: string = '/post';

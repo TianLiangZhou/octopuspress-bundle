@@ -1,9 +1,11 @@
 <div class="mb-3" [class]="direction !== 'column' ? 'row' : ''" [formGroup]="form!">
-  <label class="label col-form-label" [class]="direction !== 'column' ? 'col-12 col-md-2' : ''" for="{{control.id}}">{{ control.label }}</label>
+  <label class="label col-form-label" [class]="direction !== 'column' ? 'col-12 col-md-2' : ''" for="{{control.id}}">
+    {{ control.label}}
+  </label>
   <div [class]="direction !== 'column' ? 'col-12 col-md-10' : ''" class="d-flex flex-column">
     <ng-container [ngSwitch]="control.type">
       <input *ngSwitchCase="'input'"
-         id="{{ control.id }}"
+         [id]="control.id"
          status="primary"
          nbInput fullWidth
          [placeholder]="control.placeholder!"
@@ -13,8 +15,9 @@
          [formControlName]="control.id"/>
 
       <textarea *ngSwitchCase="'textarea'"
-        nbInput fullWidth status="primary"
-        id="{{control.id}}"
+        nbInput fullWidth [rows]="control.settings!['rows']??2"
+        status="primary"
+        [id]="control.id"
         [placeholder]="control.placeholder!"
         [status]="status"
         (ngModelChange)="writeValue($event)"
@@ -50,7 +53,7 @@
         </div>
       </div>
 
-      <nb-select id="{{ control.id }}"
+      <nb-select [id]="control.id"
          status="primary" fullWidth
          *ngSwitchCase="'select'"
          [placeholder]="control.placeholder!"
@@ -62,20 +65,19 @@
       </nb-select>
 
 
-      <nb-radio-group class="d-flex" *ngSwitchCase="'radio'" [formControlName]="control.id" id="{{ control.id }}" status="primary">
+      <nb-radio-group class="d-flex" *ngSwitchCase="'radio'" [formControlName]="control.id" [id]="control.id" status="primary">
         <nb-radio [value]="option.value" *ngFor="let option of control.options">{{option.label}}</nb-radio>
       </nb-radio-group>
 
 
-      <nb-checkbox *ngSwitchCase="'checkbox'"
-        id="{{ control.id }}"
+      <nb-checkbox *ngSwitchCase="'checkbox'" [id]="control.id"
         status="primary"
         [checked]="!!control.value"
         (checkedChange)="writeValue($event)"
         [formControlName]="control.id"></nb-checkbox>
 
       <div *ngSwitchCase="'date'">
-        <input nbInput fullWidth status="primary" id="{{ control.id }}"
+        <input nbInput fullWidth status="primary" [id]="control.id" id="{{ control.id }}"
            (ngModelChange)="writeValue($event)"
            [placeholder]="control.placeholder"
            [formControlName]="control.id"
@@ -84,7 +86,7 @@
       </div>
 
       <div *ngSwitchCase="'datetime'">
-        <input nbInput fullWidth status="primary" id="{{ control.id }}"
+        <input nbInput fullWidth status="primary" [id]="control.id" id="{{ control.id }}"
                [placeholder]="control.placeholder"
                (ngModelChange)="writeValue($event)"
                [formControlName]="control.id"
@@ -94,35 +96,38 @@
 
 
       <div *ngSwitchCase="'range_date'">
-        <input nbInput fullWidth status="primary" id="{{ control.id }}"
+        <input nbInput fullWidth status="primary" [id]="control.id"
          [placeholder]="control.placeholder"
          (ngModelChange)="writeValue($event)"
          [formControlName]="control.id"
-         [nbDatepicker]="rangeDatePicker"/>
+         [nbDatepicker]="rangeDatePicker"
+        />
         <nb-rangepicker [format]="control.format!" #rangeDatePicker></nb-rangepicker>
       </div>
 
       <div *ngSwitchCase="'autocomplete'">
-        <input nbInput fullWidth status="primary" id="{{ control.id }}"
+        <input nbInput fullWidth status="primary" [id]="control.id"
          [placeholder]="control.placeholder"
          (ngModelChange)="writeValue($event)"
          [formControlName]="control.id"
          [nbAutocomplete]="autocomplete"
         />
-        <nb-autocomplete  #autocomplete></nb-autocomplete>
+        <nb-autocomplete #autocomplete></nb-autocomplete>
       </div>
 
       <div class="d-flex justify-content-between align-items-center" *ngSwitchCase="'color'">
         <input disabled nbInput [value]="control.value ? control.value : ''" />
         <ngx-colors (ngModelChange)="writeValue($event)" ngx-colors-trigger [formControlName]="control.id"></ngx-colors>
       </div>
+
       <div *ngSwitchCase="'custom'" [innerHTML]="dom.bypassSecurityTrustHtml(control.template!)"></div>
 
-      <nb-toggle *ngSwitchCase="'switch'" [formControlName]="control.id" (ngModelChange)="writeValue($event)" status="primary"></nb-toggle>
+      <nb-toggle *ngSwitchCase="'switch'" [formControlName]="control.id" [id]="control.id" (ngModelChange)="writeValue($event)" status="primary"></nb-toggle>
+
       <group-control *ngSwitchCase="'group'" [element]="control" [formControlName]="control.id" (ngModelChange)="writeValue($event)"></group-control>
 
     </ng-container>
-    <p class="caption col-form-label status-danger" *ngIf="invalid">{{error()}}</p>
+    <p class="caption col-form-label status-danger" *ngIf="invalid">{{error}}</p>
     <label class="label col-form-label" *ngIf="control.description && control.description.length > 0">{{control.description}}</label>
   </div>
 </div>

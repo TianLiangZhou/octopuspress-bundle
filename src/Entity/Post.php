@@ -75,7 +75,7 @@ class Post implements JsonSerializable
     /**
      * @var ?int
      */
-    #[Column(name: "id", type: "bigint", nullable: false, options: ['unsigned' => true])]
+    #[Column(name: "id", type: "integer", nullable: false, options: ['unsigned' => true])]
     #[Id]
     #[GeneratedValue(strategy: "AUTO")]
     private ?int $id = null;
@@ -169,13 +169,13 @@ class Post implements JsonSerializable
     /**
      * @var int
      */
-    #[Column(name: "menu_order", type: "integer", nullable: false, options: ['default' => '0'])]
+    #[Column(name: "menu_order", type: "integer", nullable: false, options: ['unsigned'=>true, 'default' => '0'])]
     private int $menuOrder = 0;
 
     /**
      * @var string
      */
-    #[Column(name: "type", type: "string", length: 20, nullable: false, options: ['default' => 'post'])]
+    #[Column(name: "type", type: "string", length: 28, nullable: false, options: ['default' => 'post'])]
     private string $type = 'post';
 
     /**
@@ -187,7 +187,7 @@ class Post implements JsonSerializable
     /**
      * @var int
      */
-    #[Column(name: "comment_count", type: "bigint", nullable: false, options: ['default' => '0'])]
+    #[Column(name: "comment_count", type: "integer", nullable: false, options: ['unsigned' => true,'default' => '0'])]
     private int $commentCount = 0;
 
     /**

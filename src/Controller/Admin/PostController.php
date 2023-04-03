@@ -302,6 +302,15 @@ class PostController extends AdminController
             ->update()
             ->getQuery()
             ->execute();
+        $this->bridger->getRelationRepository()
+            ->createQueryBuilder('tr')
+            ->andWhere('tr.post IN (:post) AND tr.status != :status')
+            ->setParameter('post', $sets)
+            ->setParameter('status', $status)
+            ->set('status', $status)
+            ->update()
+            ->getQuery()
+            ->execute();
         $event = new PostStatusUpdateEvent($posts, $status);
         $this->bridger->getDispatcher()
             ->dispatch($event, OctopusEvent::POST_STATUS_UPDATE);

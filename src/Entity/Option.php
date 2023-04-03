@@ -29,7 +29,7 @@ class Option
     /**
      * @var int
      */
-    #[Column(name: "option_id", type: "bigint", nullable: false, options: ['unsigned' => true])]
+    #[Column(name: "option_id", type: "integer", nullable: false, options: ['unsigned' => true])]
     #[Id]
     #[GeneratedValue(strategy: "IDENTITY")]
     private int $id;

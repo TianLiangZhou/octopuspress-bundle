@@ -27,7 +27,7 @@ class PostManager
     private EventDispatcherInterface $dispatcher;
     private LoggerInterface $logger;
     private ManagerRegistry $managerRegistry;
-    private Bridger $bridge;
+    private Bridger $bridger;
     private PostRepository $repository;
     private PostMetaRepository $metaRepository;
 
@@ -39,7 +39,7 @@ class PostManager
     ) {
         $this->dispatcher = $dispatcher;
         $this->logger = $logger;
-        $this->bridge = $bridger;
+        $this->bridger = $bridger;
         $this->managerRegistry = $managerRegistry;
         $this->repository = $bridger->getPostRepository();
         $this->metaRepository = $bridger->getPostMetaRepository();
@@ -77,6 +77,15 @@ class PostManager
             $doctrine = $this->managerRegistry->getManager();
             $doctrine->persist($post);
             $doctrine->flush();
+            $this->bridger->getRelationRepository()
+                ->createQueryBuilder('tr')
+                ->andWhere('tr.post = :post AND tr.status != :status')
+                ->setParameter('post', $post->getId())
+                ->setParameter('status', $post->getStatus())
+                ->set('status', $post->getStatus())
+                ->update()
+                ->getQuery()
+                ->execute();
             $postSaveAfterEvent = new PostEvent($post, $oldStatus);
             $this->dispatcher->dispatch($postSaveAfterEvent, OctopusEvent::POST_SAVE_AFTER);
             return true;
@@ -214,7 +223,7 @@ class PostManager
             'filesize' => filesize($file),
             'sizes'    => array(),
         );
-        $sizes = $this->bridge->getMedia()->getRegisteredImageSubsizes();
+        $sizes = $this->bridger->getMedia()->getRegisteredImageSubsizes();
         $this->makeImageSubsizes($sizes, $imageMeta, $file);
         return $imageMeta;
     }

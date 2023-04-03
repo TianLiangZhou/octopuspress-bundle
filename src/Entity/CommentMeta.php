@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use JsonSerializable;
 use OctopusPress\Bundle\Repository\CommentMetaRepository;
 use OctopusPress\Bundle\Util\Formatter;
@@ -19,6 +20,7 @@ use OctopusPress\Bundle\Util\Formatter;
  */
 #[Table(name: "comment_metas",)]
 #[Entity(repositoryClass: CommentMetaRepository::class)]
+#[UniqueConstraint(columns: ['comment_id', 'meta_key'])]
 #[Index(columns: ['comment_id'], name: 'comment_id')]
 #[Index(columns: ['meta_key'], name: 'meta_key')]
 class CommentMeta
@@ -26,7 +28,7 @@ class CommentMeta
     /**
      * @var int
      */
-    #[Column(name: "meta_id", type: "bigint", nullable: false, options: ['unsigned' => true])]
+    #[Column(name: "meta_id", type: "integer", nullable: false, options: ['unsigned' => true])]
     #[Id]
     #[GeneratedValue(strategy: "IDENTITY")]
     private int $metaId;
@@ -41,7 +43,7 @@ class CommentMeta
     /**
      * @var string
      */
-    #[Column(name: "meta_key", type: "string", length: 255, nullable: false)]
+    #[Column(name: "meta_key", type: "string", length: 191, nullable: false)]
     private string $metaKey;
 
     /**

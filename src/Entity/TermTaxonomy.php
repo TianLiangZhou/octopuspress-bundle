@@ -44,7 +44,7 @@ class TermTaxonomy implements JsonSerializable
      * @var ?int
      */
     #[Id]
-    #[Column(name: "term_taxonomy_id", type: "bigint", nullable: false, options: ['unsigned' => true])]
+    #[Column(name: "term_taxonomy_id", type: "integer", nullable: false, options: ['unsigned' => true])]
     #[GeneratedValue(strategy: "AUTO")]
     private ?int $id = null;
 
@@ -80,7 +80,7 @@ class TermTaxonomy implements JsonSerializable
     /**
      * @var int
      */
-    #[Column(name: "count", type: "bigint", nullable: false, options: ['default' => '0'])]
+    #[Column(name: "count", type: "integer", nullable: false, options: ['unsigned' => true, 'default' => '0'])]
     private int $count = 0;
 
     /**

@@ -55,8 +55,7 @@
         <label class="label col-form-label col-12 col-md-2">个性头像</label>
         <div class="col-12 col-md-5">
           <div class=" d-flex justify-content-between align-items-center">
-            <span>{{avatarSrc}}</span>
-            <img alt="头像" [src]="avatarSrc" width="128" />
+            <img alt="头像" [src]="formGroup.controls['avatar'].value" width="128" />
             <button type="button" size="medium" nbButton (click)="avatar()">选择头像</button>
           </div>
         </div>
