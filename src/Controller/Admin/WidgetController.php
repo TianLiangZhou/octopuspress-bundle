@@ -77,11 +77,6 @@ class WidgetController extends AdminController
     #[Route('/blocks', name: 'blocks', methods: ['GET'])]
     public function blocks(): JsonResponse
     {
-        $this->bridger->getWidget()->registerBlock([
-            'label' => 'footer',
-        ])->registerBlock([
-            'label' => 'header',
-        ]);
         $registeredBlocks = $this->bridger->getWidget()->getRegisteredBlocks();
         $activatedBlocks = $this->option->blocks();
         $blockWidgets    = $this->option->blockWidgets();
