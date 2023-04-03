@@ -21,7 +21,7 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "sourceMap": true,
-            "outputPath": "dist",
+            "outputPath": "public/dashboard",
             "index": "dashboard/index.html",
             "main": "dashboard/main.ts",
             "polyfills": "dashboard/polyfills.ts",
