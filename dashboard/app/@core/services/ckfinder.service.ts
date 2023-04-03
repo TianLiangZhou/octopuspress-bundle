@@ -1,7 +1,8 @@
-import {EventEmitter, Injectable} from "@angular/core";
+import {Inject, Injectable} from "@angular/core";
 import {DynamicResourceLoaderService} from "./dynamic-resource-loader.service";
 import {CookieService} from "ngx-cookie-service";
-import {BehaviorSubject, ReplaySubject } from "rxjs";
+import {BehaviorSubject} from "rxjs";
+import { APP_BASE_HREF } from "@angular/common";
 
 export declare type CKFinderPopupArgument = {
   resourceType: string;
@@ -26,10 +27,11 @@ export class CKFinderService {
 
   private selectedFiles: Record<number, string> = {};
 
-  constructor(private dynamicResourceLoader: DynamicResourceLoaderService,
+  constructor(@Inject(APP_BASE_HREF) private baseHref:string,
+              private dynamicResourceLoader: DynamicResourceLoaderService,
               private cookieService: CookieService) {
     if (window.CKFinder == undefined) {
-      this.dynamicResourceLoader.loadCKFinder();
+      this.dynamicResourceLoader.loadCKFinder(baseHref + 'ckfinder/ckfinder.js');
     }
   }
 
@@ -117,7 +119,7 @@ export class CKFinderService {
     const theme = this.cookieService.get("theme");
     if (theme == "dark" || theme == "cosmic") {
       options.swatch = theme === "dark" ? "b" : "a";
-      options.themeCSS = "/ckfinder/libs/custom.jquery.mobile.dark.min.css";
+      options.themeCSS = this.baseHref + "ckfinder/libs/custom.jquery.mobile.dark.min.css";
     }
     return options;
   }

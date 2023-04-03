@@ -74,8 +74,8 @@ export class DynamicResourceLoaderService {
     });
   }
 
-  loadCKFinder() {
-    this.push([{name: 'ckfinder', src:'/ckfinder/ckfinder.js'},]);
+  loadCKFinder(href: string) {
+    this.push([{name: 'ckfinder', src:href},]);
     if (window.CKFinder == undefined) {
       this.load('ckfinder').then(r => {
         console.log("load success");
