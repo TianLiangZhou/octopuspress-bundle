@@ -336,7 +336,9 @@ return static function(RoutingConfigurator \$configurator) {
     \$configurator->import('@OctopusPressBundle/config/routes.php');
 };
 EOF;
-        file_put_contents(sprintf("%s/config/routes/%s.php", $projectDir, $extensionName), $data);
+        if (is_writable($projectDir . '/config')) {
+            file_put_contents(sprintf("%s/config/routes/%s.php", $projectDir, $extensionName), $data);
+        }
     }
 
 }
