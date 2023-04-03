@@ -4,6 +4,7 @@ import {AppConfiguration, Meta} from "../definition/common";
 import {CONFIGURATION} from "../definition/open/api";
 import {Observable, tap} from "rxjs";
 import {PostTypeSetting, TaxonomySetting} from "../definition/content/type";
+import {PlatformLocation} from "@angular/common";
 
 @Injectable()
 export class ConfigurationService {
@@ -49,5 +50,10 @@ export function initializeAppFactory(http: HttpClient, configService: Configurat
       finalize: () => {}
     })
   );
+}
 
+export function getBaseHref(platformLocation: PlatformLocation): string {
+  let baseHref = platformLocation.getBaseHrefFromDOM();
+  console.log(baseHref);
+  return baseHref;
 }

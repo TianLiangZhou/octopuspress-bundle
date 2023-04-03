@@ -8,8 +8,8 @@ import {HTTP_INTERCEPTORS, HttpClient, HttpClientModule} from "@angular/common/h
 import {ThemeModule} from "./@theme/theme.module";
 import {CoreModule} from "./@core/core.module";
 import {AuthGuard} from "./@core/services/auth.guard";
-import {ConfigurationService, initializeAppFactory} from "./@core/services/configuration.service";
-import {APP_BASE_HREF} from "@angular/common";
+import {ConfigurationService, getBaseHref, initializeAppFactory} from "./@core/services/configuration.service";
+import {APP_BASE_HREF, PlatformLocation} from "@angular/common";
 import {Authorization} from "./@core/interceptor/authorization";
 import {NotFoundComponent} from "./not-found.component";
 import {NbIconLibraries} from "@nebular/theme";
@@ -43,7 +43,7 @@ import {NbIconLibraries} from "@nebular/theme";
       deps: [HttpClient, ConfigurationService],
       multi: true
     },
-    { provide: APP_BASE_HREF, useValue: '/' },
+    {provide: APP_BASE_HREF, useFactory: getBaseHref, deps: [PlatformLocation]},
   ],
 })
 export class AppModule {
