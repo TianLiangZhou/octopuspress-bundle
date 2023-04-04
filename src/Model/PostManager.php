@@ -82,7 +82,8 @@ class PostManager
                 ->andWhere('tr.post = :post AND tr.status != :status')
                 ->setParameter('post', $post->getId())
                 ->setParameter('status', $post->getStatus())
-                ->set('status', $post->getStatus())
+                ->set('status', ':newStatus')
+                ->set('newStatus', $post->getStatus())
                 ->update()
                 ->getQuery()
                 ->execute();

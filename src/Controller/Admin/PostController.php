@@ -307,7 +307,8 @@ class PostController extends AdminController
             ->andWhere('tr.post IN (:post) AND tr.status != :status')
             ->setParameter('post', $sets)
             ->setParameter('status', $status)
-            ->set('status', $status)
+            ->set('status', ':newStatus')
+            ->set('newStatus', $status)
             ->update()
             ->getQuery()
             ->execute();
