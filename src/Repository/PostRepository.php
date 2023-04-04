@@ -163,11 +163,9 @@ class PostRepository extends ServiceEntityRepository
                 $qb->andWhere('a.status IN (:status)')->setParameter('status', $filters['status']);
             }  else {
                 if ($filters['status'] === Post::STATUS_PUBLISHED) {
-                    $qb->andWhere('(a.status = :publish OR a.status = :private OR (a.status = :future AND a.createdAt < :date))');
+                    $qb->andWhere('(a.status = :publish OR a.status = :private)');
                     $qb->setParameter('publish', Post::STATUS_PUBLISHED)
-                        ->setParameter('private', Post::STATUS_PRIVATE)
-                        ->setParameter('future', Post::STATUS_FUTURE)
-                        ->setParameter('date', date('Y-m-m H:i:s'));
+                        ->setParameter('private', Post::STATUS_PRIVATE);
                 } else {
                     $qb->andWhere('a.status = :status')->setParameter('status',  $filters['status']);
                 }
