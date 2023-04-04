@@ -516,7 +516,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
             return [];
         }
         $page = max(1, (int) $this->getRequest()->get('paged', 1));
-        $limit = $this->option->postsPerPage();
+        $limit = (int) ($options['limit'] ?? $this->option->postsPerPage());
         if (($page * $limit - $limit) > $count) {
             return [];
         }
