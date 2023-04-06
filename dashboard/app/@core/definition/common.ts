@@ -24,6 +24,7 @@ export interface AppConfiguration {
   assetsUrl: string;
   siteUrl: string;
   roles: {label: string, value: string}[];
+  settingPages: {name: string, path: string}[];
 }
 
 export declare interface OnSpinner {

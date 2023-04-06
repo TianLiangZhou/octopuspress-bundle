@@ -4,6 +4,9 @@ namespace OctopusPress\Bundle\Controller\Admin;
 
 
 use OctopusPress\Bundle\Bridge\Bridger;
+use OctopusPress\Bundle\Customize\Draw;
+use OctopusPress\Bundle\Customize\Layout\Form;
+use OctopusPress\Bundle\Model\CustomizeManager;
 use OctopusPress\Bundle\Model\PluginManager;
 use OctopusPress\Bundle\Service\ServiceCenter;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,12 +21,20 @@ class PluginController extends AdminController
     private PluginManager $pluginManager;
     private string $tempDir;
     private ServiceCenter $center;
+    private CustomizeManager $customizeManager;
 
-    public function __construct(Bridger $bridger, ServiceCenter $center, PluginManager $pluginManager) {
+    public function __construct(
+        Bridger $bridger,
+        ServiceCenter $center,
+        PluginManager $pluginManager,
+        CustomizeManager $customizeManager,
+    )
+    {
         parent::__construct($bridger);
+        $this->tempDir = $bridger->getTempDir();
         $this->center = $center;
         $this->pluginManager = $pluginManager;
-        $this->tempDir = $bridger->getTempDir();
+        $this->customizeManager = $customizeManager;
     }
 
     /**
@@ -48,7 +59,6 @@ class PluginController extends AdminController
     /**
      * 已安装插件列表
      *
-     * @throws \ReflectionException
      */
     #[Route('/installed')]
     public function installed(): JsonResponse
@@ -72,7 +82,7 @@ class PluginController extends AdminController
         return $this->json([]);
     }
 
-    #[Route('/{name}/deactivate', name: 'installed_inactive', options: ['name' => '禁用插件', 'parent' => 'plugin_installed', 'sort' => 0], methods: Request::METHOD_POST)]
+    #[Route('/{name}/deactivate', name: 'installed_deactivate', options: ['name' => '禁用插件', 'parent' => 'plugin_installed', 'sort' => 0], methods: Request::METHOD_POST)]
     public function deactivate(string $name): JsonResponse
     {
         try {
@@ -126,4 +136,25 @@ class PluginController extends AdminController
         ]);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function proxy(Request $request): JsonResponse
+    {
+        $requestUri = $request->getRequestUri();
+        if (empty($requestUri)) {
+            return $this->json(null);
+        }
+        $draw = $this->bridger->getHook()->filter($requestUri, null);
+        if ($draw instanceof Draw) {
+            $layout = $draw->getLayout();
+            if ($layout instanceof Form) {
+                foreach ($layout->getControls() as $control) {
+                    $control->setManager($this->customizeManager);
+                }
+            }
+        }
+        return $this->json($draw);
+    }
 }

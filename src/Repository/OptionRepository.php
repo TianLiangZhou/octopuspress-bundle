@@ -66,14 +66,6 @@ class OptionRepository extends ServiceEntityRepository
         'comments_per_page',
     ];
 
-
-    /**
-     * @var string[]
-     */
-    private array $defaultOptionNames = [
-        'active_plugins', 'theme', 'installed_time', 'admin_email', 'maintenance',
-    ];
-
     /**
      * @var array<string, mixed>
      */
@@ -86,12 +78,6 @@ class OptionRepository extends ServiceEntityRepository
 
     public function __construct(ManagerRegistry $registry)
     {
-        $this->defaultOptionNames = array_merge(
-            $this->defaultOptionNames,
-            self::$defaultGeneralNames,
-            self::$defaultMediaNames,
-            self::$defaultContentNames
-        );
         parent::__construct($registry, Option::class);
     }
 
@@ -103,9 +89,7 @@ class OptionRepository extends ServiceEntityRepository
         if (!empty($this->defaultOptions)) {
             return $this->defaultOptions;
         }
-        $options = $this->findBy([
-            'name' => $this->defaultOptionNames,
-        ]);
+        $options = $this->findBy(['autoload' => 'yes',]);
         foreach ($options as $option) {
             $this->defaultOptions[$option->getName()] = Formatter::reverseTransform($option->getValue(), true);
         }

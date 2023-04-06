@@ -9,6 +9,7 @@ use OctopusPress\Bundle\Command\PluginCommand;
 use OctopusPress\Bundle\EventListener\BootstrapListener;
 use OctopusPress\Bundle\EventListener\LogoutListener;
 use OctopusPress\Bundle\EventListener\ViewListener;
+use OctopusPress\Bundle\Factory\ResourceCheckerConfigCacheFactory;
 use OctopusPress\Bundle\Model\ThemeManager;
 use OctopusPress\Bundle\Model\CustomizeManager;
 use OctopusPress\Bundle\Model\MasterManager;
@@ -23,17 +24,18 @@ use OctopusPress\Bundle\Service\ServiceCenter;
 use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Twig\OctopusExtension;
 use OctopusPress\Bundle\Twig\OctopusRuntime;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container, ContainerBuilder $builder) {
     $services = $container->services()
         ->defaults()
         ->autowire()
         ->autoconfigure();
-
 
     $services->set('octopus_press.bridger', Bridger::class)
         ->args([
@@ -133,5 +135,11 @@ return static function (ContainerConfigurator $container) {
         ->args([
             service(Requester::class),
             service(Bridger::class),
+        ]);
+
+    $services->set('config_cache_factory', ResourceCheckerConfigCacheFactory::class)
+        ->args([
+            service('router'),
+            $builder->getParameter('kernel.debug') ? tagged_iterator('config_cache.resource_checker') : [],
         ]);
 };

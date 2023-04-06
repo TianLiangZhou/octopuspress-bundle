@@ -35,6 +35,9 @@ export class GeneralComponent implements OnInit, OnSpinner {
   }
 
   private filter(value: string): string[] {
+    if (value === undefined) {
+      return [];
+    }
     const filterValue = value.toLowerCase();
     return this.timezone.filter(optionValue => optionValue.toLowerCase().includes(filterValue));
   }

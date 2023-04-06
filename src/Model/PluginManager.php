@@ -113,6 +113,10 @@ class PluginManager
         $activePlugins = $this->optionRepository->activePlugins();
         $dirs = new \DirectoryIterator($this->getPluginDir());
         $plugins = [];
+        $settingPages = $this->bridger->getPlugin()->getSettingPages();
+        if ($settingPages) {
+            $settingPages = array_column($settingPages, null, 'plugin');
+        }
         foreach ($dirs as $dir) {
             if (!$dir->isDir()) {
                 continue;
@@ -126,10 +130,20 @@ class PluginManager
                 continue;
             }
             $information = $plugin::manifest();
+            $alias = u($name)->replaceMatches('/[^A-Za-z0-9_\-]++/', '')->lower()->toString();
+            $actions = [];
+            if (isset($settingPages[$alias])) {
+                $actions[] = [
+                    'link' => '/app/system/setting/general',
+                    'query'=> ['page' => $settingPages[$alias]['path']],
+                ];
+            }
             $plugins[] = array_merge($information->jsonSerialize(), [
                 'alias' => $name,
                 'enabled' => in_array($name, $activePlugins),
-                'actions' => in_array($name, $activePlugins) ? $this->bridger->getHook()->filter('plugin_action_links', [], $name) : [],
+                'actions' => in_array($name, $activePlugins)
+                    ? $this->bridger->getHook()->filter('plugin_action_links', $actions, $alias)
+                    : [],
             ]);
         }
         return $plugins;
@@ -238,16 +252,15 @@ class PluginManager
         $activePlugins = $this->getActivatedPlugins();
         $pluginDir = $this->getPluginDir();
         $doctrine = $this->bridger->getDoctrine();
+        $hook = $this->bridger->getHook();
         foreach ($activePlugins as $name) {
             $plugin = $this->getPlugin($name);
             if ($plugin == null) {
                 continue;
             }
-            $alias = u($name)->snake()->lower()->toString();
+            $alias = u($name)->replaceMatches('/[^A-Za-z0-9_\-]++/', '')->lower()->toString();
             $manifest = $plugin::manifest();
-            if (empty($manifest->getAlias())) {
-                $manifest->setAlias($alias);
-            }
+            $manifest->setAlias($alias);
             if (empty($manifest->getPluginDir())) {
                 $manifest->setPluginDir($pluginDir . DIRECTORY_SEPARATOR . $name);
             }
@@ -271,12 +284,14 @@ class PluginManager
                     $dispatcher->addSubscriber($service);
                 }
             }
-            $this->registered[$manifest->getAlias()] = [
+            $this->registered[$alias] = [
                 'plugin'   => $plugin,
                 'manifest' => $manifest,
                 'provider' => $plugin->provider($this->bridger),
             ];
             $plugin->launcher($this->bridger);
+            $hook->action('plugin_launcher', $alias, $this);
+            $hook->action('plugin_launcher_' . $alias, $this);
         }
     }
 

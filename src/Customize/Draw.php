@@ -7,7 +7,7 @@ use OctopusPress\Bundle\Customize\Layout\Form;
 use OctopusPress\Bundle\Customize\Layout\Table;
 use OctopusPress\Bundle\Customize\Layout\Tabs;
 
-final class Draw
+final class Draw implements JsonSerializable
 {
     private static ?Draw $instance = null;
 
@@ -82,5 +82,21 @@ final class Draw
         $layout['container'] = $className;
         $layout[$className] = $this->layout->jsonSerialize();
         return $layout;
+    }
+
+    /**
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->build();
+    }
+
+    /**
+     * @return JsonSerializable|null
+     */
+    public function getLayout(): ?JsonSerializable
+    {
+        return $this->layout;
     }
 }

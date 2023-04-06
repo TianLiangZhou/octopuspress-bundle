@@ -23,7 +23,7 @@ const routes: Routes = [
     component: InstalledComponent,
   },
   {
-    path: ":plugin/:page",
+    path: "feature",
     component: FeatureComponent,
   },
 ];
@@ -31,6 +31,9 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     InstalledComponent, MarketComponent, FeatureComponent,
+  ],
+  exports: [
+    FeatureComponent,
   ],
   imports: [
     CommonModule,

@@ -133,9 +133,8 @@ class OctopusRuntime implements RuntimeExtensionInterface
             return '';
         }
         $url = '';
+        $rewriterKey = '';
         if ($obj instanceof Post) {
-            if ($obj->getType() == Post::TYPE_ATTACHMENT) {
-            }
             if ($obj->getType() == Post::TYPE_NAVIGATION && ($itemType = $obj->getMeta('_menu_item_type'))) {
                 switch ($itemType->getMetaValue()) {
                     case 'custom':
@@ -170,18 +169,26 @@ class OctopusRuntime implements RuntimeExtensionInterface
                     $args['p'] = $obj->getId();
             }
             $url = $this->router->generate($permalinkType, $args);
-        }
-        if ($obj instanceof TermTaxonomy) {
+            if ($permalinkType != 'post_permalink_normal') {
+                $rewriterKey = '_rewriter_posts';
+            }
+        } elseif ($obj instanceof TermTaxonomy) {
             $url = $this->router->generate('taxonomy', [
                 'taxonomy' => $obj->getTaxonomy(),
                 'slug' => $obj->getSlug()
             ]);
+            $rewriterKey = '_rewriter_taxonomy';
         } elseif ($obj instanceof User) {
             $url = $this->router->generate('author', [
                 'slug' => $obj->getAccount(),
             ]);
+            $rewriterKey = '_rewriter_taxonomy';
+        } else {
+            // todo
         }
-
+        if ($url && $rewriterKey && $this->getOption($rewriterKey, false)) {
+            $url .= '.html';
+        }
         if ($url && $query) {
             $url .= (!str_contains($url, '?') ? '?' : '&') . http_build_query($query);
         }
@@ -204,9 +211,8 @@ class OctopusRuntime implements RuntimeExtensionInterface
         if ($this->activatedRoute->isHome() && isset($linkInfo['path']) && $linkInfo['path'] == '/' && $idUriQueryExist === false) {
             return true;
         }
-
         $uri = $request->getRequestUri();
-        if ($uri == $link) {
+        if ($uri == $link || ($uri . '.html') == $link) {
             return true;
         }
         if (isset($linkInfo['path']) && $pathInfo == $linkInfo['path']) {

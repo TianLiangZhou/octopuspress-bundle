@@ -24,7 +24,7 @@ class Form implements \JsonSerializable
      * @var array{name:string,link:string,valid:bool}
      */
     private array $submit = [
-        'name' => '提交',
+        'name' => '保存',
         'link' => '#',
         'valid' => true,
     ];
@@ -55,20 +55,22 @@ class Form implements \JsonSerializable
      * @param array<string, mixed> $options
      * @return Control
      */
-    public function addControl(string $id, string $label, string $type = AbstractControl::INPUT, array $options = []): Control
+    public function add(string $id, string $label, string $type = AbstractControl::INPUT, array $options = []): Control
     {
         if (in_array($type, [AbstractControl::AUDIO, AbstractControl::VIDEO, AbstractControl::IMAGE, AbstractControl::FILE, ])) {
             $control = new MediaControl($id, [
                 'type' => $type,
-                'label' => $label
+                'label' => $label,
+                'storage' => 'option',
             ] + $options);
         } else {
             $control = new Control($id, [
                 'type' => $type,
-                'label' => $label
+                'label' => $label,
+                'storage' => 'option',
             ] + $options);
         }
-        $this->addEntity($control);
+        $this->addControl($control);
         return $control;
     }
 
@@ -76,7 +78,7 @@ class Form implements \JsonSerializable
      * @param AbstractControl $control
      * @return $this
      */
-    public function addEntity(AbstractControl $control): static
+    public function addControl(AbstractControl $control): static
     {
         $this->controls[] = $control;
         return $this;
@@ -147,5 +149,13 @@ class Form implements \JsonSerializable
     public function getClassName(): array
     {
         return $this->className;
+    }
+
+    /**
+     * @return Control[]
+     */
+    public function getControls(): array
+    {
+        return $this->controls;
     }
 }

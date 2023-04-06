@@ -1,3 +1,5 @@
+import {Params} from "@angular/router";
+
 export interface Capability {
   name: string;
   route: string;
@@ -8,4 +10,5 @@ export interface Capability {
   sort?: number;
   link?: string;
   home?: boolean;
+  queryParams?: Params;
 }

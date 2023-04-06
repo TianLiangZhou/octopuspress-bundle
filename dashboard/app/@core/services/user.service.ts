@@ -67,6 +67,7 @@ export class UserService {
       home: item.home || false,
       children: [],
       link: item.link,
+      queryParams: item.queryParams,
     };
     this.capabilities[item.path] = {name: item.name, route: item.route, path: item.path};
     if (item.children && item.children.length > 0) {

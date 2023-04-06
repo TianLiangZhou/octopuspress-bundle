@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import {HttpClient} from "@angular/common/http";
-import {ActivatedRoute} from "@angular/router";
-import {PLUGIN_FEATURE} from "../../../@core/definition/plugin/api";
+import {ActivatedRoute, Router} from "@angular/router";
 import {PluginDrawResponse, DrawTab, DrawTable, DrawForm} from "../../../@core/definition/plugin/type";
 import {buildFormGroup} from "../../../shared/control/type";
 import {FormGroup} from "@angular/forms";
 import {NbToastrService} from "@nebular/theme";
 import {ServerDataSource} from "angular2-smart-table";
 import {Settings} from "angular2-smart-table/lib/lib/settings";
+import {SITE_BASIC, SITE_GENERAL_SAVE} from "../../../@core/definition/system/api";
 
 @Component({
   selector: 'app-plugin-feature',
@@ -26,25 +26,28 @@ export class FeatureComponent implements OnInit {
   table: DrawTable | undefined;
   settings: Settings[] = []
   source: ServerDataSource[] = [];
-
-
   formGroup: FormGroup[] = [];
 
-
+  private pluginLink = "";
 
   constructor(
     private http: HttpClient,
     private toast: NbToastrService,
     private route: ActivatedRoute,
+    private router: Router,
   ) {
 
   }
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(paramMap => {
-      let pluginName = paramMap.get('plugin') ?? '';
+    this.route.queryParamMap.subscribe(paramMap => {
       let feature = paramMap.get('page') ?? '';
-      this.http.get<PluginDrawResponse>(PLUGIN_FEATURE, {params: {name: pluginName, feature: feature}})
+      if (!feature) {
+        this.router.navigateByUrl('/404').then();
+        return ;
+      }
+      this.pluginLink = feature.replace("/backend", "");
+      this.http.get<PluginDrawResponse>(this.pluginLink)
         .subscribe(res => {
           this.title = res.title;
           this.container = res.container;
@@ -61,8 +64,8 @@ export class FeatureComponent implements OnInit {
               });
               break;
             case 'form':
-              this.formGroup[0] = buildFormGroup(this.form?.controls!)
               this.form = res.form;
+              this.formGroup[0] = buildFormGroup(this.form?.controls!)
               break;
             case 'table':
               this.table = res.table!;
@@ -133,8 +136,12 @@ export class FeatureComponent implements OnInit {
     if (this.formGroup[index].invalid) {
       return ;
     }
-    this.http.post(link, this.formGroup[index].value).subscribe(res => {
-
+    if (link == "" || link == "#" || link == "/") {
+      link = SITE_GENERAL_SAVE;
+    }
+    this.http.post(link, this.formGroup[index].getRawValue(), {
+      params: {page: this.pluginLink}
+    }).subscribe(res => {
     });
   }
 }

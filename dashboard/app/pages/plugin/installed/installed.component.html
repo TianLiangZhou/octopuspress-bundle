@@ -37,7 +37,13 @@
         </button>
       </nb-card-footer>
       <nb-card-footer class="d-flex justify-content-between" *ngIf="plugin.actions.length > 0">
-        <a nbButton status="primary" [href]="'#' + action.link" *ngFor="let action of plugin.actions">{{ action.name }}</a>
+        <a nbButton
+           status="primary"
+           [routerLink]="action.link"
+           [queryParams]="action.query"
+           *ngFor="let action of plugin.actions">
+          {{ action.name || "设置" }}
+        </a>
       </nb-card-footer>
     </nb-card>
   </div>

@@ -7,6 +7,8 @@ use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException as ORMExceptionAlias;
 use OctopusPress\Bundle\Bridge\Bridger;
+use OctopusPress\Bundle\Customize\Draw;
+use OctopusPress\Bundle\Customize\Layout\Form;
 use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Util\Formatter;
@@ -108,6 +110,89 @@ class SiteController extends AdminController
         $names = $this->repository::$defaultContentNames;
         unset($names[0], $names[1]);
         return $this->save($request->toArray(), $names);
+    }
+
+    #[Route('/general/save', name: 'general_save', options: ['name' => '保存自定义配置', 'parent' => 'setting_option'], methods: Request::METHOD_POST)]
+    public function general(Request $request): JsonResponse
+    {
+        $data = $request->toArray();
+        $page = $request->query->get('page');
+        if (empty($page)) {
+            return $this->json([
+                'message' => 'The page parameter is not specified',
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
+        $draw = $this->bridger->getHook()->filter('/backend' . $page, null);
+        if (!$draw instanceof Draw) {
+            return $this->json([
+                'message' => 'Invalid page parameter',
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
+        $form = $draw->getLayout();
+        if (!$form instanceof Form) {
+            return $this->json([
+                'message' => 'Invalid layout',
+            ], Response::HTTP_NOT_ACCEPTABLE);
+        }
+        $theme = $this->repository->theme();
+        $themeModObject = $this->repository->findOneByName('theme_mods_' . $theme);
+        if ($themeModObject == null && $theme) {
+            $themeModObject = new Option();
+            $themeModObject->setName('theme_mods_' . $theme);
+        }
+        $controls = $form->getControls();
+        $themeMod = [];
+        if ($theme) {
+            $themeMod = $this->repository->themeModules($theme);
+        }
+        $persists = [];
+        $themeModChanged = false;
+        $customControlStorages = [];
+        foreach ($controls as  $control) {
+            $id = $control->getId();
+            if (!isset($data[$id])) {
+                continue;
+            }
+            $value = $data[$id];
+            if (!$control->validate($value)) {
+                continue;
+            }
+            $value = $control->sanitize($value);
+            switch ($control->getStorage()) {
+                case 'option':
+                    $option = $this->repository->findOneByName($id);
+                    if ($option == null) {
+                        $option = new Option();
+                        $option->setName($id);
+                    }
+                    $option->setValue($value == null ? '' : $value);
+                    $persists[] = $option;
+                    break;
+                case 'theme_mod':
+                    $themeMod[$id] = $value;
+                    $themeModChanged = true;
+                    break;
+                default:
+                    $customControlStorages["customize_update_" . $id] = $value;
+            }
+        }
+        if (!$themeModChanged && empty($persists) && empty($customControlStorages)) {
+            return $this->json([]);
+        }
+        if ($themeModChanged && $themeModObject) {
+            $themeModObject->setValue($themeMod);
+            $persists[] = $themeModObject;
+        }
+        $objectManager = $this->doctrine->getManager();
+        foreach ($persists as $persist) {
+            $objectManager->persist($persist);
+        }
+        $hook = $this->bridger->getHook();
+        foreach ($customControlStorages as $hookName => $value) {
+            $hook->action($hookName, $value, $objectManager, $this);
+        }
+        $objectManager->flush();
+        return $this->json([]);
     }
 
     /**

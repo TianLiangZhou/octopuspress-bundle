@@ -50,6 +50,9 @@ final class MenuManager
             if (!empty($options['home'])) {
                 $option['home'] = true;
             }
+            if (isset($option['link']) && $option['link'] === '/app/plugin/feature') {
+                $option['queryParams'] = ['page' => $path];
+            }
             $menus[$path] = $option;
         }
         return $menus;

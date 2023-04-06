@@ -3,7 +3,7 @@ import {ROLE_DELETE, ROLE_STORE, ROLE_UPDATE, ROLES} from "../../@core/definitio
 import {MENUS} from "../../@core/definition/open/api";
 import {Role} from "../../@core/definition/system/type";
 import {HttpClient, HttpContext} from "@angular/common/http";
-import {SessionUser, OnSpinner, ResponseBody} from "../../@core/definition/common";
+import {OnSpinner, ResponseBody} from "../../@core/definition/common";
 import {Capability} from "../../@core/definition/open/type";
 import {SharedService} from "../../@core/services/shared.service";
 import {ServerDataSource} from "angular2-smart-table";
@@ -17,7 +17,61 @@ type ResponseMenus = {menus: Capability[]} & ResponseBody;
 
 @Component({
   selector: 'app-role',
-  templateUrl: './role.component.html',
+  template: `
+<div class="row">
+  <div class="col col-md-4 col-sm-6">
+    <nb-card>
+      <nb-card-header class="d-flex justify-content-between align-items-center">
+        <span>
+        {{formGroup.controls['id'].value! > 0 ? '编辑角色' : '添加新角色'}}
+        </span>
+        <button status="primary" size="small" (click)="reset()" nbButton *ngIf="formGroup.controls['id'].value!"><nb-icon icon="plus-outline"></nb-icon></button>
+      </nb-card-header>
+      <nb-card-body>
+        <form (ngSubmit)="onSubmit($event)" [formGroup]="formGroup">
+          <div class="mb-3">
+            <label for="inputName" class="label col-form-label">名称</label>
+            <div>
+              <input nbInput id="inputName" fullWidth status="primary" formControlName="name" />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="inputPermission" class="label col-form-label">权限</label>
+            <div class="">
+              <app-tree formControlName="capabilities"
+                        id="inputPermission"
+                        [items]="menus"
+                        (selectedChange)="capabilitySelected($event)"></app-tree>
+            </div>
+          </div>
+          <div class="my-3  d-flex justify-content-between">
+            <label class="label col-form-label"></label>
+            <button
+              type="submit"
+              status="primary"
+              size="small"
+              [disabled]="formGroup.invalid || spinner"
+              [nbSpinner]="spinner"
+              nbButton>保存</button>
+          </div>
+        </form>
+      </nb-card-body>
+    </nb-card>
+  </div>
+  <div class="col col-md-8 col-sm-6">
+    <nb-card>
+      <nb-card-body>
+        <angular2-smart-table
+          [settings]="settings"
+          [source]="source"
+          (edit)="edit($event)"
+          (delete)="delete($event)">
+        </angular2-smart-table>
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>
+  `,
 })
 export class RoleComponent implements OnInit, OnSpinner {
   settings = {};

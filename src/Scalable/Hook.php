@@ -8,12 +8,12 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 final class Hook
 {
     private EventDispatcher $dispatcher;
-    private Bridger $bridge;
+    private Bridger $bridger;
 
-    public function __construct(Bridger $bridge)
+    public function __construct(Bridger $bridger)
     {
         $this->dispatcher = new EventDispatcher();
-        $this->bridge = $bridge;
+        $this->bridger = $bridger;
     }
 
 
@@ -23,7 +23,7 @@ final class Hook
      * @param int $priority
      * @return Hook
      */
-    public function add(string $name, callable $callback, int $priority = 0)
+    public function add(string $name, callable $callback, int $priority = 0): Hook
     {
         $this->dispatcher->addListener($name, $callback, $priority);
         return $this;
@@ -42,7 +42,7 @@ final class Hook
             return $value;
         }
         array_unshift($args, $value);
-        $args[] = $this->bridge;
+        $args[] = $this->bridger;
         foreach ($listeners as $listener) {
             /**
              * @var callable $listener
@@ -64,7 +64,7 @@ final class Hook
         if (empty($listeners)) {
             return ;
         }
-        $args[] = $this->bridge;
+        $args[] = $this->bridger;
         foreach ($listeners as $listener) {
             /**
              * @var callable $listener

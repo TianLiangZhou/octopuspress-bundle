@@ -30,6 +30,7 @@ use OctopusPress\Bundle\Widget\MediaText;
 use OctopusPress\Bundle\Widget\Navigation;
 use OctopusPress\Bundle\Widget\Pages;
 use OctopusPress\Bundle\Widget\Pagination;
+use OctopusPress\Bundle\Widget\PreviousNext;
 use OctopusPress\Bundle\Widget\RSS;
 use OctopusPress\Bundle\Widget\SiteLogo;
 use OctopusPress\Bundle\Widget\Tags;
@@ -354,6 +355,7 @@ class MasterManager
                 MediaText::class,
                 Cover::class,
                 Pagination::class,
+                PreviousNext::class,
             ];
             if ($this->bridger->getTheme()->getThemeSupport('custom_logo')) {
                 $defaults[] = SiteLogo::class;

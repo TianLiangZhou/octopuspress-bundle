@@ -53,7 +53,5 @@ export function initializeAppFactory(http: HttpClient, configService: Configurat
 }
 
 export function getBaseHref(platformLocation: PlatformLocation): string {
-  let baseHref = platformLocation.getBaseHrefFromDOM();
-  console.log(baseHref);
-  return baseHref;
+  return platformLocation.getBaseHrefFromDOM();
 }

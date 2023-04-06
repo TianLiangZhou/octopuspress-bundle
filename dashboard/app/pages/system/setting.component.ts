@@ -1,4 +1,5 @@
 import {Component, OnInit} from '@angular/core';
+import {ConfigurationService} from "../../@core/services/configuration.service";
 
 @Component({
   selector: 'app-setting',
@@ -16,7 +17,7 @@ export class SettingComponent implements OnInit {
     {
       title: '常规',
       icon: 'settings',
-      route: './general',
+      route: './',
     },
     {
       title: '内容',
@@ -27,10 +28,21 @@ export class SettingComponent implements OnInit {
       title: "媒体",
       icon: "video-outline",
       route: "./media",
-    }
+    },
+
   ];
 
-  ngOnInit(): void {
+  constructor(private config: ConfigurationService) {
+  }
 
+  ngOnInit(): void {
+    this.config.config.settingPages.forEach(item => {
+      this.tabs.push({
+        title: item.name,
+        icon: 'options-2-outline',
+        route: './general',
+        queryParams: {page: item.path}
+      })
+    });
   }
 }

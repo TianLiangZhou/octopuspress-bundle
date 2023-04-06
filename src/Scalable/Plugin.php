@@ -4,11 +4,14 @@ declare(strict_types=1);
 namespace OctopusPress\Bundle\Scalable;
 
 use OctopusPress\Bundle\Bridge\Bridger;
+use OctopusPress\Bundle\Controller\Admin\AdminController;
+use OctopusPress\Bundle\Controller\Admin\PluginController;
 use Symfony\Component\Config\Loader\LoaderInterface;
-use Symfony\Component\Routing\RouterInterface;
-use Twig\Environment;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
 use Twig\Error\LoaderError;
 use Twig\Loader\FilesystemLoader;
+use function Symfony\Component\String\u;
 
 final class Plugin
 {
@@ -16,6 +19,8 @@ final class Plugin
      * @var array<string, array<string, mixed>>
      */
     private array $dashboardWidgets = [];
+
+    private array $settingPages = [];
 
     private LoaderInterface $loader;
     private Bridger $bridger;
@@ -128,12 +133,61 @@ final class Plugin
      */
     public function registerRoute(string|object $class): Plugin
     {
+        /**
+         * @var $pluginCollection RouteCollection
+         */
         $pluginCollection = $this->loader->load(is_object($class) ? get_class($class) : $class, 'attribute');
         if ($pluginCollection->count() < 1) {
             return $this;
         }
+        if ((is_string($class) && $this->bridger->get($class) instanceof AdminController) || $class instanceof AdminController) {
+            $pluginCollection->addNamePrefix("backend_");
+            $pluginCollection->addPrefix("backend");
+        }
         $collection = $this->bridger->getRouter()->getRouteCollection();
         $collection->addCollection($pluginCollection);
         return $this;
+    }
+
+    /**
+     * @param string $path
+     * @param callable $callable
+     * @param string $name
+     * @return $this
+     */
+    public function addRoute(string $path, callable $callable, string $name = ""): Plugin
+    {
+        $routeCollection = $this->bridger->getRouter()->getRouteCollection();
+        $name = $name ?: u($path)->snake()->lower()->toString();
+        $this->bridger->getHook()->add($path, $callable);
+        $routeCollection->add(
+            $name, new Route($path, ['_controller' => PluginController::class . '::proxy'])
+        );
+        return $this;
+    }
+
+    /**
+     * @param string $path
+     * @param callable $callable
+     * @param string $tabName
+     * @param string $pluginName
+     * @param string $routeName
+     * @return $this
+     */
+    public function registerSetting(string $path, callable $callable, string $tabName, string $pluginName = '', string $routeName = ''): Plugin
+    {
+        $this->addRoute('/backend' . $path, $callable, $routeName);
+        $this->settingPages[] = ['path' => $path, 'name' => $tabName, 'plugin' => $pluginName,];
+        return $this;
+    }
+
+
+
+    /**
+     * @return array
+     */
+    public function getSettingPages(): array
+    {
+        return $this->settingPages;
     }
 }

@@ -9,7 +9,7 @@ export type Plugin = {
   author: PluginAuthor[];
   description: string;
   enabled: boolean;
-  actions:{name:string, link:string}[];
+  actions:{name?:string, link:string, query?: Record<string, string>}[];
 }
 
 export type PluginAuthor = {

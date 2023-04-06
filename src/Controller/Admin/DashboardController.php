@@ -56,7 +56,7 @@ class DashboardController extends AdminController
 
 
     #[Route('/menu/global', name: 'setting_global', options: ['name' => '全局', 'parent' => 'setting', 'sort' => 0, 'link' => '/app/system/option'])]
-    #[Route('/menu/option', name: 'setting_option', options: ['name' => '站点', 'parent' => 'setting',  'sort' => 0, 'link' => '/app/system/setting'])]
+    #[Route('/menu/option', name: 'setting_option', options: ['name' => '站点', 'parent' => 'setting',  'sort' => 1, 'link' => '/app/system/setting'])]
     #[Route('/menu/role', name: 'setting_role', options: ['name' => '角色', 'parent' => 'setting', 'sort' => 2, 'link' => '/app/system/role'])]
     public function menu(): Response
     {

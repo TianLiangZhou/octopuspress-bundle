@@ -128,6 +128,6 @@
 
     </ng-container>
     <p class="caption col-form-label status-danger" *ngIf="invalid">{{error}}</p>
-    <label class="label col-form-label" *ngIf="control.description && control.description.length > 0">{{control.description}}</label>
+    <p class="label col-form-label" *ngIf="control.description && control.description.length > 0" [innerHTML]="dom.bypassSecurityTrustHtml(control.description)"></p>
   </div>
 </div>

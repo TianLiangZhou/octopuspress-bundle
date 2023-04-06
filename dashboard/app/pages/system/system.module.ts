@@ -13,6 +13,8 @@ import {ContentComponent} from "./setting/content/content.component";
 import {Angular2SmartTableModule} from "angular2-smart-table";
 import {RouterModule, Routes} from "@angular/router";
 import {SettingComponent} from "./setting.component";
+import {PageGeneralComponent} from "./setting/page-general.component";
+import {PluginModule} from "../plugin/plugin.module";
 
 const routes: Routes = [
     {
@@ -26,11 +28,6 @@ const routes: Routes = [
       children: [
         {
           path: '',
-          redirectTo: 'general',
-          pathMatch: 'full',
-        },
-        {
-          path: 'general',
           component: GeneralComponent,
         },
         {
@@ -41,6 +38,10 @@ const routes: Routes = [
           path: 'media',
           component: MediaComponent
         },
+        {
+          path: 'general',
+          component: PageGeneralComponent
+        }
       ]
     },
     {
@@ -58,6 +59,7 @@ const routes: Routes = [
     GeneralComponent,
     MediaComponent,
     ContentComponent,
+    PageGeneralComponent,
   ],
   imports: [
     CommonModule,
@@ -67,6 +69,7 @@ const routes: Routes = [
     NbToggleModule,
     TreeViewModule,
     ControlModule,
+    PluginModule,
   ],
   providers: []
 })

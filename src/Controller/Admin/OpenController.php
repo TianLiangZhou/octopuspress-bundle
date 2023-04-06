@@ -54,8 +54,6 @@ class OpenController extends AdminController
             $postTypes[$type] = $postType->jsonSerialize();
         }
         ;
-
-
         return $this->json([
             'name' => $this->optionRepository->title(),
             'siteUrl' => $this->optionRepository->siteUrl(),
@@ -68,6 +66,7 @@ class OpenController extends AdminController
             'commentMeta'  => $this->bridger->getMeta()->getComment(),
             'postMeta'  => $this->bridger->getMeta()->getPost(),
             'termMeta'  => $this->bridger->getMeta()->getTaxonomy(),
+            'settingPages' => $this->bridger->getPlugin()->getSettingPages(),
         ]);
     }
 

@@ -5,4 +5,3 @@ export const PLUGIN_DOWN: string = "/plugin/{name}/down";
 export const PLUGIN_UPLOAD: string = "/plugin/upload";
 export const PLUGIN_ACTIVATE: string = "/plugin/{name}/activate";
 export const PLUGIN_DEACTIVATE: string = "/plugin/{name}/deactivate";
-export const PLUGIN_FEATURE: string = "/{name}/{feature}";

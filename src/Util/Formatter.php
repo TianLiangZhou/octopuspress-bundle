@@ -13,6 +13,7 @@ final class Formatter
 
     /**
      * @param string $title
+     * @param string $locale
      * @return string
      */
     public static function sanitizeWithDashes(string $title, string $locale = 'zh'): string
@@ -122,7 +123,7 @@ final class Formatter
     }
 
     /**
-     * @param string $value
+     * @param string|null $value
      * @param bool $associative
      * @return int|array|\stdClass|string|bool
      */
