@@ -88,6 +88,8 @@ class OpenController extends AdminController
             $capabilities = array_merge($capabilities, $roleCapabilities[$roleIndex - 1]['capabilities'] ?? []);
         }
         $menus = $this->menuManager->registeredRoutes();
+        $customRoutes = $this->bridger->getPlugin()->getCustomMenus();
+        $menus = array_merge($menus, $customRoutes);
         $collection = [];
         foreach ($capabilities as $p => $v) {
             if (!isset($menus[$p])) {
@@ -140,10 +142,8 @@ class OpenController extends AdminController
     #[Route('/menu', name: 'menu')]
     public function menu(): JsonResponse
     {
-        return $this->json([
-            'menus' => $this->menuManager->tree(
-                $this->menuManager->registeredRoutes()
-            ),
-        ]);
+        $routes = $this->menuManager->registeredRoutes();
+        $customRoutes = $this->bridger->getPlugin()->getCustomMenus();
+        return $this->json(['menus' => $this->menuManager->tree(array_merge($routes, $customRoutes)),]);
     }
 }

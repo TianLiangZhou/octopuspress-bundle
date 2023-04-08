@@ -31,11 +31,10 @@ class ViewFilter
      */
     public function subscribe(): void
     {
-        $priority = 255;
+        $priority = 1;
         $this->hook->add('body_class', [$this, 'getBodyClass'], $priority);
         $this->hook->add('head', [$this, 'head'], $priority);
         $this->hook->add('footer', [$this, 'footer'], $priority);
-
         $this->hook->add('custom_logo', [$this, 'customLogo'], $priority);
     }
 

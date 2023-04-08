@@ -29,8 +29,6 @@ class PostController extends Controller
     private PostRepository $post;
     private TaxonomyRepository $taxonomy;
     private UserRepository $user;
-    private RelationRepository $relation;
-    private OptionRepository $option;
 
     public function __construct(Bridger $bridger)
     {
@@ -38,8 +36,6 @@ class PostController extends Controller
         $this->taxonomy = $bridger->getTaxonomyRepository();
         $this->user     = $bridger->getUserRepository();
         $this->post     = $bridger->getPostRepository();
-        $this->relation = $bridger->getRelationRepository();
-        $this->option   = $bridger->getOptionRepository();
     }
 
     /**
@@ -168,6 +164,7 @@ class PostController extends Controller
      * @param TermTaxonomy $taxonomy
      * @return iterable
      * @throws RuntimeError
+     * @throws NonUniqueResultException
      */
     private function filterTaxonomyResult(TermTaxonomy $taxonomy): iterable
     {

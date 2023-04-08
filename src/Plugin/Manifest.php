@@ -26,12 +26,12 @@ final class Manifest implements JsonSerializable
     /**
      * @var string
      */
-    private string $minPhpVersion = '';
+    private string $minPhpVersion = '8.1.0';
 
     /**
      * @var string
      */
-    private string $minVersion = '';
+    private string $minVersion = '1.0.0';
 
     private function __construct()
     {

@@ -51,6 +51,7 @@ class TaxonomyRepository extends ServiceEntityRepository
             )->andWhere('t.slug = :slug')
             ->setParameter('slug', $slug)
             ->getQuery()
+            ->setMaxResults(1)
             ->getOneOrNullResult();
     }
 

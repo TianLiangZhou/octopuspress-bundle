@@ -140,7 +140,7 @@ class PluginController extends AdminController
      * @param Request $request
      * @return JsonResponse
      */
-    public function proxy(Request $request): JsonResponse
+    public function settingProxy(Request $request): JsonResponse
     {
         $requestUri = $request->getRequestUri();
         if (empty($requestUri)) {

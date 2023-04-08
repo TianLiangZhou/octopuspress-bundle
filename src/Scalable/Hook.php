@@ -3,6 +3,7 @@
 namespace OctopusPress\Bundle\Scalable;
 
 use OctopusPress\Bundle\Bridge\Bridger;
+use OctopusPress\Bundle\Event\FilterEvent;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 final class Hook
@@ -42,12 +43,16 @@ final class Hook
             return $value;
         }
         array_unshift($args, $value);
-        $args[] = $this->bridger;
+        $event = new FilterEvent($this->bridger);
+        $args[] = $event;
         foreach ($listeners as $listener) {
             /**
              * @var callable $listener
              */
             $value = call_user_func_array($listener, $args);
+            if ($event->isPropagationStopped()) {
+                return $value;
+            }
             $args[0] = $value;
         }
         return $value;
@@ -64,8 +69,12 @@ final class Hook
         if (empty($listeners)) {
             return ;
         }
-        $args[] = $this->bridger;
+        $event = new FilterEvent($this->bridger);
+        $args[] = $event;
         foreach ($listeners as $listener) {
+            if ($event->isPropagationStopped()) {
+                break;
+            }
             /**
              * @var callable $listener
              */

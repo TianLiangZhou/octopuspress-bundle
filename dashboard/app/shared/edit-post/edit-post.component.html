@@ -92,6 +92,13 @@
             </div>
           </nb-accordion-item-body>
         </nb-accordion-item>
+        <nb-accordion-item *ngIf="typeSetting.supports && typeSetting.supports.includes('name')">
+          <nb-accordion-item-header>别名</nb-accordion-item-header>
+          <nb-accordion-item-body>
+            <p>内容链接别名</p>
+            <input status="primary" formControlName="name"  fullWidth nbInput />
+          </nb-accordion-item-body>
+        </nb-accordion-item>
 
         <nb-accordion-item *ngFor="let taxonomyPanel of taxonomyPanels">
           <nb-accordion-item-header>{{taxonomyPanel.label}}</nb-accordion-item-header>

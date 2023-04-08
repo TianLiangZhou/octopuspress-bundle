@@ -22,6 +22,8 @@ final class Plugin
 
     private array $settingPages = [];
 
+    private array $customMenus = [];
+
     private LoaderInterface $loader;
     private Bridger $bridger;
 
@@ -151,19 +153,62 @@ final class Plugin
 
     /**
      * @param string $path
-     * @param callable $callable
+     * @param string $controllerAction
      * @param string $name
-     * @return $this
+     * @return Route
      */
-    public function addRoute(string $path, callable $callable, string $name = ""): Plugin
+    public function addRoute(string $path, string $controllerAction, string $name = ""): Route
     {
         $routeCollection = $this->bridger->getRouter()->getRouteCollection();
         $name = $name ?: u($path)->snake()->lower()->toString();
-        $this->bridger->getHook()->add($path, $callable);
-        $routeCollection->add(
-            $name, new Route($path, ['_controller' => PluginController::class . '::proxy'])
-        );
+        $route = new Route($path, ['_controller' => $controllerAction]);
+        $routeCollection->add($name, $route);
+        return $route;
+    }
+
+    /**
+     * 添加一些自定义的一，二级菜章
+     *
+     * @return $this
+     */
+    public function addMenu(string $path, string $link, array $args = []): Plugin
+    {
+        $path = '/backend/menu' . $path;
+        $args['link'] = $link;
+        $this->customMenus[$path] = array_merge([
+            'path' => $path,
+            'route' => trim(str_replace('/', '_', $path), '_'),
+            'sort' => 10,
+            'name' => $path,
+            'parent' => '',
+            'link' => '',
+            'icon' => '',
+        ], $args);
         return $this;
+    }
+
+    /**
+     * @param string $type
+     * @param string $name
+     * @param array $args
+     * @return Plugin
+     */
+    public function addTypeMenu(string $type, string $name, array $args = []): Plugin
+    {
+        $args['name'] = $name;
+        return $this->addMenu('/' . $type, '/app/content/' . $type, $args);
+    }
+
+    /**
+     * @param string $taxonomy
+     * @param string $name
+     * @param array $args
+     * @return Plugin
+     */
+    public function addTaxonomyMenu(string $taxonomy, string $name, array $args = []): Plugin
+    {
+        $args['name'] = $name;
+        return $this->addMenu('/' . $taxonomy, '/app/taxonomy/' . $taxonomy, $args);
     }
 
     /**
@@ -171,12 +216,12 @@ final class Plugin
      * @param callable $callable
      * @param string $tabName
      * @param string $pluginName
-     * @param string $routeName
      * @return $this
      */
-    public function registerSetting(string $path, callable $callable, string $tabName, string $pluginName = '', string $routeName = ''): Plugin
+    public function registerSetting(string $path, callable $callable, string $tabName, string $pluginName = ''): Plugin
     {
-        $this->addRoute('/backend' . $path, $callable, $routeName);
+        $this->addRoute('/backend' . $path, PluginController::class . '::settingProxy', '');
+        $this->bridger->getHook()->add($path, $callable);
         $this->settingPages[] = ['path' => $path, 'name' => $tabName, 'plugin' => $pluginName,];
         return $this;
     }
@@ -189,5 +234,13 @@ final class Plugin
     public function getSettingPages(): array
     {
         return $this->settingPages;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCustomMenus(): array
+    {
+        return $this->customMenus;
     }
 }

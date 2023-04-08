@@ -133,7 +133,6 @@ class OctopusRuntime implements RuntimeExtensionInterface
             return '';
         }
         $url = '';
-        $rewriterKey = '';
         if ($obj instanceof Post) {
             if ($obj->getType() == Post::TYPE_NAVIGATION && ($itemType = $obj->getMeta('_menu_item_type'))) {
                 switch ($itemType->getMetaValue()) {
@@ -155,9 +154,6 @@ class OctopusRuntime implements RuntimeExtensionInterface
                     $args['name'] = $obj->getName();
                     break;
                 case 'post_permalink_number':
-                    if ($obj->getType() == 'page') {
-                        $permalinkType = 'page';
-                    }
                     $args['id'] = $obj->getId();
                     break;
                 case 'post_permalink_name':
@@ -169,30 +165,26 @@ class OctopusRuntime implements RuntimeExtensionInterface
                     $args['p'] = $obj->getId();
             }
             $url = $this->router->generate($permalinkType, $args);
-            if ($permalinkType != 'post_permalink_normal') {
-                $rewriterKey = '_rewriter_posts';
-            }
+            $url = $this->hookFilter('post_type_link', $url, $obj);
         } elseif ($obj instanceof TermTaxonomy) {
             $url = $this->router->generate('taxonomy', [
                 'taxonomy' => $obj->getTaxonomy(),
                 'slug' => $obj->getSlug()
             ]);
-            $rewriterKey = '_rewriter_taxonomy';
+            $url = $this->hookFilter('taxonomy_link', $url, $obj);
         } elseif ($obj instanceof User) {
             $url = $this->router->generate('author', [
                 'slug' => $obj->getAccount(),
             ]);
-            $rewriterKey = '_rewriter_taxonomy';
+            $url = $this->hookFilter('author_link', $url, $obj);
         } else {
             // todo
-        }
-        if ($url && $rewriterKey && $this->getOption($rewriterKey, false)) {
-            $url .= '.html';
+            $url = $this->hookFilter('unknown_link', $url, $obj);
         }
         if ($url && $query) {
             $url .= (!str_contains($url, '?') ? '?' : '&') . http_build_query($query);
         }
-        return $this->hook->filter('permalink.after', $url, $obj, $query);
+        return $this->hook->filter('permalink', $url, $obj, $query);
     }
 
     /**
