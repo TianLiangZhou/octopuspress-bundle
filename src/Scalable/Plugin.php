@@ -221,7 +221,7 @@ final class Plugin
     public function registerSetting(string $path, callable $callable, string $tabName, string $pluginName = ''): Plugin
     {
         $this->addRoute('/backend' . $path, PluginController::class . '::settingProxy', '');
-        $this->bridger->getHook()->add($path, $callable);
+        $this->bridger->getHook()->add('/backend' . $path, $callable);
         $this->settingPages[] = ['path' => $path, 'name' => $tabName, 'plugin' => $pluginName,];
         return $this;
     }
