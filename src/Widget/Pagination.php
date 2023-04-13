@@ -117,11 +117,8 @@ class Pagination extends AbstractWidget implements IteratorAggregate
         $currentCount = (int) ($attributes['currentCount'] ?? $limit);
         $data = $this->getPaginationData($total, $limit, $currentPage, $pageRange, $currentCount);
         $all = $request->query->all();
-        $uri = sprintf(
-            "%s%s",
-            $request->getSchemeAndHttpHost(),
-            $request->getPathInfo(),
-        );
+        $requestURI = $request->server->get('ORIGIN_REQUEST_URI');
+        $uri = $request->getUriForPath(parse_url($requestURI, PHP_URL_PATH));
 
         $previous = $next = null;
         if (isset($data['previous'])) {
