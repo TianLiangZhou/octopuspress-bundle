@@ -14,7 +14,7 @@
          [formControlName]="control.id"/>
 
       <textarea *ngSwitchCase="'textarea'"
-        nbInput fullWidth [rows]="control.settings!['rows']??2"
+        nbInput fullWidth [rows]="control.settings ? control.settings!['rows'] ?? 2 : 2"
         status="primary"
         [id]="control.id"
         [placeholder]="control.placeholder!"
