@@ -129,7 +129,7 @@ export class TaxonomyComponent implements OnInit, OnSpinner {
     }
     if (setting.labels['descField']) {
       elements.push({
-        label: setting.labels['descField'], id: "desc", type: 'textarea', value: '', description: setting.labels['descFieldDescription'], required: false,
+        label: setting.labels['descField'], id: "description", type: 'textarea', value: '', description: setting.labels['descFieldDescription'], required: false,
       });
     }
     this.formGroup = new FormGroup<any>(buildFormGroup(elements));
@@ -350,7 +350,7 @@ export class EditTaxonomyComponent implements OnInit, OnSpinner {
     }
     if (setting.labels['descField']) {
       elements.push({
-        label: setting.labels['descField'], id: "desc", type: 'textarea', value: termTaxonomy.description, description: setting.labels['descFieldDescription'], required: false,
+        label: setting.labels['descField'], id: "description", type: 'textarea', value: termTaxonomy.description, description: setting.labels['descFieldDescription'], required: false,
       });
     }
     this.formGroup =  new FormGroup<any>(buildFormGroup(elements));
