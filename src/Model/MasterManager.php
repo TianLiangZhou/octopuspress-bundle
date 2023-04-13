@@ -2,20 +2,14 @@
 
 namespace OctopusPress\Bundle\Model;
 
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use OctopusPress\Bundle\Entity\Option;
-use OctopusPress\Bundle\Entity\Permission;
-use OctopusPress\Bundle\Entity\Role;
 use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Form\Model\InstallRequest;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Repository\OptionRepository;
-use OctopusPress\Bundle\Repository\RoleRepository;
-use OctopusPress\Bundle\Repository\UserRepository;
+use OctopusPress\Bundle\Support\DefaultViewFilter;
 use OctopusPress\Bundle\Util\Formatter;
-use OctopusPress\Bundle\Widget\AbstractWidget;
 use OctopusPress\Bundle\Widget\Archives;
 use OctopusPress\Bundle\Widget\Audio;
 use OctopusPress\Bundle\Widget\Breadcrumb;
@@ -38,8 +32,6 @@ use OctopusPress\Bundle\Widget\Video;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\String\ByteString;
-use function Symfony\Component\String\b;
-use function Symfony\Component\String\u;
 
 class MasterManager
 {
@@ -73,6 +65,8 @@ class MasterManager
         $defaultOptions = [
             'site_title' => $model->getTitle(),
             'site_subtitle' => $model->getSubtitle(),
+            'site_description' => '',
+            'site_keywords' => '',
             'site_url' => $request->getSchemeAndHttpHost(),
             'admin_email' => $model->getEmail(),
             'timezone' => date_default_timezone_get(),
@@ -125,6 +119,8 @@ class MasterManager
         $this->createInitialTaxonomies();
         $this->createInitialThemeFeatures();
         $this->createInitialWidgets();
+        $this->bridger->getDefaultFilter()
+            ->subscribe();
     }
 
 
@@ -182,10 +178,12 @@ class MasterManager
             ])
             ->registerType('attachment', [
                 'label' => '附件',
+                'showUi' => false,
                 'showNavigation' => false,
             ])
             ->registerType('nav_menu_item', [
                 'label' => '导航条目',
+                'showUi' => false,
                 'showNavigation' => false,
             ])
         ;

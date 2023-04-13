@@ -2,7 +2,8 @@ const PROXY_CONFIG = [
   {
     context: [
       "/backend",
-      "/authorize"
+      "/authorize",
+      "/plugins",
     ],
     "target": "http://127.0.0.1:8080/",
     "changeOrigin": false,

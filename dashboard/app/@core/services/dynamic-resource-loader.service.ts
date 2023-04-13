@@ -28,6 +28,7 @@ export class DynamicResourceLoaderService {
         this.resources[resource.name] = {
           loaded: false,
           src: resource.src,
+          ext: resource.src.substring(resource.src.lastIndexOf('.') + 1).toLowerCase(),
         };
       }
     });
@@ -51,10 +52,15 @@ export class DynamicResourceLoaderService {
   }
 
   loadResource(name: string): Promise<ResourceLoaderResult> {
+    if (!this.resources[name]) {
+      return new Promise((resolve, reject) => {
+        reject("未载入资源文件");
+      });
+    }
     return new Promise((resolve, reject) => {
       if (!this.resources[name].loaded) {
         let element = null;
-        const ext = this.resources[name].src.substring(this.resources[name].src.lastIndexOf('.') + 1);
+        const ext = this.resources[name].ext;
         if (ext.toLowerCase() == 'js') {
           element = this.loadScript(this.resources[name].src);
         } else if (ext.toLowerCase() == 'css') {
@@ -63,13 +69,13 @@ export class DynamicResourceLoaderService {
         if (element) {
           element.onload = () => {
               this.resources[name].loaded = true;
-              resolve({resource: name, loaded: true, status: 'Loaded', type: ext.toLowerCase()});
+              resolve({resource: name, loaded: true, status: 'Loaded', type: this.resources[name].ext});
             };
           element.onerror = (error: any) => resolve({resource: name, loaded: false, status: 'Load error'});
           document.getElementsByTagName('head')[0].appendChild(element);
         }
       } else {
-        resolve({resource: name, loaded: true, status: 'Already Loaded'});
+        resolve({resource: name, loaded: true, status: 'Already Loaded', type: this.resources[name].ext});
       }
     });
   }

@@ -132,7 +132,7 @@ export class TaxonomyComponent implements OnInit, OnSpinner {
         label: setting.labels['descField'], id: "desc", type: 'textarea', value: '', description: setting.labels['descFieldDescription'], required: false,
       });
     }
-    this.formGroup = elements.length ? buildFormGroup(elements) : new FormGroup<any>({});
+    this.formGroup = new FormGroup<any>(buildFormGroup(elements));
     this.formGroup.addControl('id', new FormControl<number>(0));
     this.formGroup.addControl('taxonomy', new FormControl<string>(this.taxonomy));
     const metas = this.config.taxonomyMeta(this.taxonomy);
@@ -144,9 +144,7 @@ export class TaxonomyComponent implements OnInit, OnSpinner {
         }
       });
     }
-    this.formGroup.addControl('meta',
-      metaControls.length > 0 ? buildFormGroup(metaControls) : new FormGroup({})
-    );
+    this.formGroup.addControl('meta',new FormGroup<any>(buildFormGroup(metaControls)));
     this.metaControls = metaControls;
     this.controls = elements;
     this.taxonomySetting = setting;
@@ -355,7 +353,7 @@ export class EditTaxonomyComponent implements OnInit, OnSpinner {
         label: setting.labels['descField'], id: "desc", type: 'textarea', value: termTaxonomy.description, description: setting.labels['descFieldDescription'], required: false,
       });
     }
-    this.formGroup = elements.length ? buildFormGroup(elements) : new FormGroup<any>({});
+    this.formGroup =  new FormGroup<any>(buildFormGroup(elements));
     this.formGroup.addControl('id', new FormControl<number>(termTaxonomy.id!));
     this.formGroup.addControl('taxonomy', new FormControl<string>(termTaxonomy.taxonomy));
     const metas = this.config.taxonomyMeta(termTaxonomy.taxonomy);
@@ -367,11 +365,7 @@ export class EditTaxonomyComponent implements OnInit, OnSpinner {
         }
       });
     }
-    this.formGroup.addControl('meta',
-      metaControls.length > 0
-        ? buildFormGroup(metaControls, termTaxonomy.meta)
-        : new FormGroup({})
-    );
+    this.formGroup.addControl('meta', new FormGroup<any>(buildFormGroup(metaControls, termTaxonomy.meta)));
     this.controls = elements;
     this.metaControls = metaControls;
     this.taxonomySetting = setting;

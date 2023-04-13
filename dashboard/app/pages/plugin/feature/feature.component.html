@@ -5,7 +5,7 @@
       <nb-card-body>
         <ng-container [ngSwitch]="this.container">
           <nb-tabset *ngSwitchCase="'tabs'">
-            <nb-tab *ngFor="let tab of tabs; let i = index" [tabTitle]="tab.title" [tabIndex]="i" [tabId]="''+i">
+            <nb-tab *ngFor="let tab of tabs; let i = index" [active]="i==0" [tabTitle]="tab.title" [tabIndex]="i" [tabId]="''+i">
               <ng-container [ngSwitch]="tab.container">
                 <angular2-smart-table *ngSwitchCase="'table'"
                                  [settings]="this.settings[i]"
@@ -16,7 +16,7 @@
                 </angular2-smart-table>
                 <form [ngClass]="tab.form!.class" *ngSwitchCase="'form'" [formGroup]="formGroup[i]" (submit)="submit(i, tab.form!.submit.link)">
                   <control-container [direction]="tab.form!.direction" [form]="formGroup[i]" [controls]="tab.form!.controls"></control-container>
-                  <div [class]="tab.form!.direction !== 'column' ? 'row' : ''"  class="form-group">
+                  <div [class]="tab.form!.direction !== 'column' ? 'row' : ''"  class="">
                     <label [class]="tab.form!.direction !== 'column' ? 'col-12 col-md-2' : ''" class="label col-form-label"></label>
                     <div [class]="tab.form!.direction !== 'column' ? 'col-12 col-md-10' : ''">
                       <button status="primary" size="small" [disabled]="tab.form!.submit.valid && formGroup[i].invalid" nbButton type="submit">{{tab.form!.submit.name}}</button>
@@ -49,4 +49,3 @@
     </nb-card>
   </div>
 </div>
-

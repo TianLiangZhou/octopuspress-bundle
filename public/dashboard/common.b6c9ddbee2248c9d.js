@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdashboard=self.webpackChunkdashboard||[]).push([[592],{7147:(o,E,e)=>{e.d(E,{G:()=>u,Ic:()=>t,lt:()=>R,mi:()=>c,r4:()=>r,tg:()=>s,zA:()=>_});const s="/user",_="/user/store",R="/user/{id}/update",t="/user/delete",u="/user/{id}",r="/user/profile",c="/user/reset/email"}}]);

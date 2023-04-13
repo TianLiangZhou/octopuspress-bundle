@@ -32,6 +32,7 @@ export class ContentComponent implements OnInit, OnSpinner {
     {alias: 'post_permalink_normal', name: '朴素', example: '?p=123'},
     {alias: 'post_permalink_number', name: '数字型', example: '/p/123'},
     {alias: 'post_permalink_name', name: '文章名', example: '/sample-post'},
+    {alias: 'post_permalink_type', name: '类型和名称', example: '/question/sample-post'},
     {alias: 'post_permalink_date', name: '年月份和名称型', example: '/2022/09/sample-post'},
   ];
 

@@ -2,17 +2,25 @@
 
 namespace OctopusPress\Bundle\EventListener;
 
+use OctopusPress\Bundle\Bridge\Bridger;
+use OctopusPress\Bundle\Controller\PostController;
+use OctopusPress\Bundle\Entity\Post;
+use OctopusPress\Bundle\Entity\TermTaxonomy;
 use OctopusPress\Bundle\Model\MasterManager;
 use OctopusPress\Bundle\Model\PluginManager;
 use OctopusPress\Bundle\Plugin\PluginInterface;
 use OctopusPress\Bundle\Repository\OptionRepository;
+use OctopusPress\Bundle\Support\DefaultViewFilter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  *
@@ -92,7 +100,48 @@ class BootstrapListener implements EventSubscriberInterface
         if ($kernel instanceof PluginInterface) {
             $kernel->launcher($bridger);
         }
+        $this->registerDynamicRoutes();
         $this->manager->launchers($this->container);
+    }
+
+    /**
+     * @return void
+     */
+    private function registerDynamicRoutes(): void
+    {
+        /**
+         * @var $router RouterInterface
+         */
+        $router = $this->container->get('router');
+        $routeCollection = $router->getRouteCollection();
+        $bridger = $this->manager->getBridger();
+        $taxonomies = $bridger->getTaxonomy()->getTaxonomies();
+        foreach ($taxonomies as $name => $taxonomy) {
+            if (!$taxonomy->isShowUi() || $name === TermTaxonomy::TAG || $name === TermTaxonomy::CATEGORY || $name === TermTaxonomy::NAV_MENU) {
+                continue;
+            }
+            $taxonomyRoute = new Route('/'. $name .'/{slug}', [
+                '_controller' => PostController::class . '::taxonomy',
+                'taxonomy' => $name,
+            ], [
+                'slug'     => '[a-z0-9\-_%]{2,}',
+            ]);
+            $taxonomyRoute->setMethods(Request::METHOD_GET);
+            $routeCollection->add('taxonomy_' .$name, $taxonomyRoute);
+        }
+        $postTypes = $bridger->getPost()->getTypes();
+        foreach ($postTypes as $name => $type) {
+            if (!$type->isShowUi() || $name === Post::TYPE_NAVIGATION) {
+                continue;
+            }
+            $postRoute = new Route('/'.$name.'/{name}', [
+                '_controller' => PostController::class . '::show'
+            ], [
+                'name' => '[a-z0-9\-%_]{2,}'
+            ]);
+            $postRoute->setMethods(Request::METHOD_GET);
+            $routeCollection->add('post_permalink_type_' . $name, $postRoute);
+        }
     }
 
     /**

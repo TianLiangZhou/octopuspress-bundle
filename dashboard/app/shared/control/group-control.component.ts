@@ -1,8 +1,8 @@
 import {
-  Component, forwardRef, Input,
+  Component, Input,
   OnInit, ViewChild,
 } from "@angular/core";
-import {ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR} from "@angular/forms";
+import {AbstractControl, FormArray, FormGroup} from "@angular/forms";
 import {NbDialogRef, NbDialogService} from "@nebular/theme";
 import {buildFormGroup, Control} from "./type";
 import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
@@ -13,39 +13,34 @@ import {ControlContainerComponent} from "./control-container.component";
   selector: "group-control",
   templateUrl: "group-control.component.html",
   styleUrls: ["group-control.component.scss"],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => GroupControlComponent),
-    multi: true
-  }]
 })
-export class GroupControlComponent implements OnInit, ControlValueAccessor {
+export class GroupControlComponent implements OnInit {
+
+  @Input() direction: string = 'column';
 
   @Input() element!: Control;
 
-  protected onChange: Function = () => {
-  };
-  protected onTouched: Function = () => {
-  };
+  @Input() form!: AbstractControl;
+
+  elements: Control[] = [];
+
+  protected onChange: Function = () => {};
+  protected onTouched: Function = () => {};
 
   private dialogRef: NbDialogRef<any> | undefined;
+
   values: Record<string, any>[] = [];
-  private data: Record<string, any> | Record<string, any>[] | undefined;
 
   head: Record<string, string>[] = [];
   width: string = "100%"
-  private editIndex: number = -1;
 
 
-  constructor(
-    private dialog: NbDialogService,
-    private ckfinder: CKFinderService
-  ) {
+  constructor(private dialog: NbDialogService, private ckfinder: CKFinderService) {
   }
 
 
   ngOnInit() {
-    if (this.element && this.element.children && this.element.children.length > 0) {
+    if (this.element.children && this.element.children.length > 0) {
       const head: Record<string, string>[] = [];
       this.element.children.forEach(child => {
         head.push({
@@ -53,133 +48,69 @@ export class GroupControlComponent implements OnInit, ControlValueAccessor {
           'key': child.id,
           'type': child.type,
         });
-        if (child.attachment) {
-          if (Array.isArray(child.attachment)) {
-            child.attachment.forEach(item => {
-              this.ckfinder.addAttachmentUrl(item.id, item.url);
-            })
-          } else {
-            this.ckfinder.addAttachmentUrl(child.attachment.id, child.attachment.url);
-          }
-        }
       });
       this.head = head;
       this.width = 100 / (head.length + (this.element.multiple ? 1 : 0)) + '%';
     }
-  }
-
-  registerOnChange(fn: any): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-  }
-
-  writeValue(value: any): void {
-    if (this.data != value) {
-      this.data = value;
-      this.onChange(this.data);
-    }
-    if (this.element?.multiple) {
-      this.values = Array.isArray(value) ? value : (value ? [value] : []);
-    } else {
-      this.values = value ? [value] : [];
+    if (this.element.multiple) {
+      this.values = this.arrayForm.getRawValue();
     }
   }
 
-  open() {
+  get groupForm() {
+    return this.form as FormGroup;
+  }
+
+  get arrayForm() {
+    return this.form as FormArray
+  }
+
+  open(number: number) {
+    let isCreate = false;
+    if (this.arrayForm.at(number) == null) {
+      this.arrayForm.push(
+        new FormGroup(buildFormGroup(this.element.children!))
+      );
+      isCreate = true;
+    }
     this.dialogRef = this.dialog.open<GroupControlDialogComponent>(GroupControlDialogComponent, {
       dialogClass: 'container',
       closeOnEsc: false,
-      closeOnBackdropClick: false
+      closeOnBackdropClick: false,
+      context: {
+        controls: this.element.children!,
+        title: this.element.label,
+        group: this.arrayForm.at(number) as FormGroup
+      },
     });
-    this.dialogRef.componentRef.instance.initialize(
-      this.element,
-      this.editIndex
-    );
-    this.dialogRef.onClose.subscribe((res: Record<string, any> | undefined) => {
-      if (res != undefined) {
-        this.changeValue(res);
-      }
-      this.editIndex = -1;
-    });
-  }
+    this.dialogRef.onClose.subscribe(res=> {
+      if (res === 'cancel') {
+        if (isCreate) {
+          this.arrayForm.removeAt(this.arrayForm.length - 1);
+        } else {
 
-  edit(index: number) {
-    if (!this.element?.multiple) {
-      return;
-    }
-    let defaultValue: Record<string, any> = {};
-    for (let key in this.values[index]) {
-      defaultValue[key] = this.values[index][key];
-    }
-    this.editIndex = index;
-    this.open();
+        }
+      } else {
+        this.values = this.arrayForm.getRawValue();
+      }
+    });
   }
 
   delete(index: number) {
-    if (!this.element?.multiple) {
-      return;
-    }
-    if (Array.isArray(this.data)) {
-      const data = [...this.data];
-      data.splice(index, 1)
-      this.writeValue(data);
-    }
+    this.arrayForm.removeAt(index);
+    this.values = this.arrayForm.getRawValue();
   }
 
-  private changeValue(value: Record<string, any>) {
-    let changeValue;
-    if (this.element?.multiple) {
-      if (Array.isArray(this.data)) {
-        if (this.editIndex > -1) {
-          const data = this.data.map(item => Object.assign(item));
-          data[this.editIndex] = value;
-          changeValue = data;
-        } else {
-          changeValue = [...this.data, value];
-        }
-      } else {
-        changeValue = [value];
-      }
-    } else {
-      changeValue = value;
-    }
-    this.writeValue(changeValue);
-  }
 
   drop($event: CdkDragDrop<any, any>) {
     if (this.values.length > 1) {
       moveItemInArray(this.values, $event.previousIndex, $event.currentIndex);
-      this.writeValue(this.values);
+      this.arrayForm.setValue(this.values);
     }
   }
 
   getMedia(value: number) {
-    let url: string = '';
-    this.element.children?.forEach(control => {
-      if ((control.type == 'file' || control.type == 'image' || control.type == 'video' || control.type == 'audio') && control.attachment) {
-        if (Array.isArray(control.attachment)) {
-          control.attachment.forEach(attach => {
-            if (attach.id == value) {
-              url = attach.url;
-            }
-          });
-        } else if (control.attachment.id == value) {
-          url = control.attachment.url;
-        }
-      }
-    });
-    if (!url) {
-      url = this.ckfinder.getAttachmentUrl(value);
-    } else {
-      this.ckfinder.addAttachmentUrl(value, url);
-    }
-    return url;
+    return this.ckfinder.getAttachmentUrl(value);
   }
 }
 
@@ -190,12 +121,12 @@ export class GroupControlComponent implements OnInit, ControlValueAccessor {
       <div class="col col-md-6 col-xl-4">
         <nb-card class="scrollable">
           <nb-card-header>{{title}}</nb-card-header>
-          <nb-card-body *ngIf="controls.length > 0 && formGroup">
-            <control-container [form]="formGroup" [controls]="controls" #containerComponent></control-container>
+          <nb-card-body *ngIf="controls.length > 0">
+            <control-container [form]="group" [controls]="controls" #containerComponent></control-container>
           </nb-card-body>
           <nb-card-footer class="d-flex justify-content-between">
             <button nbButton status="basic" (click)="cancel()">取消</button>
-            <button nbButton status="primary" [disabled]="formGroup?.invalid" (click)="save()">保存</button>
+            <button nbButton status="primary" [disabled]="group?.invalid" (click)="save()">保存</button>
           </nb-card-footer>
         </nb-card>
       </div>
@@ -209,47 +140,24 @@ export class GroupControlComponent implements OnInit, ControlValueAccessor {
     `
   ],
 })
-export class GroupControlDialogComponent {
-  @Input() controls: Control[] = [];
+export class GroupControlDialogComponent implements OnInit {
   @ViewChild('containerComponent') containerComponent!: ControlContainerComponent;
-
-  formGroup: FormGroup | undefined;
+  controls: Control[] = [];
   title: string = "";
+  group!: FormGroup<Record<string, AbstractControl<any, any>>>;
 
   constructor(private dialogRef: NbDialogRef<GroupControlDialogComponent>) {
   }
 
-  initialize(element: Control, index: number) {
-    this.title = element.label;
-    if (element.children && element.children.length > 0) {
-      let controls: Control[] = element.children;
-      if (element.multiple) {
-        controls = [];
-        element.children.forEach((item) => {
-          let control = Object.assign({}, item);
-          if (Array.isArray(item.attachment) && item.attachment.length > 0) {
-            control.attachment = index > -1 ? item.attachment[index] || null : null;
-          }
-          control.value = index > -1 ? item.value[index] || null : null;
-          controls.push(control);
-        });
-      }
-      this.controls = controls;
-      this.formGroup = buildFormGroup(controls);
-    }
+  ngOnInit(): void {
   }
 
 
   cancel() {
-    this.dialogRef.close(undefined);
+    this.dialogRef.close('cancel');
   }
 
   save() {
-    if (this.formGroup?.valid) {
-      console.log(this.formGroup.value);
-      this.dialogRef.close(this.formGroup.value);
-    } else {
-      this.dialogRef.close();
-    }
+    this.dialogRef.close('save');
   }
 }

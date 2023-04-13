@@ -140,10 +140,6 @@ class PostController extends Controller
      * @throws \Doctrine\ORM\NoResultException
      * @throws RuntimeError
      */
-    #[Route('/{taxonomy}/{slug}', name: 'taxonomy', requirements: [
-        'taxonomy' => '[a-z_]{2,}',
-        'slug' => '[a-z0-9\-_%]{2,}'
-    ], priority: -127)]
     public function taxonomy(string $taxonomy, string $slug): ArchiveDataSet
     {
         $termTaxonomy = $this->bridger->getTaxonomy();

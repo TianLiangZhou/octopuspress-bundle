@@ -1,5 +1,5 @@
 <div class="mb-3" [class]="direction !== 'column' ? 'row' : ''" [formGroup]="form!">
-  <label class="label col-form-label" [class]="direction !== 'column' ? 'col-12 col-md-2' : ''" for="{{control.id}}">
+  <label [class.fs-4]="control.type=='group'" class="label col-form-label" *ngIf="control.label" [class]="direction !== 'column' ? 'col-12 col-md-2' : ''" for="{{control.id}}">
     {{ control.label}}
   </label>
   <div [class]="direction !== 'column' ? 'col-12 col-md-10' : ''" class="d-flex flex-column">
@@ -10,7 +10,6 @@
          nbInput fullWidth
          [placeholder]="control.placeholder!"
          [status]="status"
-         (ngModelChange)="writeValue($event)"
          [type]="control.inputType!"
          [formControlName]="control.id"/>
 
@@ -20,34 +19,29 @@
         [id]="control.id"
         [placeholder]="control.placeholder!"
         [status]="status"
-        (ngModelChange)="writeValue($event)"
         [formControlName]="control.id"></textarea>
 
       <div class="d-flex flex-column" *ngSwitchCase="control.type == 'file' || control.type == 'video' || control.type == 'audio' || control.type == 'image' ? control.type : ''">
         <div class="flex-column d-flex align-items-center">
-          <span *ngIf="control.type != 'image' && !control.multiple && control.attachment" class="d-inline text-break">
-            {{ control.attachment.url }}
-          </span>
-          <div *ngIf="control.type == 'image' && !control.multiple && control.attachment"
-               [style.width]="control.settings?.cropped ? control.settings?.cropped.width + 'px' : null"
-               [style.height.px]="control.settings?.cropped ? control.settings?.cropped.height + 'px' : null">
-            <img alt="{{control.label}}" width="100%" src="{{ control.attachment.url }}"/>
-          </div>
-          <ng-container *ngIf="control.type != 'image' && control.multiple && control.attachment && control.attachment.length > 0">
-            <span class="d-inline my-1 text-break" *ngFor="let file of control.attachment">{{ file.url }}"</span>
+          <ng-container *ngIf="control.type != 'image'">
+            <span class="d-inline my-1 text-break" *ngFor="let file of attachments">{{ file }}"</span>
           </ng-container>
-          <ng-container *ngIf="control.type == 'image' && control.multiple && control.attachment && control.attachment.length > 0">
-          <div class="my-1" *ngFor="let image of control.attachment; let i = index;" [style.width]="control.settings?.cropped ? control.settings?.cropped.width + 'px' : null" [style.height.px]="control.settings?.cropped ? control.settings?.cropped.height+ 'px' : null">
-            <img alt="{{control.label + i}}" width="100%" src="{{ image.url }}"/>
-          </div>
+          <ng-container *ngIf="control.type == 'image'">
+            <div>
+              <img alt="{{control.label + i}}"
+                   [style.width]="control.settings?.cropped ? control.settings?.cropped.width + 'px' : '100%'"
+                   [style.height.px]="control.settings?.cropped ? control.settings?.cropped.height+ 'px' : null"
+                   *ngFor="let image of attachments; let i = index"
+                   [src]="image"/>
+            </div>
           </ng-container>
         </div>
         <div class="d-flex justify-content-between mt-2">
-          <ng-container *ngIf="(!control.multiple ? !!control.value : control.value.length > 0) && control.settings?.is_upload">
+          <ng-container *ngIf="attachments.length > 0 && control.settings?.is_upload">
             <button nbButton type="button"  status="danger" (click)="removeMedia()">{{control.settings?.button_labels.remove}}</button>
             <button nbButton type="button"  status="warning" (click)="openMedia()">{{control.settings?.button_labels.change}}</button>
           </ng-container>
-          <button *ngIf="(!control.multiple ? !!!control.value : control.value.length < 1) && control.settings?.is_upload" nbButton fullWidth type="button" status="primary" (click)="openMedia()">
+          <button *ngIf="attachments.length < 1 && control.settings?.is_upload" nbButton fullWidth type="button" status="primary" (click)="openMedia()">
             {{control.settings?.button_labels.select}}
           </button>
         </div>
@@ -59,7 +53,6 @@
          [placeholder]="control.placeholder!"
          [multiple]="control.multiple"
          [selected]="control.value"
-         (selectedChange)="writeValue($event)"
          [formControlName]="control.id">
         <nb-option *ngFor="let option of control.options" [value]="option.value">{{option.label}}</nb-option>
       </nb-select>
@@ -73,12 +66,10 @@
       <nb-checkbox *ngSwitchCase="'checkbox'" [id]="control.id"
         status="primary"
         [checked]="!!control.value"
-        (checkedChange)="writeValue($event)"
         [formControlName]="control.id"></nb-checkbox>
 
       <div *ngSwitchCase="'date'">
         <input nbInput fullWidth status="primary" [id]="control.id" id="{{ control.id }}"
-           (ngModelChange)="writeValue($event)"
            [placeholder]="control.placeholder"
            [formControlName]="control.id"
            [nbDatepicker]="datePicker"/>
@@ -88,7 +79,6 @@
       <div *ngSwitchCase="'datetime'">
         <input nbInput fullWidth status="primary" [id]="control.id" id="{{ control.id }}"
                [placeholder]="control.placeholder"
-               (ngModelChange)="writeValue($event)"
                [formControlName]="control.id"
                [nbDatepicker]="dateTimePicker"/>
         <nb-date-timepicker withSeconds [format]="control.format!" #dateTimePicker></nb-date-timepicker>
@@ -98,7 +88,6 @@
       <div *ngSwitchCase="'range_date'">
         <input nbInput fullWidth status="primary" [id]="control.id"
          [placeholder]="control.placeholder"
-         (ngModelChange)="writeValue($event)"
          [formControlName]="control.id"
          [nbDatepicker]="rangeDatePicker"
         />
@@ -108,7 +97,6 @@
       <div *ngSwitchCase="'autocomplete'">
         <input nbInput fullWidth status="primary" [id]="control.id"
          [placeholder]="control.placeholder"
-         (ngModelChange)="writeValue($event)"
          [formControlName]="control.id"
          [nbAutocomplete]="autocomplete"
         />
@@ -116,18 +104,21 @@
       </div>
 
       <div class="d-flex justify-content-between align-items-center" *ngSwitchCase="'color'">
-        <input disabled nbInput [value]="control.value ? control.value : ''" />
-        <ngx-colors (ngModelChange)="writeValue($event)" ngx-colors-trigger [formControlName]="control.id"></ngx-colors>
+        <input disabled nbInput [value]="getControl().value" />
+        <ngx-colors ngx-colors-trigger [formControlName]="control.id"></ngx-colors>
       </div>
 
       <div *ngSwitchCase="'custom'" [innerHTML]="dom.bypassSecurityTrustHtml(control.template!)"></div>
 
-      <nb-toggle *ngSwitchCase="'switch'" [formControlName]="control.id" [id]="control.id" (ngModelChange)="writeValue($event)" status="primary"></nb-toggle>
+      <nb-toggle *ngSwitchCase="'switch'" [formControlName]="control.id" [id]="control.id" status="primary"></nb-toggle>
 
-      <group-control *ngSwitchCase="'group'" [element]="control" [formControlName]="control.id" (ngModelChange)="writeValue($event)"></group-control>
+      <group-control *ngSwitchCase="'group'" [direction]="direction" [element]="control" [form]="formGroup"></group-control>
 
     </ng-container>
     <p class="caption col-form-label status-danger" *ngIf="invalid">{{error}}</p>
     <p class="label col-form-label" *ngIf="control.description && control.description.length > 0" [innerHTML]="dom.bypassSecurityTrustHtml(control.description)"></p>
   </div>
+
+  <hr *ngIf="control.type=='group'" style="color:var(--divider-color);opacity:1;">
+
 </div>

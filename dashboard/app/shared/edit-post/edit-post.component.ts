@@ -31,9 +31,8 @@ import {
 import {
   POST_DELETE, POST_SHOW,
   POST_STORE,
-  POST_TYPE_SETTING, POST_UPDATE, POSTS,
+  POST_UPDATE, POSTS,
   TAXONOMIES,
-  TAXONOMY_REGISTERED,
   TAXONOMY_STORE
 } from "../../@core/definition/content/api";
 import {SPINNER} from "../../@core/interceptor/authorization";
@@ -45,7 +44,7 @@ import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {NbTagInputAddEvent} from "@nebular/theme/components/tag/tag-input.directive";
 import {ConfigurationService} from "../../@core/services/configuration.service";
 import {UserService} from "../../@core/services/user.service";
-import {buildFormGroup} from "../control/type";
+import {buildFormGroup, Control} from "../control/type";
 
 type CheckTermTaxonomy = TermTaxonomy & {
   checked: boolean;
@@ -148,14 +147,17 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
         return;
       }
       let metas = this.config.postMeta(type);
-      let controls: any[] = [];
+      let controls: Control[] = [];
       metas.forEach((meta) => {
        if (meta.showUi && (meta.isCreated || meta.isUpdated) && meta.control) {
          controls.push(meta.control);
        }
       });
       if (controls) {
-        this.formGroup.controls['meta'] = buildFormGroup(controls);
+        let buildFormGroupMap = buildFormGroup(controls);
+        for (let key in buildFormGroupMap) {
+          this.metaGroup.addControl(key, buildFormGroupMap[key]);
+        }
         this.controls = controls;
       }
       this.type = type;

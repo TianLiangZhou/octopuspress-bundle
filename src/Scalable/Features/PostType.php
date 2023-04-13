@@ -179,4 +179,20 @@ final class PostType implements \JsonSerializable
     {
         return $this->showNavigation;
     }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLabel(): string
+    {
+        return $this->label;
+    }
 }

@@ -112,7 +112,7 @@ export class WidgetComponent implements OnInit, AfterViewInit {
             let product = {
               id: widgetData.id,
               widget: Object.assign({}, widget),
-              form: buildFormGroup(controls.flat(1)),
+              form: new FormGroup(buildFormGroup(controls.flat(1))),
             };
             for (const key in widgetData.attributes) {
               if (product.form.contains(key)) {
@@ -219,7 +219,7 @@ export class WidgetComponent implements OnInit, AfterViewInit {
       this.blockWidgets[this.blocks[this.selectBlockIndex].name].push({
         id: this.generateUUID(),
         widget: Object.assign({}, widget),
-        form: buildFormGroup(controls.flat(1)),
+        form: new FormGroup<any>(buildFormGroup(controls.flat(1))),
       });
       if (!isQuick) {
         this.historyWidgets.unshift(widget);

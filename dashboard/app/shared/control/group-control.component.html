@@ -1,41 +1,54 @@
-<div class="float-end">
-  <button status="primary" size="small" nbButton (click)="open()">{{element!.label}}数据</button>
-</div>
-<table class="table overflow-auto text-nowrap m-0 scrollable" [hidden]="values.length < 1">
-  <thead>
-  <tr>
-    <th scope="col">#</th>
-    <th scope="col" [width]="width" *ngFor="let th of head">{{th.name}}</th>
-    <th scope="col" [width]="width" *ngIf="element!.multiple">操作</th>
-  </tr>
-  </thead>
-  <tbody cdkDropList [cdkDropListDisabled]="!element.settings?.is_sort" (cdkDropListDropped)="drop($event)">
-  <tr class="align-middle"
-      [class.cursor-move]="element.settings?.is_sort"
-      *ngFor="let value of values; let i = index"
-      cdkDrag
-      [cdkDragDisabled]="!element.settings?.is_sort"
-      [cdkDragData]="i">
-    <th scope="row">{{ i + 1}}</th>
-    <td *ngFor="let th of head">
-      <ng-container [ngSwitch]="th.type">
-        <div *ngSwitchCase="'image'"><img width="100" alt="{{th.key}}" [src]="getMedia(value[th.key])"></div>
-        <div *ngSwitchCase="'combine'">
-          <button nbButton status="primary" size="small">子集</button>
+<ng-container *ngIf="element.children">
+<div *ngIf="element.multiple; then arrayBlock else objectBlock"></div>
+</ng-container>
+
+<ng-template #objectBlock>
+  <control-container [direction]="direction" [form]="groupForm" [controls]="element.children!"></control-container>
+</ng-template>
+<ng-template #arrayBlock>
+  <table class="table overflow-auto text-nowrap m-0 scrollable">
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col" [width]="width" *ngFor="let th of head">{{th.name}}</th>
+      <th scope="col" class="text-end" [width]="width">操作</th>
+    </tr>
+    </thead>
+    <tbody cdkDropList [cdkDropListDisabled]="!element.settings?.is_sort" (cdkDropListDropped)="drop($event)">
+    <tr class="align-middle"
+        [class.cursor-move]="element.settings?.is_sort"
+        *ngFor="let value of values; let i = index"
+        cdkDrag
+        [cdkDragDisabled]="!element.settings?.is_sort"
+        [cdkDragData]="i">
+      <th scope="row">{{ i + 1}}</th>
+      <td *ngFor="let th of head">
+        <ng-container [ngSwitch]="th.type">
+          <div *ngSwitchCase="'image'"><img width="100" alt="{{th.key}}" [src]="getMedia(value[th.key]) | async"></div>
+          <div *ngSwitchCase="'group'">
+            <button nbButton status="primary" type="button" size="small">子集</button>
+          </div>
+          <div *ngSwitchDefault>{{value[th.key]}}</div>
+        </ng-container>
+      </td>
+      <td>
+        <div class="ng2-smart-actions d-flex justify-content-end h-100">
+          <a href="javascript:" class="ng2-smart-action ng2-smart-action-edit-edit" (click)="open(i)">
+            <nb-icon icon="edit-outline"></nb-icon>
+          </a>
+          <a href="javascript:" class="ng2-smart-action ng2-smart-action-delete-delete" (click)="delete(i)">
+            <nb-icon icon="trash-2-outline"></nb-icon>
+          </a>
         </div>
-        <div *ngSwitchDefault>{{value[th.key]}}</div>
-      </ng-container>
-    </td>
-    <td *ngIf="element!.multiple">
-      <div class="ng2-smart-actions d-flex h-100">
-        <a href="javascript:" class="ng2-smart-action ng2-smart-action-edit-edit" (click)="edit(i)">
-          <nb-icon icon="edit-outline"></nb-icon>
-        </a>
-        <a href="javascript:" class="ng2-smart-action ng2-smart-action-delete-delete" (click)="delete(i)">
-          <nb-icon icon="trash-2-outline"></nb-icon>
-        </a>
-      </div>
-    </td>
-  </tr>
-  </tbody>
-</table>
+      </td>
+    </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="16" class="text-end">
+          <button status="primary" type="button" size="small" nbButton (click)="open(arrayForm.length)">添加</button>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</ng-template>

@@ -3,7 +3,6 @@
     <head>
         <meta charset="{{ charset }}">
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{% block title %}{{ title|default(site_title is defined ? site_title : '') }}{% endblock %}</title>
         {{ hook_action('head') }}
         {% block style %}{% endblock %}
     </head>

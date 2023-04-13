@@ -14,6 +14,7 @@ export const POSTS: string = '/post';
 export const POST_STATISTICS: string = '/post/statistics';
 export const POST_TYPE_SETTING: string = '/post/type/{type}';
 export const POST_SHOW: string = '/post/{id}';
+export const POST_ATTACHMENT_SHOW: string = '/post/attachment/{id}';
 export const POST_STORE: string = '/post/store';
 export const POST_UPDATE: string = '/post/{id}/update';
 export const POST_DELETE: string = '/post/delete';

@@ -1,8 +1,12 @@
 import {Inject, Injectable} from "@angular/core";
 import {DynamicResourceLoaderService} from "./dynamic-resource-loader.service";
 import {CookieService} from "ngx-cookie-service";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, firstValueFrom, of, tap,} from "rxjs";
 import { APP_BASE_HREF } from "@angular/common";
+import {HttpClient} from "@angular/common/http";
+import {POST_ATTACHMENT_SHOW} from "../definition/content/api";
+import {Attachment} from "../definition/content/type";
+import {map} from "rxjs/operators";
 
 export declare type CKFinderPopupArgument = {
   resourceType: string;
@@ -25,11 +29,13 @@ export declare type File = {
 export class CKFinderService {
   private finderFileChoose = new BehaviorSubject<File[]>([]);
 
-  private selectedFiles: Record<number, string> = {};
+  private registeredFiles: Record<number, string> = {};
 
   constructor(@Inject(APP_BASE_HREF) private baseHref:string,
               private dynamicResourceLoader: DynamicResourceLoaderService,
-              private cookieService: CookieService) {
+              private cookieService: CookieService,
+              private http: HttpClient,
+  ) {
     if (window.CKFinder == undefined) {
       this.dynamicResourceLoader.loadCKFinder(baseHref + 'ckfinder/ckfinder.js');
     }
@@ -40,12 +46,23 @@ export class CKFinderService {
   }
 
   public getAttachmentUrl(id: number) {
-    return this.selectedFiles.hasOwnProperty(id) ? this.selectedFiles[id] : "";
+    if (!this.registeredFiles.hasOwnProperty(id)) {
+      return this.getMedia(id).pipe(map(res => {return res.url}));
+    } else {
+      return of(this.registeredFiles[id] ?? '');
+    }
   }
 
   public addAttachmentUrl(id: number, url: string) {
-    this.selectedFiles[id] = url;
+    this.registeredFiles[id] = url;
   }
+
+  public getMedia(id: number) {
+    return this.http.get<Attachment>(POST_ATTACHMENT_SHOW, {params: {id: id}}).pipe(
+      tap(res => {this.addAttachmentUrl(res.id, res.url)})
+    );
+  }
+
 
   popup(config: CKFinderPopupArgument) {
     const _this = this;
@@ -54,6 +71,17 @@ export class CKFinderService {
     options.selectMultiple = config.multi ?? false;
     options.chooseFilesClosePopup = !config.cropped;
     options.onInit = function (finder: any) {
+      finder.on('folder:getFiles:after', function (evt: any) {
+        let collection = finder.request( 'files:getCurrent' );
+        if (collection.length < 1) {
+          return ;
+        }
+        collection.forEach((item: any) => {
+          if (item.getUrl()) {
+            _this.registeredFiles[item.get('id') ?? '0'] = item.getUrl();
+          }
+        });
+      });
       if (config.cropped) {
         finder.on('crop:image:confirm', function (evt: any) {
           const file = evt.data.file;
@@ -65,7 +93,6 @@ export class CKFinderService {
             size: file.size,
             extension: file.getExtension(),
           }]);
-          _this.selectedFiles[file.get('id') ?? 0] = file.getUrl();
           document.dispatchEvent(new MouseEvent('click'));
           if (config.element) {
             (<HTMLInputElement>document.getElementById(config.element)).value = evt.data.files.last().getUrl();
@@ -87,7 +114,6 @@ export class CKFinderService {
             size: item.size,
             extension: item.getExtension(),
           });
-          _this.selectedFiles[item.get('id') ?? 0] = item.getUrl();
         });
         _this.finderFileChoose.next(files);
         document.dispatchEvent(new MouseEvent('click'));

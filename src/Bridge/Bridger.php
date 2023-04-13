@@ -24,6 +24,7 @@ use OctopusPress\Bundle\Scalable\TermTaxonomy;
 use OctopusPress\Bundle\Scalable\Theme;
 use OctopusPress\Bundle\Scalable\Widget;
 use OctopusPress\Bundle\Support\ActivatedRoute;
+use OctopusPress\Bundle\Support\DefaultViewFilter;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -179,6 +180,14 @@ final class Bridger
     }
 
     /**
+     * @return mixed
+     */
+    public function getControllerResult(): mixed
+    {
+        return $this->getRequest()->attributes->get('_controller_result');
+    }
+
+    /**
      * @return LoggerInterface
      */
     public function getLogger(): LoggerInterface
@@ -281,6 +290,15 @@ final class Bridger
     {
         return $this->get(Meta::class);
     }
+
+    /**
+     * @return DefaultViewFilter
+     */
+    public function getDefaultFilter(): DefaultViewFilter
+    {
+        return $this->get(DefaultViewFilter::class);
+    }
+
 
 
     /**

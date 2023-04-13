@@ -45,7 +45,7 @@ final class ActivatedRoute
      */
     public function isTaxonomy(): bool
     {
-        return $this->getRouteName() == 'taxonomy';
+        return str_starts_with($this->getRouteName(), 'taxonomy_');
     }
 
     /**
@@ -85,9 +85,7 @@ final class ActivatedRoute
      */
     public function isSingular(): bool
     {
-        return in_array($this->getRouteName(), [
-            'post_permalink_normal', 'post_permalink_number','post_permalink_date', 'post_permalink_name', 'page'
-        ]);
+        return str_starts_with($this->getRouteName(), 'post_permalink_') || $this->getRouteName() == 'page';
     }
 
     /**
@@ -95,9 +93,7 @@ final class ActivatedRoute
      */
     public function isSingle(): bool
     {
-        return in_array($this->getRouteName(), [
-            'post_permalink_normal', 'post_permalink_number','post_permalink_date', 'post_permalink_name'
-        ]);
+        return str_starts_with($this->getRouteName(), 'post_permalink_');
     }
 
     /**

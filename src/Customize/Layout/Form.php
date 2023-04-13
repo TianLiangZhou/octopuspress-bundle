@@ -100,7 +100,7 @@ class Form implements \JsonSerializable
      * @param bool $isValid
      * @return Form
      */
-    public function setSubmit(string $link, string $name = '提交', bool $isValid = true): Form
+    public function setSubmit(string $link, string $name = '保存', bool $isValid = true): Form
     {
         $this->submit = [
             'name' => $name,

@@ -30,7 +30,7 @@ class OptionRepository extends ServiceEntityRepository
         'site_url',
         'site_static_url',
         'site_description',
-        'site_keyword',
+        'site_keywords',
         'timezone',
         'lang',
         'charset',
@@ -276,6 +276,23 @@ class OptionRepository extends ServiceEntityRepository
     public function roles(): array
     {
         return $this->value('roles', []) ?? [];
+    }
+
+    /**
+     * @return string
+     */
+    public function lang(): string
+    {
+        return $this->value('lang', 'zh_CN');
+    }
+
+
+    /**
+     * @return string
+     */
+    public function charset(): string
+    {
+        return $this->value('charset', 'UTF-8');
     }
 
 

@@ -159,6 +159,10 @@ class OctopusRuntime implements RuntimeExtensionInterface
                 case 'post_permalink_name':
                     $args['name'] = $obj->getName();
                     break;
+                case 'post_permalink_type':
+                    $permalinkType = 'post_permalink_type_' . $obj->getType();
+                    $args['name'] = $obj->getName();
+                    break;
                 case 'post_permalink_normal':
                 default:
                     $permalinkType = 'home';
@@ -167,10 +171,12 @@ class OctopusRuntime implements RuntimeExtensionInterface
             $url = $this->router->generate($permalinkType, $args);
             $url = $this->hookFilter('post_type_link', $url, $obj);
         } elseif ($obj instanceof TermTaxonomy) {
-            $url = $this->router->generate('taxonomy', [
-                'taxonomy' => $obj->getTaxonomy(),
-                'slug' => $obj->getSlug()
-            ]);
+            $taxonomy = $obj->getTaxonomy();
+            $name = $taxonomy;
+            if ($taxonomy != TermTaxonomy::TAG && $taxonomy != TermTaxonomy::CATEGORY) {
+                $name = 'taxonomy_' . $taxonomy;
+            }
+            $url = $this->router->generate($name, ['slug' => $obj->getSlug()]);
             $url = $this->hookFilter('taxonomy_link', $url, $obj);
         } elseif ($obj instanceof User) {
             $url = $this->router->generate('author', [

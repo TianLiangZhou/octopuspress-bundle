@@ -29,7 +29,7 @@ class Breadcrumb extends AbstractWidget implements \IteratorAggregate
     protected function context(array $attributes = []): array
     {
         // TODO: Implement context() method.
-        $controllerResult = $this->getBridger()->getRequest()->attributes->get('_controller_result', null);
+        $controllerResult = $this->getBridger()->getControllerResult();
         if ($controllerResult == null) {
             $controllerResult = $attributes['entity'] ?? null;
         }

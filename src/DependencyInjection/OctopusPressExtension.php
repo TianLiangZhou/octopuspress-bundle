@@ -271,13 +271,6 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
         $container->register(AccessDeniedHandler::class, AccessDeniedHandler::class);
         $container->register(LoginFailureHandler::class, LoginFailureHandler::class);
 
-
-//        $services->set('config_cache_factory', ResourceCheckerConfigCacheFactory::class)
-//            ->args([
-//                service('router'),
-//                $container->getParameter('kernel.debug') ? tagged_iterator('config_cache.resource_checker') : [],
-//            ]);
-
         $this->generateRoute($container->getParameter('kernel.project_dir'), $this->getAlias());
     }
 

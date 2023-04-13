@@ -12,7 +12,7 @@ use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Scalable\Hook;
 use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Support\ArchiveDataSet;
-use OctopusPress\Bundle\Support\ViewFilter;
+use OctopusPress\Bundle\Support\DefaultViewFilter;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -55,7 +55,6 @@ class ViewManager
             return;
         }
         $this->booted = true;
-        $this->registerFilter();
         if (!$this->activatedRoute->isDashboard()) {
             $this->registerGlobal();
         }
@@ -72,7 +71,6 @@ class ViewManager
     {
         $controllerResult = $this->getControllerResult();
         $context = [
-            'title' => $this->getTitle(),
             'route' => $this->getActivatedRoute()->getRouteName(),
             'entity' => null,
             'collection'=> null,
@@ -326,15 +324,6 @@ class ViewManager
         return $this->hook->filter($type . '_template', $template, $themePath, $templates);
     }
 
-    /**
-     * @return void
-     */
-    public function registerFilter(): void
-    {
-        $filter = new ViewFilter($this);
-        $filter->subscribe();
-    }
-
 
     /**
      * @return void
@@ -343,54 +332,16 @@ class ViewManager
     {
         $this->twig->addGlobal('now', time());
         $this->twig->addGlobal('activated_route', $this->activatedRoute);
-        $options = $this->option->getDefaultOptions();
-        foreach ($options as $name => $value) {
-            $this->twig->addGlobal($name, $value);
+        $defaultGlobalOptions = array_merge(
+            $this->option::$defaultGeneralNames,
+            $this->option::$defaultMediaNames,
+            $this->option::$defaultContentNames
+        );
+        $defaultOptions = $this->option->getDefaultOptions();
+        foreach ($defaultGlobalOptions as $key) {
+            $this->twig->addGlobal($key, $defaultOptions[$key] ?? null);
         }
-        if (!isset($options['lang'])) {
-            $this->twig->addGlobal('lang', 'zh');
-        }
-        if (!isset($options['charset'])) {
-            $this->twig->addGlobal('charset', 'UTF-8');
-        }
-    }
-
-
-    /**
-     * @return string
-     */
-    private function getTitle(): string
-    {
-        $args = ['title' => '',];
-        $siteName = $this->option->title();
-        $controllerResult = $this->getControllerResult();
-        if ($this->activatedRoute->isHome()) {
-            $args['title'] = $siteName;
-        } elseif ($this->activatedRoute->isArchives()) {
-            if ($controllerResult instanceof ArchiveDataSet) {
-                $taxonomy = $controllerResult->getArchiveTaxonomy();
-                if ($taxonomy instanceof TermTaxonomy) {
-                    $args['title'] = $taxonomy->getTerm()->getName();
-                } elseif ($taxonomy instanceof User) {
-                    $args['title'] = $taxonomy->getNickname() . '作品';
-                } else {
-                    $args['title'] = $taxonomy->title ?? '';
-                }
-            }
-        } elseif ($this->activatedRoute->isSingle()) {
-            $args['title'] = $controllerResult instanceof Post
-                ? $controllerResult->getTitle()
-                : '';
-        }
-        if ($this->activatedRoute->isHome()) {
-            $args['subtitle'] = $this->option->subtitle();
-        } else {
-            $args['site'] = $siteName;
-        }
-        $sep = $this->hook->filter('document_title_separator', '-');
-        $args = $this->hook->filter('document_title_parts', $args);
-        $title = implode(" $sep ", array_filter($args));
-        return $this->hook->filter('document_title', $title);
+        $this->twig->addGlobal('theme', $this->option->theme());
     }
 
     /**
@@ -422,7 +373,7 @@ class ViewManager
      */
     public function getControllerResult(): mixed
     {
-        return $this->getBridger()->getRequest()->attributes->get('_controller_result');
+        return $this->getBridger()->getControllerResult();
     }
 
     /**

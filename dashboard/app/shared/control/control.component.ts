@@ -1,15 +1,12 @@
 import {
-  AfterViewInit,
   Component,
-  forwardRef, Inject,
+  Inject,
   Input, LOCALE_ID,
-  OnChanges,
   OnInit,
-  SimpleChanges
 } from "@angular/core";
 import {CKFinderService} from "../../@core/services/ckfinder.service";
 import {buildFormGroup, Control} from "./type";
-import {ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators} from "@angular/forms";
+import {FormGroup} from "@angular/forms";
 import {DomSanitizer} from "@angular/platform-browser";
 import {Attachment} from "../../@core/definition/content/type";
 
@@ -23,13 +20,8 @@ import {Attachment} from "../../@core/definition/content/type";
       }
     `
   ],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => ControlComponent),
-    multi: true
-  }]
 })
-export class ControlComponent implements OnInit, OnChanges, AfterViewInit, ControlValueAccessor {
+export class ControlComponent implements OnInit {
 
   @Input() direction = 'column';
   @Input() control!: Control;
@@ -38,14 +30,13 @@ export class ControlComponent implements OnInit, OnChanges, AfterViewInit, Contr
   protected onChange: Function = () => {};
   protected onTouched: Function = () => {};
   id: string = "";
+  attachments: string[] = [];
 
   constructor(
     private ckfinder: CKFinderService,
     public dom: DomSanitizer,
     @Inject(LOCALE_ID) private locale: string,
-  ) {}
-
-  ngAfterViewInit(): void {
+  ) {
 
   }
 
@@ -60,7 +51,6 @@ export class ControlComponent implements OnInit, OnChanges, AfterViewInit, Contr
     if (!this.control.format) {
       this.control.format = '';
     }
-
     const formControl = this.getControl();
     if (this.control.disabled) {
       formControl?.disable();
@@ -68,34 +58,66 @@ export class ControlComponent implements OnInit, OnChanges, AfterViewInit, Contr
     formControl?.statusChanges.subscribe(res => {
       this.invalid = res == 'INVALID' && formControl.dirty;
     });
-    this.ckfinder.onChoose().subscribe((files) => {
-      if (!['file', 'image', 'video', 'audio'].includes(this.control.type)) {
-        return ;
-      }
-      const attachments: Attachment[] = [];
-      files.forEach((file) => {
-        if (this.control.id == file.source) {
-          attachments.push({url: file.url, id: file.id});
+    if (['file', 'image', 'video', 'audio'].includes(this.control.type)) {
+      this.ckfinder.onChoose().subscribe((files) => {
+        const attachments: Attachment[] = [];
+        files.forEach((file) => {
+          if (this.control.id == file.source) {
+            attachments.push({url: file.url, id: file.id});
+          }
+        });
+        if (attachments.length < 1) {
+          return ;
+        }
+        let value = null;
+        if (this.control.multiple) {
+          value = [];
+          attachments.forEach(item => {
+            value.push(item.id);
+          });
+        } else {
+          let attachment = attachments.pop();
+          value = attachment!.id;
+        }
+        formControl.setValue(value);
+      });
+      formControl.valueChanges.subscribe(values => {
+        if (values) {
+          this.buildAttachment(values);
         }
       });
-      if (attachments.length < 1) {
-        return ;
+      if (formControl.value) {
+        this.buildAttachment(formControl.value)
       }
-      // @ts-ignore
-      this.control.attachment = this.control.multiple ? attachments : attachments[attachments.length - 1];
-      const value = this.control.multiple ? attachments.map((item) => item.id) : attachments[attachments.length - 1].id;
-      this.writeValue(value);
-      this.getControl().setValue(value);
-    });
+    }
+  }
+
+  private buildAttachment(value: any) {
+    if (!Array.isArray(value)) {
+      let number = parseInt(value, 10);
+      if (number > 0) {
+        this.ckfinder.getAttachmentUrl(number).subscribe(url => {
+          this.attachments[0] = url;
+        });
+      }
+    } else {
+      value.forEach(number => {
+        if (number < 1) {
+          return ;
+        }
+        this.ckfinder.getAttachmentUrl(number).subscribe(url => {
+          this.attachments.push(url);
+        });
+      });
+    }
   }
 
   removeMedia() {
-    this.control.attachment = undefined;
+    this.attachments = [];
     let value: undefined|any[] = [];
     if (!this.control.multiple) {
       value = undefined;
     }
-    this.writeValue(value);
     this.getControl().setValue(value);
   }
 
@@ -111,10 +133,6 @@ export class ControlComponent implements OnInit, OnChanges, AfterViewInit, Contr
       const resourceType = this.control.type.charAt(0).toUpperCase() + this.control.type.slice(1) + 's';
       this.ckfinder.popup({resourceType: resourceType, multi: this.control.multiple!, source: this.control.id});
     }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-
   }
 
   get status() {
@@ -149,40 +167,13 @@ export class ControlComponent implements OnInit, OnChanges, AfterViewInit, Contr
       }
     }
     if (this.form == undefined) {
-      this.form = buildFormGroup([this.control])
+      this.form = new FormGroup<any>(buildFormGroup([this.control]))
     }
     return this.form.controls[this.control.id];
   }
 
-  registerOnChange(fn: any): void {
-    this.onChange = fn;
-  }
 
-  registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    this.control.disabled = isDisabled;
-  }
-
-  get value() {
-    return this.control.value;
-  }
-
-  set value(value: any) {
-    this.setValue(value);
-    this.onChange(value);
-  }
-
-  private setValue(value: any) {
-    this.writeValue(value);
-  }
-
-  writeValue(value: any): void {
-    if (value !== this.value) {
-      this.control.value = value;
-      this.onChange(this.value);
-    }
+  get formGroup() {
+    return this.getControl();
   }
 }

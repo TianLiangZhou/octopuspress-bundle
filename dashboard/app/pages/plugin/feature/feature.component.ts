@@ -7,7 +7,7 @@ import {FormGroup} from "@angular/forms";
 import {NbToastrService} from "@nebular/theme";
 import {ServerDataSource} from "angular2-smart-table";
 import {Settings} from "angular2-smart-table/lib/lib/settings";
-import {SITE_BASIC, SITE_GENERAL_SAVE} from "../../../@core/definition/system/api";
+import {SITE_GENERAL_SAVE} from "../../../@core/definition/system/api";
 
 @Component({
   selector: 'app-plugin-feature',
@@ -59,13 +59,13 @@ export class FeatureComponent implements OnInit {
                   this.source[index] = this.getSource(tab.table?.source!);
                   this.settings[index] = this.getSettings(tab.table!);
                 } else {
-                  this.formGroup[index] = buildFormGroup(tab.form?.controls!);
+                  this.formGroup[index] = new FormGroup<any>(buildFormGroup(tab.form?.controls!));
                 }
               });
               break;
             case 'form':
               this.form = res.form;
-              this.formGroup[0] = buildFormGroup(this.form?.controls!)
+              this.formGroup[0] = new FormGroup<any>(buildFormGroup(this.form?.controls!));
               break;
             case 'table':
               this.table = res.table!;

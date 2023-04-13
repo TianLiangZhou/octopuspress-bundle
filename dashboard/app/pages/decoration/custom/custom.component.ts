@@ -45,7 +45,7 @@ export class CustomComponent implements OnInit, OnSpinner{
       res.sections.forEach((item) => {
         elements.push(...item.controls);
       });
-      this.formGroup = buildFormGroup(elements);
+      this.formGroup = new FormGroup<any>(buildFormGroup(elements));
       for (let key in this.formGroup.controls) {
         this.values[key] = this.formGroup.controls[key].value;
       }

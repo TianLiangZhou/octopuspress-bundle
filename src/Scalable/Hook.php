@@ -20,11 +20,11 @@ final class Hook
 
     /**
      * @param string $name
-     * @param callable $callback
+     * @param callable|array $callback
      * @param int $priority
      * @return Hook
      */
-    public function add(string $name, callable $callback, int $priority = 0): Hook
+    public function add(string $name, callable|array $callback, int $priority = 0): Hook
     {
         $this->dispatcher->addListener($name, $callback, $priority);
         return $this;
@@ -84,10 +84,10 @@ final class Hook
 
     /**
      * @param string $name
-     * @param callable $callback
+     * @param callable|array $callback
      * @return void
      */
-    public function remove(string $name, callable $callback): void
+    public function remove(string $name, callable|array $callback): void
     {
         $this->dispatcher->removeListener($name, $callback);
     }

@@ -22,6 +22,7 @@ use OctopusPress\Bundle\Security\PermissionVoter;
 use OctopusPress\Bundle\Service\Requester;
 use OctopusPress\Bundle\Service\ServiceCenter;
 use OctopusPress\Bundle\Support\ActivatedRoute;
+use OctopusPress\Bundle\Support\DefaultViewFilter;
 use OctopusPress\Bundle\Twig\OctopusExtension;
 use OctopusPress\Bundle\Twig\OctopusRuntime;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -61,6 +62,11 @@ return static function (ContainerConfigurator $container, ContainerBuilder $buil
         ->args([
             service('request_stack'),
             service(Hook::class)
+        ])
+        ->public();
+    $services->set(DefaultViewFilter::class, DefaultViewFilter::class)
+        ->args([
+            service(Bridger::class),
         ])
         ->public();
 

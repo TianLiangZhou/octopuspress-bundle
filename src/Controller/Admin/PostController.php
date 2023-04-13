@@ -180,6 +180,15 @@ class PostController extends AdminController
         );
     }
 
+    #[Route('/attachment/{id}', name: 'attachment_show', requirements: ['id' => '\d+'])]
+    public function attachment(Post $post): JsonResponse
+    {
+        if ($post->getType() !== Post::TYPE_ATTACHMENT) {
+            return $this->json(['message' => '错误的附件类型'], Response::HTTP_NOT_ACCEPTABLE);
+        }
+        return $this->json($post->getAttachment($this->bridger->getAssetsUrl()));
+    }
+
     /**
      * @param string $type
      * @return JsonResponse

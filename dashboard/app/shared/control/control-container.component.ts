@@ -1,9 +1,18 @@
-import {Component, Input, OnChanges, OnInit, QueryList, SimpleChanges, ViewChildren} from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  QueryList,
+  SimpleChanges,
+  ViewChildren
+} from "@angular/core";
 import {FormGroup} from "@angular/forms";
 import {buildFormGroup, Control} from "./type";
 import {DynamicResourceLoaderService} from "../../@core/services/dynamic-resource-loader.service";
 import {ControlComponent} from "./control.component";
-import {ReplaySubject, Subject} from "rxjs";
+import {ReplaySubject, Subject, timer} from "rxjs";
 
 @Component({
   selector: "control-container",
@@ -26,13 +35,13 @@ import {ReplaySubject, Subject} from "rxjs";
     `
   ],
 })
-export class ControlContainerComponent implements OnInit, OnChanges {
+export class ControlContainerComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() direction = 'column';
   @Input() controls: Control[] = [];
   @Input() form!: FormGroup;
   @ViewChildren('controlComponent') controlComponents: QueryList<ControlComponent> = new QueryList<ControlComponent>();
 
-  private $resourceSubject = new Subject<Record<string, string[]>>()
+  private $resourceSubject = new ReplaySubject<Record<string, string[]>>(1)
   private $controlSubject = new ReplaySubject<Control[]>(1);
 
 
@@ -41,10 +50,64 @@ export class ControlContainerComponent implements OnInit, OnChanges {
   ) {
   }
 
+  ngAfterViewInit(): void {
+    this.$resourceSubject.subscribe(resources => {
+      const waitResources: any[] = [];
+      const nameMap: Record<string, string> = {};
+      Object.keys(resources).forEach((id) => {
+        resources[id].forEach((resource) => {
+          const file = resource.substring(resource.lastIndexOf('/') + 1);
+          const index = file.lastIndexOf('.');
+          const filename = file.substring(0, index);
+          waitResources.push({name: filename, src: resource});
+          nameMap[filename] = id;
+        });
+      });
+      console.log(resources);
+      console.log(nameMap);
+      this.resourceLoader.push(waitResources);
+      this.resourceLoader.load(...waitResources.map<string>((item) => item.name)).then((results) => {
+        console.log(results);
+        results.forEach((result) => {
+          if (!result.loaded || result.type == undefined || result.type != 'js') {
+            return;
+          }
+          const fun: any = window[result.resource as any];
+          if (fun !== undefined) {
+            let controlComponent: ControlComponent | undefined;
+            let depends: Record<string, ControlComponent | undefined> = {};
+            console.log(nameMap, result.resource);
+            if (nameMap[result.resource]) {
+              controlComponent = this.controlComponents.find((control) => control.id == nameMap[result.resource]);
+              const control = this.controls.find((control) => control.id == nameMap[result.resource]);
+              if (control && control.depends && control.depends.length > 0) {
+                control.depends.forEach(depend => {
+                  depends[depend] = this.controlComponents.find(element => element.id == depend);
+                });
+              }
+            }
+            timer(500).subscribe(() => {
+              try {
+                const component = new fun(controlComponent);
+                component.init(depends);
+                if (controlComponent && controlComponent.id) {
+                  console.log(controlComponent.id)
+                  window[(controlComponent.id + 'Component') as any] = component;
+                }
+              } catch (e) {
+                console.log(e);
+              }
+            });
+          }
+        });
+      });
+    });
+  }
+
   ngOnInit(): void {
     this.$controlSubject.subscribe((controls: Control[]) => {
       if (this.form == undefined) {
-        this.form = buildFormGroup(controls);
+        this.form = new FormGroup<any>(buildFormGroup(controls));
       }
       const resources: Record<string, string[]> = {};
       controls.forEach((control) => {
@@ -59,50 +122,6 @@ export class ControlContainerComponent implements OnInit, OnChanges {
         this.$resourceSubject.next(resources);
       }
     });
-
-    this.$resourceSubject.subscribe(resources => {
-      const waitResources: any[] = [];
-      const nameMap: Record<string, string> = {};
-      Object.keys(resources).forEach((id) => {
-        resources[id].forEach((resource) => {
-          const file = resource.substring(resource.lastIndexOf('/') + 1);
-          const index = file.lastIndexOf('.');
-          const filename = file.substring(0, index);
-          waitResources.push({name: filename, src: resource});
-          nameMap[filename] = id;
-        });
-      });
-      this.resourceLoader.push(waitResources);
-      this.resourceLoader.load(...waitResources.map<string>((item) => item.name)).then((results) => {
-        results.forEach((result) => {
-          if (!result.loaded || result.type == undefined || result.type != 'js') {
-            return;
-          }
-          const fun: any = window[result.resource as any];
-          if (fun !== undefined) {
-            let controlComponent: ControlComponent | undefined;
-            let depends: Record<string, ControlComponent | undefined> = {};
-            if (nameMap[result.resource]) {
-              controlComponent = this.controlComponents.find((control) => control.id == nameMap[result.resource]);
-              const control = this.controls.find((control) => control.id == nameMap[result.resource]);
-              if (control && control.depends && control.depends.length > 0) {
-                control.depends.forEach(depend => {
-                  depends[depend] = this.controlComponents.find(element => element.id == depend);
-                });
-              }
-            }
-            try {
-              const component = new fun(controlComponent);
-              component.init(depends);
-            } catch (e) {
-              console.log(e);
-            }
-          }
-        });
-      });
-    });
-
-
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -116,12 +135,14 @@ export class ControlContainerComponent implements OnInit, OnChanges {
     if (depends == undefined || depends.length < 1) {
       return ;
     }
-    let hidden = true;
     for (let depend of depends) {
       const dependMode = depend.split(":");
-      if (dependMode.length < 2 || dependMode[1] === "d") {
-        hidden = hidden && this.form.controls[depend].value;
-      } else if (dependMode[1] === "e") {
+      if (dependMode.length < 2 || dependMode[1] === "d") { // 显示
+        control.hidden = !this.form.controls[depend].value;
+        this.form.controls[depend].valueChanges.subscribe(value => {
+          control.hidden = !value;
+        });
+      } else if (dependMode[1] === "e") { // 互斥
         this.form.controls[control.id].valueChanges.subscribe((value: any) => {
           const type = typeof value;
           const options = {
@@ -147,7 +168,5 @@ export class ControlContainerComponent implements OnInit, OnChanges {
         });
       }
     }
-    control.hidden = !hidden;
   }
-
 }

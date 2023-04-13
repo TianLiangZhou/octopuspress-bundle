@@ -197,8 +197,7 @@ abstract class AbstractControl implements \JsonSerializable
         if ($manager == null) {
             return $this->default;
         }
-        $parent = $this->getParent();
-        if ($parent == null) {
+        if ($this->getParent() == null) {
             return match ($this->getStorage()) {
                 "option" => $manager->getOption($this->getId(), $this->default),
                 "theme_mod" => $manager->getThemeMod()[$this->getId()] ?? $this->default,
@@ -206,8 +205,6 @@ abstract class AbstractControl implements \JsonSerializable
                 default => $manager->getHook()
                     ->filter('customize_value_' . $this->getId(), $this->default, $this),
             };
-        } elseif (($parentValue = $parent->getValue())) {
-            return $this->getChildrenValue($parentValue, $this->getId());
         }
         return $this->default;
     }
