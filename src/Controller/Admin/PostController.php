@@ -391,6 +391,7 @@ class PostController extends AdminController
     {
         $taxonomySetting = $this->bridger->getTaxonomy();
         $taxonomyRelationships = [];
+        $originRelationships = $post->getTermRelationships();
         foreach ($relationships as $relationship) {
             if (($termTaxonomy = $relationship->getTaxonomy()) == null) {
                 continue;
@@ -406,9 +407,12 @@ class PostController extends AdminController
             $taxonomyRelationships[$termTaxonomy->getId()] = $relationship;
         }
         $taxonomies = $taxonomyRelationships ? array_keys($taxonomyRelationships) : [];
-        foreach ($post->getTermRelationships() as $relationship) {
+        foreach ($originRelationships as $relationship) {
             $id = $relationship->getTaxonomy()->getId();
             if (!in_array($id, $taxonomies)) {
+                $termTaxonomy = $relationship->getTaxonomy();
+                $termTaxonomy->setCount($termTaxonomy->getCount() - 1);
+                $this->getEM()->persist($termTaxonomy);
                 $post->removeTermRelationship($relationship);
                 $this->getEM()->remove($relationship);
             } else {
@@ -419,6 +423,9 @@ class PostController extends AdminController
             if ($relationship->getTaxonomy() == null) {
                 continue;
             }
+            $termTaxonomy = $relationship->getTaxonomy();
+            $termTaxonomy->setCount($termTaxonomy->getCount() + 1);
+            $this->getEM()->persist($termTaxonomy);
             $post->addTermRelationship($relationship);
         }
     }
