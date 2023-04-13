@@ -55,12 +55,19 @@ class BootstrapListener implements EventSubscriberInterface
      */
     public function onRequestEvent(RequestEvent $event): void
     {
-        $pathInfo = $event->getRequest()->getPathInfo();
         /**
          * @var OptionRepository $option
          */
         $option = $this->container->get(OptionRepository::class);
-        if ($option->maintenance() && !str_starts_with($pathInfo, '/backend')) {
+        $request = $event->getRequest();
+        $requestUri = $request->server->get('REQUEST_URI');
+        if ($option->staticMode()) {
+            if (str_contains($requestUri, '.html')) {
+                $request->server->set('REQUEST_URI', str_replace('.html', '', $requestUri));
+            }
+        }
+        $request->server->set('ORIGIN_REQUEST_URI', $requestUri);
+        if ($option->maintenance() && !str_starts_with($requestUri, '/backend')) {
             $event->setResponse(new Response('站点维护中...'));
             $event->stopPropagation();
             return ;
@@ -71,10 +78,10 @@ class BootstrapListener implements EventSubscriberInterface
         }
         $domain = $option->siteUrl();
         $redirectResponse = null;
-        if ($pathInfo === '/install' && $domain) {
+        if ($requestUri === '/install' && $domain) {
             $redirectResponse = new RedirectResponse('/');
         }
-        if ($pathInfo !== '/install' && empty($domain)) {
+        if ($requestUri !== '/install' && empty($domain)) {
             $redirectResponse = new RedirectResponse('/install');
         }
         if ($redirectResponse) {

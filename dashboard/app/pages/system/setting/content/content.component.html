@@ -35,6 +35,14 @@
         </nb-radio-group>
       </div>
     </div>
+    <div class="mb-3 row" *ngIf="option.permalink_structure != 'post_permalink_normal'">
+      <label id="staticMode" class="label col-form-label col-12 col-md-2" for="permalink">静态模式</label>
+      <div class="col-12 col-md-10 d-flex flex-column">
+        <nb-checkbox name="staticMode" [(ngModel)]="option.static_mode">是</nb-checkbox>
+        <label class="label">静态模式将会在URL后面添加后缀: ".html"</label>
+      </div>
+    </div>
+
     <div class="header"><div><h6>评论</h6></div></div>
     <div class="mb-3 row">
       <label class="label col-form-label col-12 col-md-2" for="default_comment_status">开启评论</label>

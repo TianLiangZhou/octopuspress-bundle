@@ -169,6 +169,9 @@ class OctopusRuntime implements RuntimeExtensionInterface
                     $args['p'] = $obj->getId();
             }
             $url = $this->router->generate($permalinkType, $args);
+            if ($permalinkType != 'post_permalink_normal' && $this->option->staticMode()) {
+                $url .= '.html';
+            }
             $url = $this->hookFilter('post_type_link', $url, $obj);
         } elseif ($obj instanceof TermTaxonomy) {
             $taxonomy = $obj->getTaxonomy();
@@ -177,11 +180,17 @@ class OctopusRuntime implements RuntimeExtensionInterface
                 $name = 'taxonomy_' . $taxonomy;
             }
             $url = $this->router->generate($name, ['slug' => $obj->getSlug()]);
+            if ($this->option->staticMode()) {
+                $url .= '.html';
+            }
             $url = $this->hookFilter('taxonomy_link', $url, $obj);
         } elseif ($obj instanceof User) {
             $url = $this->router->generate('author', [
                 'slug' => $obj->getAccount(),
             ]);
+            if ($this->option->staticMode()) {
+                $url .= '.html';
+            }
             $url = $this->hookFilter('author_link', $url, $obj);
         } else {
             // todo

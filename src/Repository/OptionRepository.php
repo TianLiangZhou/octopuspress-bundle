@@ -55,6 +55,7 @@ class OptionRepository extends ServiceEntityRepository
     public static array $defaultContentNames = [
         'site_icon',
         'site_url',
+        'static_mode',
         'permalink_structure',
         'default_category',
         'default_post_format',
@@ -241,6 +242,14 @@ class OptionRepository extends ServiceEntityRepository
     public function permalinkStructure(): string
     {
         return $this->getDefaultOptions()['permalink_structure'] ?? 'post_permalink_normal';
+    }
+
+    /**
+     * @return bool
+     */
+    public function staticMode(): bool
+    {
+        return $this->getDefaultOptions()['static_mode'] ?? false;
     }
 
     public function thumbnail(): array
