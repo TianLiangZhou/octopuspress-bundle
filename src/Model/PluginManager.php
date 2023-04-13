@@ -74,7 +74,29 @@ class PluginManager
         $plugins[] = $name;
         $meta->setValue(json_encode($plugins) ?: '');
         $this->optionRepository->add($meta);
+        $this->migrateTo($name);
         return true;
+    }
+
+    /**
+     * 迁移静态资源文件到web公共目录
+     *
+     * @param string $pluginName
+     * @return void
+     */
+    private function migrateTo(string $pluginName): void
+    {
+        $publicPluginDir = $this->bridger->getPublicDir(). DIRECTORY_SEPARATOR .'plugins' . DIRECTORY_SEPARATOR . $pluginName;
+        if (!\file_exists($publicPluginDir)) {
+            \mkdir($publicPluginDir, 0755, true);
+        }
+        $pluginDir = $this->getBridger()->getPluginDir() . DIRECTORY_SEPARATOR . $pluginName;
+        $allowExt = [
+            '*.html', '*.css', '*.js', '*.jpg', '*.jpeg', '*.png', '*.webp', '*.svg', '*.bmp', '*.ico', '*.gif',
+            '*.flv', '*.mp4', '*.wav', '*.mp3', '*.ogg', '*.webm', '*.flac'
+        ];
+        $iterator = Finder::create()->name($allowExt)->in($pluginDir)->exclude(['dev'])->getIterator();
+        (new Filesystem())->mirror($pluginDir, $publicPluginDir, $iterator);
     }
 
 
