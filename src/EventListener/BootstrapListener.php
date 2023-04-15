@@ -2,7 +2,6 @@
 
 namespace OctopusPress\Bundle\EventListener;
 
-use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Controller\PostController;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
@@ -10,7 +9,6 @@ use OctopusPress\Bundle\Model\MasterManager;
 use OctopusPress\Bundle\Model\PluginManager;
 use OctopusPress\Bundle\Plugin\PluginInterface;
 use OctopusPress\Bundle\Repository\OptionRepository;
-use OctopusPress\Bundle\Support\DefaultViewFilter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -138,7 +136,7 @@ class BootstrapListener implements EventSubscriberInterface
         }
         $postTypes = $bridger->getPost()->getTypes();
         foreach ($postTypes as $name => $type) {
-            if (!$type->isShowUi() || $name === Post::TYPE_NAVIGATION) {
+            if (!$type->isShowUi() || !$type->isShowOnFront() || $name === Post::TYPE_NAVIGATION) {
                 continue;
             }
             $postRoute = new Route('/'.$name.'/{name}', [

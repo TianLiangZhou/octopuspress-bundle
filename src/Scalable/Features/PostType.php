@@ -4,6 +4,9 @@ namespace OctopusPress\Bundle\Scalable\Features;
 
 use OctopusPress\Bundle\Scalable\TermTaxonomy;
 
+/**
+ *
+ */
 final class PostType implements \JsonSerializable
 {
     private string $name;
@@ -20,11 +23,13 @@ final class PostType implements \JsonSerializable
 
     private bool $showUi;
 
-    private bool $showTableTaxonomy;
-
     private bool $showNavigation;
 
     private array $parentType = [];
+
+    private array $children = [];
+
+    private bool $showOnFront = true;
 
     public function __construct(string $name, array $args)
     {
@@ -48,37 +53,27 @@ final class PostType implements \JsonSerializable
             'supports' => ['title', 'editor'],
             'taxonomies' => [],
             'showUi'   => true,
-            'showTableTaxonomy' => true,
+            'showOnFront'       => true,
             'showNavigation'    => true,
-            'parentType' => [$this->name],
+            'hierarchical'      => false,
+            'parentType' => [],
         ];
 
         $args = array_merge($defaults, $args);
-
-        if (is_array($args['labels'])) {
-            $this->labels = $args['labels'];
+        $this->labels = (array) $args['labels'];
+        $this->supports = (array) $args['supports'];
+        $this->taxonomies = (array) $args['taxonomies'];
+        $this->showUi = (bool) $args['showUi'];
+        $this->parentType = (array) $args['parentType'];
+        if (in_array('parent', $this->supports) && empty($this->parentType)) {
+            $this->parentType[] = $this->name;
         }
-        if (is_array($args['supports'])) {
-            $this->supports = $args['supports'];
-        }
-        if (is_array($args['taxonomies'])) {
-            $this->taxonomies = $args['taxonomies'];
-        }
-        if (is_bool($args['showUi'])) {
-            $this->showUi = $args['showUi'];
-        }
-        if (is_bool($args['showTableTaxonomy'])) {
-            $this->showTableTaxonomy = $args['showTableTaxonomy'];
-        }
-        if (is_array($args['parentType'])) {
-            $this->parentType = $args['parentType'];
-        }
-
+        $this->showOnFront    = (bool) $args['showOnFront'];
         $this->showNavigation = (bool) $args['showNavigation'];
-
-        if ($args['label'] && is_string($args['label'])) {
-            $this->label = $args['label'];
+        if (!$this->isShowUi()) {
+            $this->showOnFront = $this->showNavigation = false;
         }
+        $this->label = (string) $args['label'];
         if ($this->isShowUi()) {
             $this->setDefaultLabel();
         }
@@ -111,6 +106,7 @@ final class PostType implements \JsonSerializable
     }
 
     /**
+     * Of list ['author', 'title', 'name', 'editor', 'parent', 'excerpt', 'thumbnail', 'comments', 'trackbacks']
      * @return $this
      */
     public function addSupports(): PostType
@@ -137,9 +133,10 @@ final class PostType implements \JsonSerializable
             'labels' => $this->labels,
             'supports'=> array_keys($this->features),
             'parentType' => $this->parentType,
+            'children'   => $this->children,
             'visibility' => [
+                'showOnFront' => $this->showOnFront,
                 'showUi' => $this->showUi,
-                'showTableTaxonomy' => $this->showTableTaxonomy,
                 'showNavigation' => $this->showNavigation,
             ],
         ];
@@ -194,5 +191,48 @@ final class PostType implements \JsonSerializable
     public function getLabel(): string
     {
         return $this->label;
+    }
+
+    /**
+     * @param string $type
+     * @return void
+     */
+    private function addChildren(string $type): void
+    {
+        if (!in_array($type, $this->children)) {
+            $this->children[] = $type;
+        }
+    }
+
+    /**
+     * @param PostType[] $types
+     * @return $this
+     */
+    public function registerChildren(array $types): PostType
+    {
+        if (isset($this->features['parent'])) {
+            foreach ($types as $type) {
+                if (in_array($type->getName(), $this->parentType)) {
+                    $type->addChildren($this->getName());
+                }
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParentType(): array
+    {
+        return $this->parentType;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isShowOnFront(): bool
+    {
+        return $this->showOnFront;
     }
 }

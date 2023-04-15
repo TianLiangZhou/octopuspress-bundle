@@ -1,36 +1,49 @@
-import {Component, EventEmitter, Input, OnInit} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Input, OnInit} from '@angular/core';
 import {
-  POST_DELETE,
+  POST_DELETE, POST_SHOW,
   POST_STATISTICS,
   POST_TRASH,
-  POST_TYPE_SETTING, POST_UNDO,
+  POST_UNDO,
   POSTS,
   TAXONOMIES
 } from "../../@core/definition/content/api";
 import {User} from "../../@core/definition/user/type";
 import {ActivatedRoute, Router} from "@angular/router";
-import {ReplaySubject, Subject} from "rxjs";
+import {
+  combineLatest,
+  from,
+  ReplaySubject,
+  Subject,
+  timer,
+} from "rxjs";
 import {IColumnType, ServerDataSource} from "angular2-smart-table";
 import {IColumn, Settings} from "angular2-smart-table/lib/lib/settings";
 import {HttpClient, HttpParams} from "@angular/common/http";
-import {DeleteEvent} from "angular2-smart-table/lib/lib/events";
 import {Post, PostTypeSetting, TaxonomySetting, TermTaxonomy} from "../../@core/definition/content/type";
 import {ConfigurationService} from "../../@core/services/configuration.service";
-import {FormControl} from "@angular/forms";
-import {OnSpinner, Records} from "../../@core/definition/common";
+import {FormControl, FormGroup} from "@angular/forms";
+import {OnSpinner, PostEntity, Records} from "../../@core/definition/common";
+import {distinctUntilChanged, map, switchMap} from "rxjs/operators";
+import {NbSidebarService} from "@nebular/theme";
 
 @Component({
   selector: 'app-post',
   template: `
     <nb-card>
       <nb-card-header class="d-flex justify-content-between align-items-center">
-        <span>{{typeSetting.label}}</span>
-        <a [routerLink]="'/app/content/post-new/' + type" size="small" nbButton status="primary"><nb-icon icon="plus-outline"></nb-icon></a>
+        <span>{{typeSetting.label}}<span *ngIf="parent"> - {{parent.title}}</span></span>
+        <a [routerLink]="'/app/content/post-new/' + type" queryParamsHandling="merge" size="small" nbButton status="primary"><nb-icon icon="plus-outline"></nb-icon></a>
       </nb-card-header>
       <nb-card-body>
-        <nb-radio-group [formControl]="filterControls['status']" class="d-flex flex-row mb-2">
-          <nb-radio *ngFor="let radio of radios" [value]="radio.value">{{radio.label}}</nb-radio>
-        </nb-radio-group>
+        <div class="mb-2">
+          <ng-container *ngFor="let link of radios">
+            <a class="mx-2 bg-transparent border-0" [class]="{'fs-6': link.value == status, 'text-primary': link.value == status}"
+               nbButton
+               style="color: var(--text-basic-color)"
+               [routerLink]="['./']" [queryParams]="{status: link.value}" queryParamsHandling="merge"
+            >{{link.label}}</a>
+          </ng-container>
+        </div>
         <div class="mb-2 row">
           <form class="col-auto d-flex" (ngSubmit)="batch()">
             <nb-select name="batchMode" fullWidth [(ngModel)]="batchMode">
@@ -42,32 +55,36 @@ import {OnSpinner, Records} from "../../@core/definition/common";
           </form>
           <form class="col-auto d-flex">
             <div class="ms-3">
-              <nb-select fullWidth [formControl]="filterControls['date']">
+              <nb-select fullWidth [formControl]="getControl('date')">
                 <nb-option [value]="''">全部日期</nb-option>
                 <nb-option [value]="option.value" *ngFor="let option of dateFilters">{{option.label}}</nb-option>
               </nb-select>
             </div>
-            <div class="ms-3" *ngFor="let taxonomyFilter of taxonomyFilters">
-              <nb-select fullWidth [formControl]="filterControls[taxonomyFilter.slug]">
-                <nb-option [value]="''">全部{{taxonomyFilter.label}}</nb-option>
-                <nb-option [value]="option.id" *ngFor="let option of taxonomyFilter.options">{{option.name}}</nb-option>
-              </nb-select>
+            <ng-container *ngFor="let taxonomyFilter of taxonomyFilters">
+              <div class="ms-3" *ngIf="!taxonomyFilter.hidden">
+                <nb-select fullWidth [formControl]="getControl(taxonomyFilter.slug)">
+                  <nb-option [value]="''">全部{{taxonomyFilter.label}}</nb-option>
+                  <nb-option [value]="option.id" *ngFor="let option of taxonomyFilter.options">{{option.name}}</nb-option>
+                </nb-select>
+              </div>
+            </ng-container>
+            <div class="ms-3">
+              <a status="primary" nbButton [routerLink]="['./']" [queryParams]="filterControls.getRawValue()" queryParamsHandling="merge">筛选</a>
             </div>
           </form>
         </div>
         <angular2-smart-table
-          [settings]="settings"
+          [settings]="tableTypeSettings[type]"
           [source]="source">
         </angular2-smart-table>
       </nb-card-body>
     </nb-card>
   `
 })
-export class PostComponent implements OnInit, OnSpinner {
+export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
   protected typeChange$: ReplaySubject<string> = new ReplaySubject<string>(1);
   type: string = 'post';
-  source: ServerDataSource | undefined;
-  settings: Partial<Settings> = {};
+  source: ServerDataSource | undefined = undefined;
   batches = [
     {'label': '批量操作', 'value': ''},
     {'label': '移至回收站', 'value': 'trash'},
@@ -80,55 +97,113 @@ export class PostComponent implements OnInit, OnSpinner {
     {label: `草稿`, value: 'draft'},
     {label: `回收站`, value: 'trash'},
   ];
-  filterControls: Record<string, FormControl> = {
+  filterControls = new FormGroup<any>({
     status: new FormControl<string>(''),
     date: new FormControl<string>(''),
-  };
+  });
   spinner: boolean = false;
-  taxonomyFilters: {label: string, slug: string, options: TermTaxonomy[]}[] = [];
+  taxonomyFilters: {label: string, slug: string, hidden: boolean, options: TermTaxonomy[]}[] = [];
   dateFilters: {label: string, value: string}[] = [];
-  private condition: {[key: string]: string|number} = {
-    type: this.type,
-    status: this.filterControls.status.value || '',
-    author: '' ,
-    taxonomy: '',
-    date: '',
-  };
-
-  private $conditionChangeSourceRefresh = new Subject<Record<any, number | string>>();
+  parent: Post | null = null;
+  tableTypeSettings: Record<string, Settings> = {};
+  private $conditionChangeSourceRefresh = new ReplaySubject<Record<string, any>>(1);
+  private $parentChangeSourceRefresh = new Subject<number>();
 
   constructor(protected router: Router,
               protected route: ActivatedRoute,
               protected http: HttpClient,
-              protected config: ConfigurationService
+              protected config: ConfigurationService,
+              protected sidebar: NbSidebarService,
               ) {
+  }
+
+  ngAfterViewInit(): void {
+    timer(0).subscribe(_ => {
+      this.sidebar.collapse('menu-sidebar');
+    });
   }
 
   onSpinner(spinner: boolean): void {
     this.spinner = spinner;
   }
 
+  get status() {
+    return this.filterControls.controls.status.value;
+  }
+
   ngOnInit(): void {
     const postTypes = this.config.postTypes();
-    this.typeChange$.subscribe(type => {
-      if (type === 'nav_menu_item') {
-        this.router.navigateByUrl('/app/decoration/navigation').then();
-        return ;
-      }
-      if (!Object.keys(postTypes).includes(type)) {
-        this.router.navigateByUrl('/404').then();
-        return ;
-      }
-      this.typeSetting = postTypes[type];
-      if (!this.typeSetting.visibility!.showUi) {
-        return ;
-      }
-      this.type = type;
-      this.condition.type = type;
-      this.settings = this.buildSettings();
-      this.buildSource();
+    this.$conditionChangeSourceRefresh.pipe(
+      distinctUntilChanged(),
+      switchMap(wheres => {
+        let httpParams = new HttpParams({fromObject:wheres});
+        return combineLatest([
+          from([httpParams]),
+          this.http.get<Record<string, any>>(POST_STATISTICS, {params: httpParams}),
+        ]);
+      })
+    )
+    .subscribe(([httpParams, stats]) => {
+      this.radios[0].label = stats.all > 0 ? `全部 (${stats.all})` : `全部`;
+      this.radios[1].label = stats.publish > 0 ? `已发布 (${stats.publish})` : `已发布`;
+      this.radios[2].label = stats.draft > 0 ? `草稿 (${stats.draft})` : `草稿`;
+      this.radios[3].label = stats.trash > 0 ? `回收站  (${stats.trash})` : `回收站`;
+      this.dateFilters = stats.yearMonths;
+      this.source = new ServerDataSource(this.http, {
+        endPoint: POSTS + `?` + httpParams.toString(),
+        dataKey: 'records',
+        totalKey: 'total',
+        pagerPageKey: 'page',
+        pagerLimitKey: 'limit',
+        filterFieldKey: '#field#',
+      });
     });
-    this.filterControls.status.valueChanges.subscribe(value => {
+    this.$parentChangeSourceRefresh.pipe(
+      switchMap(parent => {
+        return this.http.get<PostEntity>(POST_SHOW, {params: {id: parent}});
+      })
+    ).subscribe(parent => {
+      this.parent = parent;
+    });
+    combineLatest([this.route.params.pipe(distinctUntilChanged()), this.route.queryParams.pipe(distinctUntilChanged())])
+      .pipe(
+        map(([p, query]) => ({...p, ...query}))
+      )
+      .subscribe(maps => {
+        const type = maps['type'] || 'post';
+        if (type === 'nav_menu_item') {
+          this.router.navigateByUrl('/app/decoration/navigation').then();
+          return ;
+        }
+        if (!Object.keys(postTypes).includes(type)) {
+          this.router.navigateByUrl('/404').then();
+          return ;
+        }
+        if (this.type !== type || !this.typeSetting.hasOwnProperty('label')) {
+          this.type = type;
+          this.typeSetting = postTypes[type];
+          if (!this.typeSetting.visibility!.showUi) {
+            return;
+          }
+        }
+        if (this.tableTypeSettings[type] === undefined) {
+          this.tableTypeSettings[type] = this.buildSettings();
+        }
+        if (!maps.hasOwnProperty('status')) {
+          maps['status'] = '';
+        }
+        let parent = parseInt(maps['parent'], 10);
+        if (parent > 0) {
+          this.$parentChangeSourceRefresh.next(parent);
+        } else if (this.parent) {
+          this.parent = null;
+        }
+        if ((maps['status'] ?? '') != this.filterControls.status) {
+          this.filterControls.controls.status.setValue(maps['status'] ?? '');
+        }
+        this.$conditionChangeSourceRefresh.next(maps);
+      });
+    this.filterControls.controls.status.valueChanges.subscribe(value => {
       if (value === 'trash') {
         this.batches = [this.batches[0],
           {'label': '还原', 'value': 'undo'},
@@ -137,27 +212,11 @@ export class PostComponent implements OnInit, OnSpinner {
       } else {
         this.batches = [this.batches[0], {'label': '移至回收站', 'value': 'trash'}];
       }
-      this.$conditionChangeSourceRefresh.next({status: value || ''});
-    });
-    this.filterControls.date.valueChanges.subscribe(value => {
-      this.$conditionChangeSourceRefresh.next({date: value || ''});
-    });
-    this.route.paramMap.subscribe(map => {
-      let type = map.get('type');
-      if (!type) {
-        type = 'post';
-      }
-      this.typeChange$.next(type);
-    });
-    this.$conditionChangeSourceRefresh.subscribe(conditionMap => {
-      this.condition = Object.assign(this.condition, conditionMap);
-      this.buildSource();
     });
   }
 
   batch() {
     let idSets = this.source?.getSelectedItems().map(item => item.id);
-    console.log(idSets);
     if (!idSets || idSets.length < 1) {
       return ;
     }
@@ -190,34 +249,16 @@ export class PostComponent implements OnInit, OnSpinner {
     }
   }
 
-  private buildSource() {
-    const httpParams = new HttpParams({fromObject: this.condition});
-    this.http.get<Record<string, any>>(POST_STATISTICS + '?' + httpParams.toString()).subscribe(response => {
-      this.radios[0].label = response.all > 0 ? `全部 (${response.all})` : `全部`;
-      this.radios[1].label = response.publish > 0 ? `已发布 (${response.publish})` : `已发布`;
-      this.radios[2].label = response.draft > 0 ? `草稿 (${response.draft})` : `草稿`;
-      this.radios[3].label = response.trash > 0 ? `回收站  (${response.trash})` : `回收站`;
-      this.dateFilters = response.yearMonths;
-    });
-    this.source = new ServerDataSource(this.http, {
-      endPoint: POSTS + `?` + httpParams.toString(),
-      dataKey: 'records',
-      totalKey: 'total',
-      pagerPageKey: 'page',
-      pagerLimitKey: 'limit',
-      filterFieldKey: '#field#',
-    });
-  }
-
   private buildSettings(): Settings {
 
-    const defaultColumns = {
+    const defaultColumns: Record<string, IColumn> = {
       title: {
         title: '标题',
         type: IColumnType.Custom,
         filter: true,
         renderComponent: PostActionsComponent,
         onComponentInitFunction: (component: PostActionsComponent) => {
+          component.setTypes(this.type, this.config.postTypes());
           component.onClick().subscribe(action => {
             this.executeAction(action.action, [action.id], component.rowData.title)
           });
@@ -229,11 +270,6 @@ export class PostComponent implements OnInit, OnSpinner {
         type: IColumnType.Custom,
         filter: false,
         renderComponent: PostAuthorComponent,
-        onComponentInitFunction: (component: PostAuthorComponent) => {
-          component.onClick().subscribe(author => {
-            this.$conditionChangeSourceRefresh.next({author: author});
-          });
-        },
         width: '10%',
         isSortable: false,
       },
@@ -241,33 +277,33 @@ export class PostComponent implements OnInit, OnSpinner {
 
     const dynamicColumns: Record<string, IColumn> = {};
     const taxonomies = this.config.taxonomies();
-    this.taxonomyFilters = [];
     for (let slug in taxonomies) {
-      if (!taxonomies[slug].types.includes(this.type)) {
+      let exist = taxonomies[slug].types.includes(this.type);
+      this.taxonomyFilters.forEach(item => {
+        if (item.slug === slug) {
+          item.hidden = !exist;
+        }
+      });
+      if (!exist) {
         continue;
       }
-      if (this.typeSetting.visibility?.showTableTaxonomy) {
+      if (taxonomies[slug].visibility.showPostTable[this.type]) {
         dynamicColumns[slug] = {
           title: taxonomies[slug].label,
           type: IColumnType.Custom,
           renderComponent: PostTaxonomyComponent,
           onComponentInitFunction: (component: PostTaxonomyComponent) => {
             component.taxonomy = slug;
-            component.onClick().subscribe(selectedTaxonomy => {
-              if (this.filterControls.hasOwnProperty(selectedTaxonomy.taxonomy)) {
-                this.filterControls[selectedTaxonomy.taxonomy].setValue(selectedTaxonomy.id);
-              } else {
-                this.$conditionChangeSourceRefresh.next({taxonomy: selectedTaxonomy.id});
-              }
-            });
           },
           filter: false,
           width: '15%',
           isSortable: false,
         };
       }
-      if (taxonomies[slug].visibility.showPostFilter) {
-        this.addTaxonomyFilter(taxonomies[slug]);
+      if (taxonomies[slug].visibility.showPostFilter[this.type]) {
+        if (!this.filterControls.hasOwnProperty(slug)) {
+          this.addTaxonomyFilter(taxonomies[slug]);
+        }
       }
     }
 
@@ -308,20 +344,21 @@ export class PostComponent implements OnInit, OnSpinner {
     }
   }
 
+  public getControl(name: string)
+  {
+    return this.filterControls.controls[name] as FormControl;
+  }
+
   private addTaxonomyFilter(taxonomy: TaxonomySetting) {
     this.http.get<Records<TermTaxonomy>>(TAXONOMIES, {params: {taxonomy: taxonomy.slug}}).subscribe(response => {
       this.taxonomyFilters.push({
         slug: taxonomy.slug,
         label: taxonomy.label,
+        hidden: false,
         options: response.records,
       });
     });
-    if (!this.filterControls.hasOwnProperty(taxonomy.slug)) {
-      this.filterControls[taxonomy.slug] = new FormControl('');
-      this.filterControls[taxonomy.slug].valueChanges.subscribe(value => {
-        this.$conditionChangeSourceRefresh.next({taxonomy: value})
-      });
-    }
+    this.filterControls.addControl(taxonomy.slug, new FormControl('', {}));
   }
 }
 
@@ -347,7 +384,7 @@ export class EditPostComponent {
       </strong>
     </div>
     <nb-actions>
-      <nb-action [class.ps-0]="i==0" [link]="action.value == 'edit'?'/app/content/edit-post/'+rowData.id:''" [title]="action.title"
+      <nb-action [class.ps-0]="i==0" [href]="action.link||''" [title]="action.title"
                  (click)="click(action.value)"
                  [icon]="action.icon"
                  *ngFor="let action of actions;  index as i"></nb-action>
@@ -374,23 +411,34 @@ export class PostActionsComponent {
   @Input() value!: string;
   @Input() rowData: any;
 
-  actions: {title: string, icon: string, value: string}[] = [];
+  actions: {title: string, icon: string, value: string, link?:any}[] = [];
+  private type: string = 'post';
+  private postTypes: Record<string, PostTypeSetting> = {};
 
   constructor(protected http: HttpClient) {
   }
 
   ngOnInit(): void {
+    let actions = [];
+
+    let typeSetting = this.postTypes[this.type];
     if (this.rowData.status === 'trash') {
-      this.actions.push(
+      actions = [
         {title: '还原', icon: 'undo-outline', value: 'undo'},
         {title: '永久删除', icon: 'trash-outline', value: 'delete'}
-      );
+      ];
     } else {
-      this.actions.push(
-        {title: '编辑', icon: 'edit-2-outline', value: 'edit'},
-        {title: '移至回收站', icon: 'trash-2-outline', value: 'trash'}
-      );
+      actions.push({title: '编辑', icon: 'edit-2-outline', value: 'edit', link: '/#/app/content/edit-post/'+this.rowData.id});
+      if (typeSetting && typeSetting.children && typeSetting.children.length > 0) {
+        typeSetting.children.forEach(child => {
+          let childTypeSetting = this.postTypes[child];
+          actions.push({title: '子集'+(childTypeSetting.label ?? ''), icon: 'layers-outline', value: 'children', link: '/#/app/content/' + child + '?parent=' + this.rowData.id});
+          actions.push({title: '添加子集'+(childTypeSetting.label ?? ''), icon: 'plus-outline', value: 'children', link: '/#/app/content/post-new/'+child + '?parent=' + this.rowData.id});
+        });
+      }
+      actions.push({title: '移至回收站', icon: 'trash-2-outline', value: 'trash'});
     }
+    this.actions = actions;
   }
 
   onClick() {
@@ -398,14 +446,19 @@ export class PostActionsComponent {
   }
 
   click(action: string) {
-    if (action === 'edit') {
-      return false;
+    if (action !== 'trash') {
+      return true;
     }
     this.actionClick.emit({
       action: action,
       id: this.rowData.id
     })
     return false;
+  }
+
+  setTypes(type: string, types: Record<string, PostTypeSetting>) {
+    this.type = type;
+    this.postTypes = types;
   }
 
 }
@@ -415,8 +468,8 @@ export class PostActionsComponent {
   template: `
     <div class="py-3 text-break">
       <ng-container *ngIf="termTaxonomies.length > 0">
-        <ng-container *ngFor="let t of termTaxonomies;let last = last">
-          <a  href="javascript:;" (click)="click(t.id!)">{{t.name}}</a>
+        <ng-container *ngFor="let t of termTaxonomies;let last = last;">
+          <a [routerLink]="['./']" [queryParams]="getParams(t)">{{t.name}}</a>
           <a *ngIf="!last">、</a>
         </ng-container>
       </ng-container>
@@ -425,18 +478,11 @@ export class PostActionsComponent {
   `,
 })
 export class PostTaxonomyComponent implements OnInit {
-  private actionClick: EventEmitter<{taxonomy: string, id: number}> = new EventEmitter();
-
   @Input() value!: string;
   @Input() rowData: Post | undefined;
   @Input() taxonomy: string = '';
 
-  actions: {title: string, icon: string, value: string}[] = [];
-
   termTaxonomies: TermTaxonomy[] = [];
-
-  constructor(protected http: HttpClient) {
-  }
 
   ngOnInit(): void {
     if (this.rowData) {
@@ -444,40 +490,27 @@ export class PostTaxonomyComponent implements OnInit {
     }
   }
 
-  onClick() {
-    return this.actionClick;
+  getParams(t: TermTaxonomy) {
+    let obj: Record<string, number> = {};
+    obj[t.taxonomy] = t.id || 0;
+    return obj;
   }
-
-  click(id: number) {
-    this.actionClick.next({taxonomy: this.taxonomy, id: id});
-  }
-
 }
 
 @Component({
   selector: 'app-post-author',
   template: `
     <div class="py-3 text-break">
-        <a href="javascript:;" (click)="click($event)">{{value.account}}</a>
+      <a [routerLink]="['./']" [queryParams]="{author: this.value.id}" queryParamsHandling="merge">{{value.account}}</a>
+      <span>({{value.nickname}})</span>
     </div>
 
   `,
 })
 export class PostAuthorComponent implements OnInit {
-  private actionClick: EventEmitter<number> = new EventEmitter();
-
   @Input() value!: User;
   @Input() rowData: Post | undefined;
 
   ngOnInit(): void {
   }
-
-  onClick() {
-    return this.actionClick;
-  }
-
-  click($event: Event) {
-    this.actionClick.next(this.value.id);
-  }
-
 }

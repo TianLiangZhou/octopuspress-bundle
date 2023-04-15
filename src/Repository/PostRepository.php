@@ -2,8 +2,11 @@
 
 namespace OctopusPress\Bundle\Repository;
 
+use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\PostMeta;
+use OctopusPress\Bundle\Entity\TermRelationship;
 use OctopusPress\Bundle\Util\RepositoryTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
@@ -171,6 +174,13 @@ class PostRepository extends ServiceEntityRepository
                 }
             }
         }
+        if (isset($filters['parent'])) {
+            if (empty($filters['parent'])) {
+                $qb->andWhere('a.parent IS NULL');
+            } else {
+                $qb->andWhere('a.parent = :parent')->setParameter('parent', (int) $filters['parent']);
+            }
+        }
         if (!empty($filters['date'])) {
             $yearMonth = explode('-', $filters['date']);
             if (count($yearMonth) === 2) {
@@ -201,7 +211,7 @@ class PostRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param array<int, Post> $records
+     * @param Post[] $records
      * @return array
      */
     public function handleRecords(array $records): array
@@ -210,6 +220,12 @@ class PostRepository extends ServiceEntityRepository
         $items = [];
         foreach ($records as $record) {
             $author = $record->getAuthor();
+            $collection = $record->getTermRelationships();
+            $taxonomies = [];
+            foreach ($collection as $item) {
+                $termTaxonomy = $item->getTaxonomy();
+                $taxonomies[] = array_merge($termTaxonomy->jsonSerialize(), $termTaxonomy->getTerm()->jsonSerialize());
+            }
             $items[] = array_merge(
                 $record->jsonSerialize(),
                 [
@@ -218,7 +234,7 @@ class PostRepository extends ServiceEntityRepository
                         'account'  => $author->getAccount(),
                         'nickname' => $author->getNickname(),
                     ],
-                    'relationships' => [],
+                    'relationships' => $taxonomies,
                     'createdAt' => $record->getCreatedAt()->format('Y-m-d H:i'),
                     'modifiedAt' => $record->getModifiedAt()->format('Y-m-d H:i'),
                 ]

@@ -12,19 +12,23 @@ trait RepositoryTrait
     /**
      * @param Request $request
      * @param int $hydrationMode
+     * @param callable|null $builderCallable
      * @return array Returns an array of Option objects
      */
-    public function pagination(Request $request, int $hydrationMode = AbstractQuery::HYDRATE_ARRAY): array
+    public function pagination(Request $request, int $hydrationMode = AbstractQuery::HYDRATE_ARRAY, callable $builderCallable = null): array
     {
         $all = $request->query->all();
         $builderQuery = $this->createQueryBuilder('a');
+        if ($builderCallable) {
+            call_user_func($builderCallable, $builderQuery, $all);
+        }
         $this->addFilters($builderQuery, $all);
         $query = $builderQuery->getQuery();
         if (!isset($all['page'])) {
             $records = $query->getResult();
             return ['total' => count($records), 'records' => $this->handleRecords($records)];
         }
-        $page = max((int) ($all['page'] ?? 1), 1);
+        $page = max((int) $all['page'], 1);
         $size = max((int) ($all['size'] ?? 30), 30);
         $paginator = new Paginator($query);
         if (($count = $paginator->count()) < 1) {
@@ -43,7 +47,7 @@ trait RepositoryTrait
      * @param QueryBuilder $qb
      * @param array<string, string|int|null> $filters
      */
-    abstract private function addFilters(QueryBuilder $qb, array $filters): void;
+    abstract public function addFilters(QueryBuilder $qb, array $filters): void;
 
     /**
      * @param array<int, object> $records

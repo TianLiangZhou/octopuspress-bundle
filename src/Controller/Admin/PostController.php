@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace OctopusPress\Bundle\Controller\Admin;
 
 use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\QueryBuilder;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\PostMeta;
@@ -60,9 +62,25 @@ class PostController extends AdminController
             $request->query->set('_order', 'DESC');
         }
         return $this->json(
-            $this->repository->pagination($request, AbstractQuery::HYDRATE_OBJECT)
+            $this->repository->pagination(
+                $request,
+                AbstractQuery::HYDRATE_OBJECT,
+                function (QueryBuilder $queryBuilder, array $queries) {
+                    if (!empty($queries['relations'])) {
+                        $queryBuilder->innerJoin(
+                            TermRelationship::class,
+                            'tt',
+                            Join::WITH,
+                            'tt.post = a.id'
+                        )->andWhere('tt.taxonomy IN (:taxonomyIds)')
+                        ->setParameter('taxonomyIds', $queries['relations']);
+                    }
+                }
+            )
         );
     }
+
+
 
     /**
      * @param Request $request
@@ -72,9 +90,18 @@ class PostController extends AdminController
     public function statistics(Request $request): JsonResponse
     {
         $this->filterRequest($request);
-        $all = $request->query->all();
+        $queries = $request->query->all();
         $queryBuilder = $this->repository->createQueryBuilder('a');
-        $this->repository->addFilters($queryBuilder, $all);
+        if (!empty($queries['relations'])) {
+            $queryBuilder->innerJoin(
+                TermRelationship::class,
+                'tt',
+                Join::WITH,
+                'tt.post = a.id'
+            )->andWhere('tt.taxonomy IN (:taxonomyIds)')
+                ->setParameter('taxonomyIds', $queries['relations']);
+        }
+        $this->repository->addFilters($queryBuilder, $queries);
         $ymResults = $queryBuilder->select('year(a.createdAt) as y, month(a.createdAt) as m')
                         ->addOrderBy('y', 'DESC')
                         ->addGroupBy('y')->addGroupBy('m')
@@ -91,9 +118,18 @@ class PostController extends AdminController
             'yearMonths' => $yearMonths,
         ];
         $qb = $this->repository->createQueryBuilder('a');
+        if (!empty($queries['relations'])) {
+            $qb->innerJoin(
+                TermRelationship::class,
+                'tt',
+                Join::WITH,
+                'tt.post = a.id'
+            )->andWhere('tt.taxonomy IN (:taxonomyIds)')
+                ->setParameter('taxonomyIds', $queries['relations']);
+        }
         $qb->select('COUNT(a.status) as cnt, a.status');
-        unset($all['status']);
-        $this->repository->addFilters($qb, $all);
+        unset($queries['status']);
+        $this->repository->addFilters($qb, $queries);
         $results = $qb->addGroupBy('a.status')
             ->getQuery()->getArrayResult();
         $statusMap = array_column($results, 'cnt', 'status');
@@ -114,7 +150,7 @@ class PostController extends AdminController
             $request->query->set('type', 'post');
         }
         $status = $request->query->get('status', '');
-       if (empty($status)) {
+        if (empty($status)) {
             $request->query->set('status', [
                 Post::STATUS_PUBLISHED,
                 Post::STATUS_DRAFT,
@@ -122,13 +158,15 @@ class PostController extends AdminController
                 Post::STATUS_PRIVATE,
             ]);
         }
-        $taxonomyId = $request->query->getInt('taxonomy', 0);
-        if ($taxonomyId > 0) {
-            $relationResults = $this->relationRepository->getTaxonomyObjectQuery($taxonomyId)
-                ->getResult();
-            if ($relationResults) {
-                $request->query->set('id', array_column($relationResults, 'object_id'));
+        $taxonomies = $this->bridger->getTaxonomy()->getTaxonomies();
+        $taxonomyIds = [];
+        foreach ($taxonomies as $taxonomy) {
+            if (($taxonomyId = $request->query->getInt($taxonomy->getName(), 0)) > 0) {
+                $taxonomyIds[] = $taxonomyId;
             }
+        }
+        if ($taxonomyIds) {
+            $request->query->set('relations', $taxonomyIds);
         }
     }
 
@@ -453,9 +491,10 @@ class PostController extends AdminController
             }
         }
         if (!empty($otherEntityMap['parent']) && is_numeric($otherEntityMap['parent'])) {
+            $postType = $this->bridger->getPost()->getType($post->getType());
             $parent = $this->repository->findOneBy([
                 'id' => (int) $otherEntityMap['parent'],
-                'type' => $post->getType(),
+                'type' => $postType->getParentType(),
             ]);
             if ($parent) {
                 $post->setParent($parent);

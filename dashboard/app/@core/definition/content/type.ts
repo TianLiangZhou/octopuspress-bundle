@@ -53,9 +53,9 @@ export interface PostTypeSetting {
   labels: Record<string, any>;
   supports: string[],
   parentType: string[],
+  children: string[],
   visibility: {
     showUi: boolean;
-    showTableTaxonomy: boolean;
     showNavigation: boolean;
   };
 }
@@ -68,7 +68,8 @@ export interface TaxonomySetting {
   hierarchical: boolean;
   visibility: {
     showUi: boolean;
-    showPostFilter: boolean;
+    showPostFilter: Record<string, boolean>;
+    showPostTable: Record<string, boolean>;
     showNavigation: boolean;
   }
 }

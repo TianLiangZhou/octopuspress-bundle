@@ -35,6 +35,7 @@ class Post
         $postType->addSupports()
             ->registerTaxonomies($this->taxonomy);
         $this->types[$type] = $postType;
+        $postType->registerChildren($this->getTypes());
         return $this;
     }
 

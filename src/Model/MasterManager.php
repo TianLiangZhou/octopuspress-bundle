@@ -134,7 +134,7 @@ class MasterManager
         $termTaxonomy->registerTaxonomy('category', 'post', [
                 'label' => '分类',
                 'hierarchical' => true,
-                'showPostFilter' => true,
+                'showPostFilter' => ['post' => true],
             ])
             ->registerTaxonomy('tag', 'post', [
                 'label' => '标签',
@@ -165,7 +165,7 @@ class MasterManager
                 ],
                 'supports' => [
                     'title', 'editor', 'author', 'thumbnail', 'excerpt', 'trackbacks', 'comments'
-                ]
+                ],
             ])
             ->registerType('page', [
                 'label' => '页面',

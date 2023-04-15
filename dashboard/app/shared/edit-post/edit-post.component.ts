@@ -19,7 +19,7 @@ import {
 
 import {ActivatedRoute, Router} from "@angular/router";
 import {debounceTime, delay, distinctUntilChanged, filter, map, switchMap} from "rxjs/operators";
-import {HttpClient, HttpContext, HttpErrorResponse} from "@angular/common/http";
+import {HttpClient, HttpContext, HttpErrorResponse, HttpParams} from "@angular/common/http";
 import {CKFinderService} from "../../@core/services/ckfinder.service";
 import {ActionBody, OnSpinner, PostEntity, Records} from "../../@core/definition/common";
 import {
@@ -36,7 +36,7 @@ import {
   TAXONOMY_STORE
 } from "../../@core/definition/content/api";
 import {SPINNER} from "../../@core/interceptor/authorization";
-import {Observable, ReplaySubject, Subject, Subscription, timer} from "rxjs";
+import {Observable, of, ReplaySubject, Subject, Subscription, timer} from "rxjs";
 import {User} from "../../@core/definition/user/type";
 import {USER_MEMBER} from "../../@core/definition/user/api";
 import {CkeditorComponent} from "../ckeditor/ckeditor.component";
@@ -189,12 +189,22 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
         this.postTypeChange$.next(map.get('type') || 'post');
       }
     });
-
+    this.route.queryParamMap.subscribe(map => {
+      let parentId = parseInt(map.get('parent') ?? '0', 10);
+      if (parentId > 0) {
+        this.http.get<PostEntity>(this.endpoint.show, {params:{id: parentId}}).subscribe(parent => {
+          this.selectParent(parent);
+        });
+      }
+    });
     this.filteredAuthorOptions$ = this.formGroup.controls.authorNickname.valueChanges.pipe(
       filter(value => value != '[object Object]' && value != ''),
       debounceTime(400),
       distinctUntilChanged(),
       switchMap(value => {
+        if (!value) {
+          return of();
+        }
         return this.http.get<Records<User>>(USER_MEMBER + '?nickname=' + value + '&size=30').pipe(map(result => result.records))
       })
     );
@@ -203,7 +213,16 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
       debounceTime(400),
       distinctUntilChanged(),
       switchMap(value => {
-        return this.http.get<Records<Post>>(POSTS+ '?type=' + this.type + '&title='+value+'&size=30').pipe(map(result => result.records))
+        if (!value) {
+          return of();
+        }
+        let type = this.typeSetting.parentType || this.type;
+        let params = new HttpParams({fromObject: {
+          type: type,
+          title: value || "",
+          size: 30
+        }});
+        return this.http.get<Records<Post>>(POSTS, {params: params}).pipe(map(result => result.records))
       })
     );
 
@@ -224,7 +243,7 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
     });
 
     this.ckfinder.onChoose().subscribe((files: any[]) => {
-      let file = files.pop();
+      let file = files[0]||null;
       if (file) {
         this.entity.featuredImage.id = file.id;
         this.entity.featuredImage.url = file.url;

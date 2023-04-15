@@ -168,7 +168,15 @@ class PostController extends Controller
          * @var $runtime OctopusRuntime
          */
         $runtime = $this->bridger->getTwig()->getRuntime(OctopusRuntime::class);
-        return $runtime->getTaxonomyPosts($taxonomy->getId(), []);
+        $postTypes = $this->bridger->getPost()->getTypes();
+        $types = [];
+        foreach ($postTypes as $name => $type) {
+            if (!$type->isShowOnFront()) {
+                continue;
+            }
+            $types[] = $name;
+        }
+        return $runtime->getTaxonomyPosts($taxonomy->getId(), ['type' => $types]);
     }
 
     /**
@@ -183,7 +191,15 @@ class PostController extends Controller
          */
         $filters['_sort'] = 'id';
         $filters['_order'] = 'DESC';
+        $filters['type'] = [];
         $runtime = $this->bridger->getTwig()->getRuntime(OctopusRuntime::class);
+        $postTypes = $this->bridger->getPost()->getTypes();
+        foreach ($postTypes as $name => $type) {
+            if (!$type->isShowOnFront()) {
+                continue;
+            }
+            $filters['type'][] = $name;
+        }
         return $runtime->getPosts($filters);
     }
 }

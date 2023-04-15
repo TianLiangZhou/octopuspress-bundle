@@ -29,7 +29,15 @@ final class Taxonomy implements \JsonSerializable
     private bool $hierarchical;
 
     private bool $showUi;
-    private bool $showPostFilter;
+    /**
+     * @var array<string, bool>
+     */
+    private array $showPostFilter = [];
+    /**
+     * @var array<string, bool>
+     */
+    private array $showPostTable  = [];
+
     private bool $showNavigation;
 
 
@@ -52,17 +60,19 @@ final class Taxonomy implements \JsonSerializable
             'description'           => '',
             'hierarchical'          => false,
             'showUi'                => true,
-            'showPostFilter'        => false,
+            'showPostFilter'        => [],
+            'showPostTable'         => [],
             'showNavigation'        => true,
         ];
         $args = array_merge($defaults, $args);
         $this->label = $args['label'] ?? $this->name;
-        if ($args['description']) {
-            $this->description = $args['description'];
-        }
+        $this->description = $args['description'];
         $this->hierarchical = (bool) $args['hierarchical'];
         $this->showUi      = (bool) $args['showUi'];
-        $this->showPostFilter      = (bool) $args['showPostFilter'];
+        $this->showPostFilter = (array) $args['showPostFilter'];
+        $this->showPostFilter = array_merge(array_fill_keys($this->objectType, false), $this->showPostFilter);
+        $this->showPostTable = (array) $args['showPostTable'];
+        $this->showPostTable = array_merge(array_fill_keys($this->objectType, true), $this->showPostTable);
         $this->showNavigation = (bool) $args['showNavigation'];
         if (is_array($args['labels'])) {
             $this->labels = $args['labels'];
@@ -80,6 +90,7 @@ final class Taxonomy implements \JsonSerializable
     {
         if (!in_array($objectType, $this->objectType)) {
             $this->objectType[] = $objectType;
+            $this->addPostTable($objectType);
         }
     }
 
@@ -95,6 +106,7 @@ final class Taxonomy implements \JsonSerializable
             'visibility' => [
                 'showUi' => $this->showUi,
                 'showPostFilter' => $this->showPostFilter,
+                'showPostTable' => $this->showPostTable,
                 'showNavigation' => $this->showNavigation,
             ],
         ];
@@ -122,6 +134,36 @@ final class Taxonomy implements \JsonSerializable
     public function getObjectType(): array
     {
         return $this->objectType;
+    }
+
+    /**
+     * @param string|array $type
+     * @param bool $filter
+     * @return $this
+     */
+    public function addPostFilter(string|array $type, bool $filter = true): Taxonomy
+    {
+        foreach ((array)$type as $t) {
+            if (is_string($t)) {
+                $this->showPostFilter[$t] = $filter;
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @param string|array $type
+     * @param bool $show
+     * @return $this
+     */
+    public function addPostTable(string|array $type, bool $show = true): Taxonomy
+    {
+        foreach ((array)$type as $t) {
+            if (is_string($t)) {
+                $this->showPostTable[$t] = $show;
+            }
+        }
+        return $this;
     }
 
     /**

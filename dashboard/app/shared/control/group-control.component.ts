@@ -126,7 +126,7 @@ export class GroupControlComponent implements OnInit {
           </nb-card-body>
           <nb-card-footer class="d-flex justify-content-between">
             <button nbButton status="basic" (click)="cancel()">取消</button>
-            <button nbButton status="primary" [disabled]="group?.invalid" (click)="save()">保存</button>
+            <button nbButton status="primary" [disabled]="group.invalid" (click)="save()">保存</button>
           </nb-card-footer>
         </nb-card>
       </div>
