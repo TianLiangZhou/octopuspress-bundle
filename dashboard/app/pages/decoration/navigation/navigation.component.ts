@@ -113,8 +113,12 @@ export class NavigationComponent implements OnInit, OnSpinner, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    timer(300).subscribe(val => {
-      this.sidebar.toggle(true, 'menu-sidebar');
+    timer(0).subscribe(val => {
+      this.sidebar.getSidebarState('menu-sidebar').subscribe(state => {
+        if (state !== 'compacted') {
+          this.sidebar.compact('menu-sidebar');
+        }
+      });
     });
   }
 

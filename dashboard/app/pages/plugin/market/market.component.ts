@@ -1,17 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {Records, ResponseBody} from "../../../@core/definition/common";
 import {Plugin} from "../../../@core/definition/plugin/type";
 import {PLUGIN_MARKET, PLUGIN_SETUP} from "../../../@core/definition/plugin/api";
 import {HttpClient} from "@angular/common/http";
 import {ActivatedRoute} from "@angular/router";
 import {DomSanitizer} from "@angular/platform-browser";
-import {NbToastrService} from "@nebular/theme";
+import {NbSidebarService, NbToastrService} from "@nebular/theme";
+import {timer} from "rxjs";
 
 @Component({
   selector: 'app-plugin-market',
   templateUrl: './market.component.html',
 })
-export class MarketComponent implements OnInit {
+export class MarketComponent implements OnInit, AfterViewInit {
   plugins: Plugin[] = [];
 
   title: string = "";
@@ -20,10 +21,22 @@ export class MarketComponent implements OnInit {
     private http: HttpClient,
     private toast: NbToastrService,
     private route: ActivatedRoute,
-    public sanitizer: DomSanitizer
+    public sanitizer: DomSanitizer,
+    private sidebar: NbSidebarService,
   ) {
 
   }
+
+  ngAfterViewInit(): void {
+    timer(0).subscribe(val => {
+      this.sidebar.getSidebarState('menu-sidebar').subscribe(state => {
+        if (state !== 'compacted') {
+          this.sidebar.compact('menu-sidebar');
+        }
+      });
+    });
+  }
+
   ngOnInit(): void {
     this.getPlugins();
     this.route.data.subscribe((data) => {

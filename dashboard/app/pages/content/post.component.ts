@@ -37,7 +37,7 @@ import {NbSidebarService} from "@nebular/theme";
       <nb-card-body>
         <div class="mb-2">
           <ng-container *ngFor="let link of radios">
-            <a class="mx-2 bg-transparent border-0" [class]="{'fs-6': link.value == status, 'text-primary': link.value == status}"
+            <a class="mx-2 bg-transparent border-0 ps-0" [class]="{'fs-6': link.value == status, 'text-primary': link.value == status}"
                nbButton
                style="color: var(--text-basic-color)"
                [routerLink]="['./']" [queryParams]="{status: link.value}" queryParamsHandling="merge"
@@ -53,22 +53,22 @@ import {NbSidebarService} from "@nebular/theme";
               <button nbButton status="primary" [disabled]="!batchMode || spinner" [nbSpinner]="spinner" type="submit">应用</button>
             </div>
           </form>
-          <form class="col-auto d-flex">
-            <div class="ms-3">
+          <form class="col-auto d-flex flex-column flex-sm-row">
+            <div class="ms-sm-3 mt-3 mt-sm-0">
               <nb-select fullWidth [formControl]="getControl('date')">
                 <nb-option [value]="''">全部日期</nb-option>
                 <nb-option [value]="option.value" *ngFor="let option of dateFilters">{{option.label}}</nb-option>
               </nb-select>
             </div>
             <ng-container *ngFor="let taxonomyFilter of taxonomyFilters">
-              <div class="ms-3" *ngIf="!taxonomyFilter.hidden">
+              <div class="ms-sm-3 mt-3 mt-sm-0" *ngIf="!taxonomyFilter.hidden">
                 <nb-select fullWidth [formControl]="getControl(taxonomyFilter.slug)">
                   <nb-option [value]="''">全部{{taxonomyFilter.label}}</nb-option>
                   <nb-option [value]="option.id" *ngFor="let option of taxonomyFilter.options">{{option.name}}</nb-option>
                 </nb-select>
               </div>
             </ng-container>
-            <div class="ms-3">
+            <div class="ms-sm-3 mt-3 mt-sm-0">
               <a status="primary" nbButton [routerLink]="['./']" [queryParams]="filterControls.getRawValue()" queryParamsHandling="merge">筛选</a>
             </div>
           </form>
@@ -119,7 +119,11 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
 
   ngAfterViewInit(): void {
     timer(0).subscribe(_ => {
-      this.sidebar.collapse('menu-sidebar');
+      this.sidebar.getSidebarState('menu-sidebar').subscribe(state => {
+        if (state !== 'collapsed') {
+          this.sidebar.collapse('menu-sidebar');
+        }
+      });
     });
   }
 

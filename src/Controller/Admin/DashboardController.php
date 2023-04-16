@@ -6,7 +6,6 @@ namespace OctopusPress\Bundle\Controller\Admin;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use OctopusPress\Bundle\Entity\Option;
-use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -68,17 +67,17 @@ class DashboardController extends AdminController
     #[Route('/dashboard', name: 'dashboard', options: ['name' => '面板', 'sort' => 1, 'icon' => 'home', 'link' => '/app/dashboard', 'home' => true])]
     public function main(Request $request): JsonResponse
     {
-        $cards = [
-            $this->getStatusCard(),
-        ];
-        $this->customCards($cards);
+        $cards = [];
         $cards[] = $this->getSystemInfo();
         if (($memory = $this->getMemory())) {
             $cards[] = $memory;
         }
-        $cards[] = $this->getPHPInfo($request);
-        $cards[] = $this->getPHPExtension();
-        return $this->json($cards);
+        $this->customCards($cards);
+        $dashboard = [
+            'status' => $this->getStatusCard(),
+            'cards'  => $cards,
+        ];
+        return $this->json($dashboard);
     }
 
 
@@ -117,42 +116,62 @@ class DashboardController extends AdminController
      */
     private function getSystemInfo(): array
     {
-        $data = [
+        $resource = $this->getEM()->getConnection()->getNativeConnection();
+        $dbInfo = ucfirst($resource->getAttribute(\PDO::ATTR_DRIVER_NAME))
+            . ':' .$resource->getAttribute(\PDO::ATTR_SERVER_VERSION);
+        $boolMap = [false => '否', true => '是'];
+        $collection = [
+            ['name' => 'PHP', 'value' => PHP_VERSION],
+            ['name' => 'SAPI', 'value' => php_sapi_name()],
+            ['name' => '数据库', 'value' => $dbInfo],
+            ['name' => '当前时区', 'value' => date_default_timezone_get()],
+            ['name' => '脚本最大内存', 'value' => ini_get('memory_limit')],
+            ['name' => '最大上传大小', 'value' => ini_get('upload_max_filesize')],
+            ['name' => '显示错误', 'value' => $boolMap[(bool) ini_get('display_errors')]],
+            ['name' => '脚本超时时间', 'value' => ini_get('max_execution_time')],
+            ['name' => 'Symfony', 'value' => Kernel::VERSION],
+            ['name' => 'Intl支持', 'value' => $boolMap[extension_loaded('intl')]],
+            ['name' => 'Redis支持', 'value' => $boolMap[extension_loaded('redis')]],
+            ['name' => 'FFI支持', 'value' => $boolMap[extension_loaded('FFI')]],
             ['name' => '主机名', 'value' => php_uname('n')],
             ['name' => '内核', 'value' => php_uname('r')],
             ['name' => 'OS', 'value' => PHP_OS],
         ];
+        $collection = $this->bridger->getHook()->filter('dashboard_system_info', $collection);
         $process = new Process(['uptime']);
         $process->run();
         if ($process->isSuccessful()) {
             $output = $process->getOutput();
-            $data[] = ['name' => 'uptime', 'value' => $output];
+            $collection[] = ['name' => 'uptime', 'value' => $output];
         }
         $process = new Process(['cat', '/etc/timezone']);
         $process->run();
         if ($process->isSuccessful()) {
             $output = $process->getOutput();
-            $data[] = ['name' => '时区', 'value' => $output];
+            $collection[] = ['name' => '时区', 'value' => $output];
         }
         $process = Process::fromShellCommandline('top -b -n 1 | grep Tasks');
         $process->run();
         if ($process->isSuccessful()) {
             $output = $process->getOutput();
-            $data[] = ['name' => '进程', 'value' => substr($output, 6)];
+            $collection[] = ['name' => '进程', 'value' => substr($output, 6)];
         }
         $process = Process::fromShellCommandline('cat /proc/cpuinfo | grep "model name"');
         $process->run();
         if ($process->isSuccessful()) {
             $output = $process->getOutput();
-            $data[] = ['name' => 'CPU', 'value' => substr(explode("\n", $output)[0], 12)];
+            $collection[] = ['name' => 'CPU', 'value' => substr(explode("\n", $output)[0], 12)];
         }
 
         return [
             'type' => 'table',
             'class' => 'col-6',
             'title' => '系统信息',
-            'body' => $data,
+            'body' => $collection,
             'settings' => [
+                'pager' => [
+                    'perPage' => 128,
+                ],
                 'actions' => [
                     'add' => false,
                     'delete' => false,
@@ -209,116 +228,6 @@ class DashboardController extends AdminController
             ];
         }
         return [];
-    }
-
-    /**
-     * @param Request $request
-     * @return array<string, mixed>
-     */
-    private function getPHPInfo(Request $request): array
-    {
-        $phpVersion = PHP_VERSION;
-        $dbVersion = $this->getEM()->getConnection()->getNativeConnection()->getAttribute(\PDO::ATTR_SERVER_VERSION);
-        $symfonyVersion = Kernel::VERSION;
-        $runEnv = php_sapi_name();
-        $serverSoft = $request->server->get('SERVER_SOFTWARE');
-        $zendVersion = zend_version();
-        $iniDir = php_ini_loaded_file();
-        $iniConfig = ini_get_all(null, false);
-        $displayError = $iniConfig['display_errors'] === 1 ? ['checkmark-outline', 'success'] : ['close-outline', 'danger'];
-        $timezone = date_default_timezone_get();
-        $data = [
-            [
-                'type' => 'input',
-                'value' => $phpVersion,
-                'name' => 'PHP版本',
-            ],
-            [
-                'type' => 'input',
-                'value' => $zendVersion,
-                'name' => 'Zend引擎版本',
-            ],
-            [
-                'type' => 'input',
-                'value' => $serverSoft,
-                'name' => 'Web服务',
-            ],
-            [
-                'type' => 'input',
-                'value' => $dbVersion,
-                'name' => '数据库版本',
-            ],
-            [
-                'type' => 'input',
-                'value' => $symfonyVersion,
-                'name' => 'Symfony版本',
-            ],
-            [
-                'type' => 'input',
-                'value' => $runEnv,
-                'name' => '运行模式',
-            ],
-            [
-                'type' => 'input',
-                'value' => $iniDir,
-                'name' => 'INI路径',
-            ],
-            [
-                'type' => 'input',
-                'value' => $iniConfig['memory_limit'],
-                'name' => '脚本最大内存',
-            ],
-            [
-                'type' => 'input',
-                'value' => $iniConfig['upload_max_filesize'],
-                'name' => '最大上传大小',
-            ],
-            [
-                'type' => 'input',
-                'value' => $iniConfig['post_max_size'],
-                'name' => 'POST提交大小',
-            ],
-            [
-                'type' => 'icon',
-                'value' => $displayError[0],
-                'status' => $displayError[1],
-                'name' => '显示错误',
-            ],
-            [
-                'type' => 'input',
-                'value' => $iniConfig['max_execution_time'],
-                'name' => '脚本超时时间',
-            ],
-            [
-                'type' => 'input',
-                'value' => $timezone,
-                'name' => '当前时区',
-            ],
-        ];
-        return [
-            'type' => 'form',
-            'class' => 'col',
-            'title' => 'PHP信息',
-            'body' => $data,
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function getPHPExtension(): array
-    {
-        $extensions = get_loaded_extensions();
-        $body = [];
-        foreach ($extensions as $ext) {
-            $body[] = $ext;
-        }
-        return [
-            'type' => 'grid',
-            'class' => 'col',
-            'title' => 'PHP扩展',
-            'body' => $body,
-        ];
     }
 
     /**

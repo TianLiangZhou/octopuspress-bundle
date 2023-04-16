@@ -1,17 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {ActivatedRoute} from "@angular/router";
 import {Records, ResponseBody} from "../../../@core/definition/common";
 import {Plugin} from "../../../@core/definition/plugin/type";
 import {PLUGIN_ACTIVATE, PLUGIN_DOWN, PLUGIN_DEACTIVATE, PLUGIN_INSTALLED, PLUGIN_UPLOAD} from "../../../@core/definition/plugin/api";
-import {NbDialogService, NbToastrService} from "@nebular/theme";
+import {NbDialogService, NbSidebarService, NbToastrService} from "@nebular/theme";
 import {DialogRef} from "@angular/cdk/dialog";
+import {timer} from "rxjs";
 
 @Component({
   selector: 'app-plugin-installed',
   templateUrl: './installed.component.html',
 })
-export class InstalledComponent implements OnInit {
+export class InstalledComponent implements OnInit, AfterViewInit {
 
   plugins: Plugin[] = [];
 
@@ -22,8 +23,19 @@ export class InstalledComponent implements OnInit {
     private toast: NbToastrService,
     private route: ActivatedRoute,
     public dialog: NbDialogService,
+    private sidebar: NbSidebarService,
   ) {
 
+  }
+
+  ngAfterViewInit(): void {
+    timer(0).subscribe(val => {
+      this.sidebar.getSidebarState('menu-sidebar').subscribe(state => {
+        if (state !== 'compacted') {
+          this.sidebar.compact('menu-sidebar');
+        }
+      });
+    });
   }
 
   ngOnInit(): void {

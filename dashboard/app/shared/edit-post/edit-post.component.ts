@@ -263,7 +263,11 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
       this.formGroup.controls.date.setValue(isNow ? null : date);
     });
     timer(0).subscribe(() => {
-      this.sidebarService.toggle(true, 'menu-sidebar');
+      this.sidebarService.getSidebarState('menu-sidebar').subscribe(state => {
+        if (state !== 'collapsed') {
+          this.sidebarService.collapse('menu-sidebar');
+        }
+      });
       this.accordion?.openAll();
     });
   }

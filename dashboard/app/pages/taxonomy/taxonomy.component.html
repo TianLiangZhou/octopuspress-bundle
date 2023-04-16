@@ -28,10 +28,10 @@
     <nb-card>
       <nb-card-body class="border-0">
         <form (ngSubmit)="batch()" class="row mb-2">
-          <nb-select name="batchMode" [(ngModel)]="batchMode">
+          <nb-select class="col-auto" name="batchMode" [(ngModel)]="batchMode">
             <nb-option [value]="option.value" *ngFor="let option of batches">{{option.label}}</nb-option>
           </nb-select>
-          <div class="col">
+          <div class="col-auto">
             <button nbButton status="primary" [disabled]="!batchMode" type="submit">应用</button>
           </div>
         </form>

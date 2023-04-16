@@ -12,7 +12,16 @@ import {CKFinderService} from "../../@core/services/ckfinder.service";
         </nb-card>
       </div>
     </div>
-  `
+  `,
+  styles: [
+    `
+      :host {
+        ::ng-deep nb-card-body iframe {
+          height: calc(100vh - 152px)
+        }
+      }
+    `
+  ]
 })
 export class MediaComponent implements OnInit, AfterViewInit {
 

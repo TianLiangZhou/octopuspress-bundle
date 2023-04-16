@@ -1,101 +1,82 @@
 <div class="row">
-  <div class="{{item.class}}" *ngFor="let item of card">
-    <div *ngIf="item.type == 'status';then status else other;"></div>
-    <ng-template #status>
-      <div class="row">
-        <div class="col-xxl-3 col-md-6" *ngFor="let status of item.body">
-          <app-status-card [title]="status.title" [on]="status.value" [icon]="status.icon" [id]="status.id" [color]="status.primaryColor"></app-status-card>
-        </div>
+  <div *ngIf="status" class="col-12">
+    <div class="row">
+      <div class="col-xxl-3 col-md-6" *ngFor="let item of status.body">
+        <app-status-card [title]="item.title" [on]="item.value" [icon]="item.icon" [id]="item.id" [color]="item.primaryColor"></app-status-card>
       </div>
-    </ng-template>
-    <ng-template #other>
-      <nb-card>
-        <nb-card-header>{{item.title}}</nb-card-header>
-        <nb-card-body>
-          <ng-container [ngSwitch]="item.type">
-            <angular2-smart-table *ngSwitchCase="'table'"
-                             [settings]="item.settings"
-                             [source]="item.body"
-            >
-            </angular2-smart-table>
-            <form *ngSwitchCase="'form'">
-              <div class="mb-3 row align-items-center" *ngFor="let input of item.body">
-                <label class="label col-6 col-form-label">{{input.name}}</label>
-                <div class="col-6">
-                  <ng-container [ngSwitch]="input.type">
-                    <nb-icon *ngSwitchCase="'icon'" [icon]="input.value" [status]="input.status"></nb-icon>
-                    <input *ngSwitchDefault [value]="input.value" nbInput disabled>
-                  </ng-container>
-                </div>
-              </div>
-            </form>
-            <ngx-charts-bar-vertical *ngSwitchCase="'bar-vertical'"
-              [animations]="item.settings.animations"
-              [xAxis]="item.settings.xAxis"
-              [yAxis]="item.settings.yAxis"
-              [scheme]="colorScheme"
-              [results]="item.body">
-            </ngx-charts-bar-vertical>
-            <ngx-charts-advanced-pie-chart *ngSwitchCase="'pie-chart'"
-              [animations]="item.settings.animations"
-              [scheme]="colorScheme"
-              [results]="item.body">
-            </ngx-charts-advanced-pie-chart>
-            <ngx-charts-pie-chart *ngSwitchCase="'pie'"
-              [animations]="item.settings.animations"
-              [legend]="item.settings.legend"
-              [labels]="item.settings.labels"
-              [scheme]="colorScheme"
-              [results]="item.body">
-            </ngx-charts-pie-chart>
-            <ngx-charts-number-card *ngSwitchCase="'number'"
-              cardColor="#232837"
-              emptyColor="#1e222e"
-              [animations]="item.settings.animations"
-              [scheme]="colorScheme"
-              [view]="item.settings.view"
-              [results]="item.body">
-            </ngx-charts-number-card>
-            <ngx-charts-bar-horizontal *ngSwitchCase="'bar-horizontal'"
-               [animations]="item.settings.animations"
-              [xAxis]="item.settings.xAxis"
-              [yAxis]="item.settings.yAxis"
-              [scheme]="colorScheme"
-              [results]="item.body">
-            </ngx-charts-bar-horizontal>
-
-            <ngx-charts-line-chart *ngSwitchCase="'line'"
+    </div>
+  </div>
+  <div class="col-auto" *ngFor="let item of cards">
+    <nb-card>
+      <nb-card-header>{{item.title}}</nb-card-header>
+      <nb-card-body>
+        <ng-container [ngSwitch]="item.type">
+          <angular2-smart-table
+            *ngSwitchCase="'table'"
+            [settings]="item.settings"
+            [source]="item.body"
+          >
+          </angular2-smart-table>
+          <ngx-charts-bar-vertical *ngSwitchCase="'bar-vertical'"
                                    [animations]="item.settings.animations"
-              [xAxis]="item.settings.xAxis"
-              [yAxis]="item.settings.yAxis"
-              [scheme]="colorScheme"
-              [results]="item.body">
-            </ngx-charts-line-chart>
+                                   [xAxis]="item.settings.xAxis"
+                                   [yAxis]="item.settings.yAxis"
+                                   [scheme]="colorScheme"
+                                   [results]="item.body">
+          </ngx-charts-bar-vertical>
+          <ngx-charts-advanced-pie-chart *ngSwitchCase="'pie-chart'"
+                                         [animations]="item.settings.animations"
+                                         [scheme]="colorScheme"
+                                         [results]="item.body">
+          </ngx-charts-advanced-pie-chart>
+          <ngx-charts-pie-chart *ngSwitchCase="'pie'"
+                                [animations]="item.settings.animations"
+                                [legend]="item.settings.legend"
+                                [labels]="item.settings.labels"
+                                [scheme]="colorScheme"
+                                [results]="item.body">
+          </ngx-charts-pie-chart>
+          <ngx-charts-number-card *ngSwitchCase="'number'"
+                                  cardColor="#232837"
+                                  emptyColor="#1e222e"
+                                  [animations]="item.settings.animations"
+                                  [scheme]="colorScheme"
+                                  [view]="item.settings.view"
+                                  [results]="item.body">
+          </ngx-charts-number-card>
+          <ngx-charts-bar-horizontal *ngSwitchCase="'bar-horizontal'"
+                                     [animations]="item.settings.animations"
+                                     [xAxis]="item.settings.xAxis"
+                                     [yAxis]="item.settings.yAxis"
+                                     [scheme]="colorScheme"
+                                     [results]="item.body">
+          </ngx-charts-bar-horizontal>
 
-            <ngx-charts-area-chart-stacked *ngSwitchCase="'area'"
-               [animations]="item.settings.animations"
-              [xAxis]="item.settings.xAxis"
-              [yAxis]="item.settings.yAxis"
-              [scheme]="colorScheme"
-              [results]="item.body">
-            </ngx-charts-area-chart-stacked>
+          <ngx-charts-line-chart *ngSwitchCase="'line'"
+                                 [animations]="item.settings.animations"
+                                 [xAxis]="item.settings.xAxis"
+                                 [yAxis]="item.settings.yAxis"
+                                 [scheme]="colorScheme"
+                                 [results]="item.body">
+          </ngx-charts-line-chart>
+
+          <ngx-charts-area-chart-stacked *ngSwitchCase="'area'"
+                                         [animations]="item.settings.animations"
+                                         [xAxis]="item.settings.xAxis"
+                                         [yAxis]="item.settings.yAxis"
+                                         [scheme]="colorScheme"
+                                         [results]="item.body">
+          </ngx-charts-area-chart-stacked>
 
 
-            <ngx-charts-pie-grid *ngSwitchCase="'pie-grid'"
-              [animations]="item.settings.animations"
-              [scheme]="colorScheme"
-              [results]="item.body">
-            </ngx-charts-pie-grid>
-
-            <div class="row" *ngSwitchCase="'grid'">
-              <div class="col" *ngFor="let grid of item.body">
-                <nb-alert status="success">{{grid}}</nb-alert>
-              </div>
-            </div>
-          </ng-container>
-        </nb-card-body>
-      </nb-card>
-    </ng-template>
+          <ngx-charts-pie-grid *ngSwitchCase="'pie-grid'"
+                               [animations]="item.settings.animations"
+                               [scheme]="colorScheme"
+                               [results]="item.body">
+          </ngx-charts-pie-grid>
+        </ng-container>
+      </nb-card-body>
+    </nb-card>
   </div>
 </div>
 

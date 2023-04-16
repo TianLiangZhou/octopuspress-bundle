@@ -128,8 +128,12 @@ export class WidgetComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     timer(300).subscribe(val => {
-      this.sidebar.toggle(true, 'menu-sidebar');
-    })
+      this.sidebar.getSidebarState('menu-sidebar').subscribe(state => {
+        if (state !== 'compacted') {
+          this.sidebar.compact('menu-sidebar');
+        }
+      });
+    });
   }
 
   toggleWidgetSidebar($event: Event|null) {
