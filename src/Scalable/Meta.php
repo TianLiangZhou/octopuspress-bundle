@@ -20,9 +20,11 @@ final class Meta
      * @param AbstractControl|array|null $control
      * @return $this
      */
-    public function registerTaxonomy(string $taxonomy, string $key, array $args = [], AbstractControl|array $control = null): Meta
+    public function registerTaxonomy(string|array $taxonomy, string $key, array $args = [], AbstractControl|array $control = null): Meta
     {
-        $this->taxonomy[$taxonomy][] = $this->register($key, $args, $control);
+        foreach ((array) $taxonomy as $t) {
+            $this->taxonomy[$t][] = $this->register($key, $args, $control);
+        }
         return $this;
     }
 
@@ -33,9 +35,11 @@ final class Meta
      * @param AbstractControl|array|null $control
      * @return $this
      */
-    public function registerPost(string $type, string $key, array $args = [], AbstractControl|array $control = null): Meta
+    public function registerPost(string|array $type, string $key, array $args = [], AbstractControl|array $control = null): Meta
     {
-        $this->post[$type][] = $this->register($key, $args, $control);
+        foreach ((array) $type as $t) {
+            $this->post[$t][] = $this->register($key, $args, $control);
+        }
         return $this;
     }
 
