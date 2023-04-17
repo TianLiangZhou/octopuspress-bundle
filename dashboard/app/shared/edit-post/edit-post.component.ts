@@ -194,6 +194,7 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
       if (parentId > 0) {
         this.http.get<PostEntity>(this.endpoint.show, {params:{id: parentId}}).subscribe(parent => {
           this.selectParent(parent);
+          this.selectAuthor((parent.author) as User);
         });
       }
     });
@@ -286,6 +287,7 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
     }
     delete data.authorNickname;
     delete data.visible;
+    delete data.parentInput;
     this.http.post<ActionBody>(
       this.id > 0 ? this.endpoint.update : this.endpoint.create,
       data,
