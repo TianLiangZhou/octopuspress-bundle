@@ -35,6 +35,9 @@ export class ConfigurationService {
   postMeta(type: string): Meta[] {
     return this.config.postMeta[type] || [];
   }
+  userMeta(): Meta[] {
+    return this.config.userMeta;
+  }
 
   roles() {
     return this.config.roles || [];

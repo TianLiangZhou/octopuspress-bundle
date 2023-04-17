@@ -14,6 +14,7 @@ import {SPINNER} from "../../@core/interceptor/authorization";
 import {User} from "../../@core/definition/user/type";
 import {CKFinderService} from "../../@core/services/ckfinder.service";
 import { Subscription } from 'rxjs';
+import {buildFormGroup, Control} from "../../shared/control/type";
 
 @Component({
   selector: 'app-user-new',
@@ -36,7 +37,7 @@ export class NewComponent implements OnInit, OnSpinner, OnDestroy {
     {value: '', label: '无'}
   ];
 
-  controls = [];
+  controls :Control[] = [];
 
   showPassword = true;
 
@@ -68,6 +69,20 @@ export class NewComponent implements OnInit, OnSpinner, OnDestroy {
     });
     this.metaGroup.addControl('description', new FormControl(''));
     this.metaGroup.addControl('rich_editing', new FormControl<boolean>(false));
+
+    let controls: Control[] = [];
+    this.configService.userMeta().forEach(item => {
+      if (item.control) {
+        controls.push(item.control);
+      }
+    });
+    if (controls.length > 0) {
+      let buildGroup = buildFormGroup(controls);
+      for (let key in buildGroup) {
+        this.metaGroup.addControl(key, buildGroup[key]);
+      }
+      this.controls = controls;
+    }
     this.activatedRoute.paramMap.subscribe(map => {
       if (this.activatedRoute.snapshot.url[0].path !== 'new') {
         let url = USER_SELF_PROFILE;
