@@ -35,6 +35,10 @@
   .sidebar-compact {
     left: var(--sidebar-width-compact) !important;
   }
+  .sidebar-collapse {
+    left: 0 !important;
+  }
+
   .component-skeleton {
     display: flex;
     flex-direction: column;

@@ -2,23 +2,24 @@
   <div class="col-12">
     <nb-card>
       <nb-card-body>
-        <div class="d-flex align-items-center">
-          <div *ngIf="navigate.length > 0" class="d-flex align-items-center">
-            <span>
-              选择要编辑的导航：
-            </span>
+        <div class="d-flex flex-md-row justify-content-between">
+          <div *ngIf="navigate.length > 0" class="d-flex">
             <nb-select [(ngModel)]="nav.id">
               <nb-option *ngFor="let m of navigate" [value]="m.id">{{m.name}}</nb-option>
             </nb-select>
-            <button class="mx-2" nbButton status="primary" [disabled]="nav.id < 1" (click)="editor()">编辑</button>
-            <span>或</span>
+            <button class="mx-2" nbButton status="control" [disabled]="nav.id < 1" (click)="editor()">编辑</button>
           </div>
-          <span><a href="javascript:" (click)="create()">创建新导航</a>&nbsp;&nbsp;<span>不要忘了保存您的修改!</span></span>
+          <div class="">
+            <button nbButton status="primary">
+              <nb-icon icon="plus-outline"></nb-icon>
+              创建新导航
+            </button>
+          </div>
         </div>
       </nb-card-body>
     </nb-card>
   </div>
-  <div class="col-5">
+  <div class="col-12 col-xl-5">
     <nb-card>
       <nb-card-header>
         添加导航项
@@ -89,7 +90,7 @@
       </nb-card-body>
     </nb-card>
   </div>
-  <div class="col-7">
+  <div class="col-12 col-xl-7">
     <form #navForm="ngForm" (ngSubmit)="save()">
       <nb-card>
       <nb-card-header>

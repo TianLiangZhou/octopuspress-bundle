@@ -58,6 +58,7 @@ export class WidgetComponent implements OnInit, AfterViewInit {
   selectBlockIndex = -1;
 
   selectedWidget: WidgetItemComponent | undefined;
+  leftSidebarCollapse: boolean = false;
 
 
   constructor(protected http: HttpClient,
@@ -66,14 +67,6 @@ export class WidgetComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
-    this.sidebar.onToggle().subscribe((event:any) => {
-      this.leftSidebarCompact = event.compact
-    });
-    this.sidebar.onExpand().subscribe(event => {
-      if (event) {
-        this.leftSidebarCompact = false;
-      }
-    });
     const widgetRequest = this.http.get<RegisteredResponse>(WIDGETS);
     const blockRequest = this.http.get<Block[]>(BLOCKS);
     combineLatest([widgetRequest, blockRequest]).subscribe(([widgetResponse, blocks]) => {
@@ -127,9 +120,15 @@ export class WidgetComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    timer(300).subscribe(val => {
+    timer(0).subscribe(_ => {
       this.sidebar.getSidebarState('menu-sidebar').subscribe(state => {
-        if (state !== 'compacted') {
+        if (state == 'compacted') {
+          this.leftSidebarCollapse = false;
+          this.leftSidebarCompact = true;
+        } else if (state == 'collapsed') {
+          this.leftSidebarCompact = false;
+          this.leftSidebarCollapse = true;
+        } else {
           this.sidebar.compact('menu-sidebar');
         }
       });

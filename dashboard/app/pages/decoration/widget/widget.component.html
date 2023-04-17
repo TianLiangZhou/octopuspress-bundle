@@ -1,4 +1,5 @@
-<div [class.sidebar-compact]="leftSidebarCompact" [class.sidebar-expanded]="!leftSidebarCompact"
+<div [class.sidebar-compact]="leftSidebarCompact"
+     [class.sidebar-collapse]="leftSidebarCollapse"
      class="component-skeleton">
   <div class="component-skeleton-body">
     <nb-card class="mb-0 position-relative">
@@ -17,7 +18,7 @@
       </nb-card-header>
     </nb-card>
     <div class="d-flex flex-grow-1 overflow-auto" style="overscroll-behavior-y: none;">
-      <div class="col-4 p-0 position-relative" [hidden]="hasHiddenWidgetSidebar">
+      <div class="col-12 col-xl-4 p-0 position-relative" [hidden]="hasHiddenWidgetSidebar">
         <div class="d-flex flex-column h-100">
           <div class="h-100">
             <div class="position-relative overflow-hidden h-100">
@@ -85,7 +86,7 @@
           </div>
         </div>
       </div>
-      <div tabindex="0" (blur)="unselectWidget($event)" class="col-3 p-0 position-relative sidebar-setting"
+      <div tabindex="0" (blur)="unselectWidget($event)" class="col-12 col-xl-3 p-0 position-relative sidebar-setting"
            [hidden]="hasHiddenSettingSidebar">
         <div class="d-flex flex-column h-100">
           <div class="h-100">
