@@ -43,7 +43,7 @@ class CommentController extends AdminController
     #[Route('', name: 'sets')]
     public function comments(Request $request, #[CurrentUser] User $user): JsonResponse
     {
-        $statusFilter = $request->get('statusFilter');
+        $statusFilter = $request->get('status');
         switch ($statusFilter) {
             case 'approved':
             case 'unapproved':
@@ -65,29 +65,12 @@ class CommentController extends AdminController
         $records = $pagination['records'];
 
         $comments = [];
-        $router = $this->bridger->getRouter();
         foreach ($records as $record) {
-            $post = $record->getPost();
-            $p = [];
-            if ($post) {
-                $p[] = sprintf(
-                    "<a href='%s'><strong class='fw-bold'>%s</strong></a>",
-                    '#/app/content/edit-post/' . $post->getId(),
-                    $post->getTitle()
-                );
-                $p[] = sprintf(
-                    "<a href='%s'>%s</a>",
-                    $this->optionRepository->siteUrl() . $router->generate('home', ['p' => $post->getId()]),
-                    '查看文章'
-                );
-            }
-            $b = [];
-            $b[] = sprintf('<strong>%s</strong>', ($author = $record->getUser()) ? $author->getNickname() : $record->getAuthor());
             $comments[] = [
                 'id' => $record->getId(),
                 'content' => $record->getContent(),
-                'author'  => $b,
-                'post'    => $p,
+                'author'  => ($author = $record->getUser()) ? $author->getNickname() : $record->getAuthor(),
+                'post'    => $record->getPost(),
                 'approved' => $record->getApproved(),
                 'createdAt' => $record->getCreatedAt()->format('Y-m-d H:i:s'),
             ];

@@ -387,21 +387,18 @@ export class EditPostComponent {
         <ng-container *ngIf="rowData.status === 'draft'"> - <span>草稿</span></ng-container>
       </strong>
     </div>
-    <nb-actions>
-      <nb-action [class.ps-0]="i==0" [href]="action.link||''" [title]="action.title"
-                 (click)="click(action.value)"
-                 [icon]="action.icon"
-                 *ngFor="let action of actions;  index as i"></nb-action>
-    </nb-actions>
+    <div id="actions" class="d-flex flex-row">
+      <a class="px-2" (click)="click(action.value)" [class.ps-0]="i == 0" [routerLink]="action.link" [queryParams]="action.query" queryParamsHandling="merge" *ngFor="let action of actions;  index as i">{{action.title}}</a>
+    </div>
   `,
   styles: [
     `
       :host {
-        nb-actions {
+        #actions {
           visibility: hidden;
         }
         &:hover {
-          nb-actions {
+          #actions {
             visibility: visible;
           }
         }
@@ -415,7 +412,7 @@ export class PostActionsComponent {
   @Input() value!: string;
   @Input() rowData: any;
 
-  actions: {title: string, icon: string, value: string, link?:any}[] = [];
+  actions: {title: string, icon: string, value: string, link?:string, query?: Record<string, any>}[] = [];
   private type: string = 'post';
   private postTypes: Record<string, PostTypeSetting> = {};
 
@@ -432,12 +429,12 @@ export class PostActionsComponent {
         {title: '永久删除', icon: 'trash-outline', value: 'delete'}
       ];
     } else {
-      actions.push({title: '编辑', icon: 'edit-2-outline', value: 'edit', link: '/#/app/content/edit-post/'+this.rowData.id});
+      actions.push({title: '编辑', icon: 'edit-2-outline', value: 'edit', link: '/app/content/edit-post/'+this.rowData.id});
       if (typeSetting && typeSetting.children && typeSetting.children.length > 0) {
         typeSetting.children.forEach(child => {
           let childTypeSetting = this.postTypes[child];
-          actions.push({title: '子集'+(childTypeSetting.label ?? ''), icon: 'layers-outline', value: 'children', link: '/#/app/content/' + child + '?parent=' + this.rowData.id});
-          actions.push({title: '添加子集'+(childTypeSetting.label ?? ''), icon: 'plus-outline', value: 'children', link: '/#/app/content/post-new/'+child + '?parent=' + this.rowData.id});
+          actions.push({title: '子集'+(childTypeSetting.label ?? ''), icon: 'layers-outline', value: 'children', query:{parent:this.rowData.id}, link: '/app/content/' + child });
+          actions.push({title: '添加子集'+(childTypeSetting.label ?? ''), icon: 'plus-outline', value: 'children', query:{parent:this.rowData.id}, link: '/app/content/post-new/'+child});
         });
       }
       actions.push({title: '移至回收站', icon: 'trash-2-outline', value: 'trash'});

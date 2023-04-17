@@ -1,9 +1,13 @@
 <nb-card>
   <nb-card-header>{{route.title}}</nb-card-header>
   <nb-card-body>
-    <nb-radio-group [formControl]="radioFilter" class="d-flex flex-row mb-2">
-      <nb-radio *ngFor="let radio of radios" [value]="radio.value">{{radio.label}}</nb-radio>
-    </nb-radio-group>
+    <ng-container *ngFor="let link of radios">
+      <a class="mx-2 bg-transparent border-0 ps-0" [class]="{'fs-6': link.value == radioFilter.value, 'text-primary': link.value == radioFilter.value}"
+         nbButton
+         style="color: var(--text-basic-color)"
+         [routerLink]="['./']" [queryParams]="{status: link.value}" queryParamsHandling="merge"
+      >{{link.label}}</a>
+    </ng-container>
     <form (ngSubmit)="batch()" class="row mb-2">
       <nb-select class="col-auto" name="batchMode" [(ngModel)]="batchMode">
         <nb-option [value]="option.value" *ngFor="let option of batches">{{option.label}}</nb-option>
@@ -18,6 +22,5 @@
       (edit)="edit($event)"
     >
     </angular2-smart-table>
-
   </nb-card-body>
 </nb-card>

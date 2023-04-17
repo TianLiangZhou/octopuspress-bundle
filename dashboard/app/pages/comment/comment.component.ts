@@ -1,14 +1,15 @@
 import {Component, EventEmitter, HostListener, Input, OnInit} from '@angular/core';
-import {HttpClient, HttpContext} from "@angular/common/http";
+import {HttpClient, HttpContext, HttpParams} from "@angular/common/http";
 import {EditEvent} from "angular2-smart-table/lib/lib/events";
 import {IColumnType, ServerDataSource} from "angular2-smart-table";
 import {Settings} from "angular2-smart-table/lib/lib/settings";
 import {FormControl, NgForm} from "@angular/forms";
-import {ActivatedRoute, ActivatedRouteSnapshot} from "@angular/router";
+import {ActivatedRoute, ActivatedRouteSnapshot, convertToParamMap, Params} from "@angular/router";
 import {LocationStrategy} from "@angular/common";
 import {ConfigurationService} from "../../@core/services/configuration.service";
 import {OnSpinner} from "../../@core/definition/common";
 import {SPINNER} from "../../@core/interceptor/authorization";
+import {Post} from "../../@core/definition/content/type";
 
 @Component({
   selector: 'app-comment',
@@ -41,15 +42,16 @@ export class CommentComponent implements OnInit, OnSpinner {
   }
   ngOnInit(): void {
     this.settings = this.buildSettings();
-    this.loadStatistics();
-    this.loadSource('all');
-    this.radioFilter.valueChanges.subscribe(value => {
-      this.loadSource(value!);
+    this.activatedRoute.queryParams.subscribe((queryMap: Params) => {
+      let params = Object.assign({'status': this.radioFilter.value}, queryMap);
+      this.radioFilter.setValue(params['status']);
+      this.loadSource(params);
     });
   }
 
-  private loadStatistics() {
-    this.http.get<Record<string, number>>('/comment/statistics').subscribe((data: Record<string, number>) => {
+  private loadSource(params: Record<string, any>) {
+    let httpParams = new HttpParams({fromObject: params});
+    this.http.get<Record<string, number>>('/comment/statistics', {params: httpParams}).subscribe((data: Record<string, number>) => {
       this.radios = [
         {label: `全部 (${data.all})`, value: 'all'},
         {label: `我的 (${data.my})`, value: 'my'},
@@ -59,11 +61,8 @@ export class CommentComponent implements OnInit, OnSpinner {
         {label: `回收站 (${data.trash})`, value: 'trash'},
       ];
     });
-  }
-
-  private loadSource(filter: string) {
     this.source = new ServerDataSource(this.http, {
-      endPoint: '/comment?statusFilter='+filter,
+      endPoint: '/comment?status='+httpParams.toString(),
       dataKey: 'records',
       totalKey: 'total',
       pagerPageKey: 'page',
@@ -92,8 +91,7 @@ export class CommentComponent implements OnInit, OnSpinner {
 
   private updateStatus(action: string, idSets: number[]) {
     this.http.post('/comment/' + action, {'id':idSets,}, {context:new HttpContext().set(SPINNER, this)}).subscribe(() => {
-      this.loadStatistics();
-      this.loadSource(this.radioFilter.value!);
+      this.loadSource(this.activatedRoute.snapshot.queryParams);
     });
   }
 
@@ -114,11 +112,6 @@ export class CommentComponent implements OnInit, OnSpinner {
       columns: {
         author: {
           title: "作者",
-          type: IColumnType.Html,
-          classContent: 'd-flex flex-column',
-          valuePrepareFunction: function (params: string[]) {
-            return params.join("");
-          },
           filter: false,
         },
         content: {
@@ -134,11 +127,8 @@ export class CommentComponent implements OnInit, OnSpinner {
         },
         post: {
           title: "回复至",
-          type: IColumnType.Html,
-          classContent: 'd-flex flex-column',
-          valuePrepareFunction: function (params: string[]) {
-            return params.join("");
-          },
+          type: IColumnType.Custom,
+          renderComponent: CommentPostComponent,
           filter: false,
         },
         createdAt: {
@@ -159,21 +149,18 @@ export class CommentComponent implements OnInit, OnSpinner {
   selector: 'app-comment-actions',
   template: `
     <div class="py-3">{{value}}</div>
-    <nb-actions>
-      <nb-action [class.ps-0]="i==0" [link]="action.value == 'edit'?'/app/comment/'+rowData.id:''" [title]="action.title"
-                 (click)="click(action.value)"
-                 [icon]="action.icon"
-                 *ngFor="let action of actions; index as i"></nb-action>
-    </nb-actions>
+    <div id="actions">
+      <a class="px-2" (click)="click(action.value)" [class.ps-0]="i == 0" [routerLink]="action.link" [queryParams]="action.query" queryParamsHandling="merge" *ngFor="let action of actions;  index as i">{{action.title}}</a>
+    </div>
   `,
   styles: [
     `
       :host {
-        nb-actions {
+        #actions {
           visibility: hidden;
         }
         &:hover {
-          nb-actions {
+          #actions {
             visibility: visible;
           }
         }
@@ -188,7 +175,7 @@ export class CommentContentComponent implements OnInit {
   @Input() value!: string;
   @Input() rowData: any;
 
-  actions: {title: string, icon: string, value: string}[] = [];
+  actions: {title: string, icon: string, value: string, query?: Record<string, any>, link?: string}[] = [];
 
   constructor(protected http: HttpClient) {
   }
@@ -289,7 +276,7 @@ export class CommentContentComponent implements OnInit {
             </div>
             <div class="d-flex align-items-center" *ngIf="comment.post">
               <label class="label">回应给: </label>
-              <h6 class="ms-2"><a href="#/app/content/edit-post/{{comment.post.id}}">{{comment.post.title}}</a></h6>
+              <h6 class="ms-2"><a [routerLink]="'/app/content/edit-post/'+comment.post.id">{{comment.post.title}}</a></h6>
             </div>
           </nb-card-body>
           <nb-card-footer class="d-flex justify-content-between">
@@ -344,4 +331,22 @@ export class CommentEditComponent implements OnInit {
   getStatus(approved: string) {
     return this.options.find(item => item.value == approved)?.label;
   }
+}
+
+@Component({
+  selector: 'app-comment-post',
+  template: `
+    <a *ngIf="value" [routerLink]="'/app/content/edit-post/'+value.id">查看文章</a>
+  `,
+})
+export class CommentPostComponent implements OnInit {
+
+
+  @Input() value: Post|null = null;
+  @Input() rowData: any;
+
+  ngOnInit(): void {
+
+  }
+
 }
