@@ -139,7 +139,13 @@ class BootstrapListener implements EventSubscriberInterface
             if (!$type->isShowUi() || !$type->isShowOnFront() || $name === Post::TYPE_NAVIGATION) {
                 continue;
             }
-            $postRoute = new Route('/'.$name.'/{name}', [
+            $parentType = $type->getParentType();
+            if (empty($parentType) || ($parentType[0] == $name)) {
+                $path = '/'.$name.'/{name}';
+            } else {
+                $path = '/'. $parentType[0] . '/' . $name . '/{name}';
+            }
+            $postRoute = new Route($path, [
                 '_controller' => PostController::class . '::show'
             ], [
                 'name' => '[a-z0-9\-%_]{2,}'

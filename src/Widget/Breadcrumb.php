@@ -41,7 +41,11 @@ class Breadcrumb extends AbstractWidget implements \IteratorAggregate
         $crumbs = [];
         if ($controllerResult instanceof Post) {
             $crumbs = [$controllerResult];
-            $categories = $controllerResult->getCategories();
+            $parent = null;
+            if ($parent = $controllerResult->getParent()) {
+                array_unshift($crumbs, $parent);
+            }
+            $categories = $parent ? $parent->getCategories() : $controllerResult->getCategories();
             foreach ($categories as $category) {
                 array_unshift($crumbs, $category);
                 $parent = $category->getParent();
