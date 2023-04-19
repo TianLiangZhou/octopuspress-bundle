@@ -55,6 +55,8 @@ class OctopusExtension extends AbstractExtension
 
             new TwigFunction('get_plugin', [OctopusRuntime::class, 'getPlugin']),
 
+            new TwigFunction('thumbnail', [OctopusRuntime::class, 'thumbnail'], ['is_safe' => ['html']]),
+
             new TwigFunction('attachment', [OctopusRuntime::class, 'attachment']),
             new TwigFunction('attachments', [OctopusRuntime::class, 'attachments']),
 

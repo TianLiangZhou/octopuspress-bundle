@@ -119,10 +119,14 @@ class PostRepository extends ServiceEntityRepository
             $mapAttachment[$attachment->getId()] = $attachment;
         }
         foreach ($posts as $post) {
-            if (!isset($mapAttachment[$post->getId()])) {
+            if (!isset($attachmentIdArray[$post->getId()])) {
                 continue;
             }
-            $post->setThumbnail($mapAttachment[$post->getId()]);
+            $thumbnailId = $attachmentIdArray[$post->getId()];
+            if (!isset($mapAttachment[$thumbnailId])) {
+                continue;
+            }
+            $post->setThumbnail($mapAttachment[$thumbnailId]);
         }
     }
 

@@ -282,6 +282,29 @@ class OctopusRuntime implements RuntimeExtensionInterface
     }
 
     /**
+     * @param Post $post
+     * @param string $size
+     * @return string
+     */
+    public function thumbnail(Post $post, string $class = '', string $size = 'thumbnail'): string
+    {
+        $type = $post->getType();
+        if ($type !== Post::TYPE_ATTACHMENT) {
+            $post = $post->getThumbnail();
+            if ($post == null) {
+                return '';
+            }
+        }
+        $attachment = $post->getAttachment($this->assetsUrl);
+        return sprintf(
+            '<img src="%s" alt="%s"  class="%s" />',
+            $attachment['url'],
+            $post->getTitle(),
+            $class,
+        );
+    }
+
+    /**
      * @param int $attachmentId
      * @return array|null
      */
@@ -350,15 +373,15 @@ class OctopusRuntime implements RuntimeExtensionInterface
 
     /**
      * @param array $idSets
-     * @return User[]|null
+     * @return User[]
      */
-    public function getUsers(array $idSets)
+    public function getUsers(array $idSets): array
     {
         $ids = array_filter($idSets, function ($id) {
            return is_numeric($id) && $id > 0;
         });
         if (empty($ids)) {
-            return null;
+            return [];
         }
         return $this->user->findBy([
             'id' => $ids,
