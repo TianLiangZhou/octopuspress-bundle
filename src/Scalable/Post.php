@@ -56,6 +56,21 @@ class Post
     }
 
     /**
+     * @return string[]
+     */
+    public function getShowFrontTypes(): array
+    {
+        $names = [];
+        foreach ($this->types as $name => $type) {
+            if (!$type->isShowUi() || !$type->isShowOnFront()) {
+                continue;
+            }
+            $names[] = $name;
+        }
+        return $names;
+    }
+
+    /**
      * @param string $name
      * @return PostType|null
      */

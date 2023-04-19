@@ -283,6 +283,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
 
     /**
      * @param Post $post
+     * @param string $class
      * @param string $size
      * @return string
      */
