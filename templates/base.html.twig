@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ lang }}" class="{{ hook_filter('base_class', [])|join(' ') }}" {{ hook_filter('html_attributes', [])|join(' ')|raw }}>
+<html lang="{{ lang|split('_')[0] }}" class="{{ hook_filter('base_class', [])|join(' ') }}" {{ hook_filter('html_attributes', [])|join(' ')|raw }}>
     <head>
         <meta charset="{{ charset }}">
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
