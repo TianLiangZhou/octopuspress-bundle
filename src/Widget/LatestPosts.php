@@ -6,8 +6,9 @@ use OctopusPress\Bundle\Customize\AbstractControl;
 use OctopusPress\Bundle\Customize\Control;
 use OctopusPress\Bundle\Customize\Section;
 use OctopusPress\Bundle\Entity\Post;
+use Traversable;
 
-class LatestPosts extends AbstractWidget
+class LatestPosts extends AbstractWidget implements \IteratorAggregate
 {
 
     protected function template(): string
@@ -67,7 +68,7 @@ EOF;
         $author = (int) ($attributes['author'] ?? 0);
 
         $filters = [
-            'type' => Post::TYPE_POST,
+            'type' => (array) ($attributes['type'] ?? Post::TYPE_POST),
         ];
         if ($author > 0) {
             $filters['author'] = $author;
@@ -184,7 +185,12 @@ EOF;
             'label' => '最大数量',
             'default' => 5,
         ]));
-        $this->addTemplate('test/jfdafdsa.twig')->addTemplate('fdafd/testa.twig');
         $this->addSection($section4);
+    }
+
+    public function getIterator(): Traversable
+    {
+        // TODO: Implement getIterator() method.
+        return new \ArrayIterator($this->getContext()['posts'] ?? []);
     }
 }
