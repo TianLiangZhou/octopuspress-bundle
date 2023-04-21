@@ -54,7 +54,6 @@ class PostRepository extends ServiceEntityRepository
     public function createQuery(array $filters = [], callable $closure = null): Query
     {
         $queryBuilder = $this->createQueryBuilder('a');
-        $queryBuilder->leftJoin(PostMeta::class, 'm', Join::WITH, 'a.id = m.post');
         if (empty($filters['status'])) {
             $filters['status'] = Post::STATUS_PUBLISHED;
         }
