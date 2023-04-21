@@ -163,11 +163,16 @@ class TaxonomyRepository extends ServiceEntityRepository
         if (!empty($filters['parent']) && (is_integer($filters['parent']) || $filters['parent'] instanceof TermTaxonomy)) {
             $qb->andWhere('a.parent =:parent')->setParameter('parent', $filters['parent']);
         }
-        if (!empty($filters['slug'])) {
-            $qb->andWhere('t.slug = :slug')->setParameter('slug', $filters['slug']);
-        }
-        if (!empty($filters['name'])) {
-            $qb->andWhere('t.name LIKE :name')->setParameter('name', $filters['name'] . '%');
+        if (!empty($filters['slug']) || !empty($filters['name'])) {
+            if (!in_array('t', $qb->getAllAliases())) {
+                $qb->leftJoin(Term::class, 't', Join::WITH, 'a.term=t.id');
+            }
+            if (!empty($filters['slug'])) {
+                $qb->andWhere('t.slug = :slug')->setParameter('slug', $filters['slug']);
+            }
+            if (!empty($filters['name'])) {
+                $qb->andWhere('t.name LIKE :name')->setParameter('name', $filters['name'] . '%');
+            }
         }
     }
 
