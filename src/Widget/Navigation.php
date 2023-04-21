@@ -68,9 +68,9 @@ class Navigation extends AbstractWidget implements IteratorAggregate
             }, $objects),
             'status' => Post::STATUS_PUBLISHED,
             'type' => Post::TYPE_NAVIGATION,
-        ], function (QueryBuilder $builder) {
-            $builder->orderBy('a.menuOrder', 'ASC');
-        })->getResult();
+            '_sort' => 'menuOrder',
+            '_order'=> '',
+        ])->getResult();
         return $results;
     }
 

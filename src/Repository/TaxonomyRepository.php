@@ -3,6 +3,7 @@
 namespace OctopusPress\Bundle\Repository;
 
 use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\NonUniqueResultException;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\Term;
@@ -124,6 +125,9 @@ class TaxonomyRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('a');
         $this->addFilters($queryBuilder, $otherCondition);
         return $queryBuilder->getQuery()
+            ->enableResultCache(mt_rand(120, 240), 'taxonomy_query_' . md5(serialize($otherCondition)))
+            ->setFetchMode(TermTaxonomy::class, 'term', ClassMetadata::FETCH_EAGER)
+            ->setHint(Query::HINT_READ_ONLY, true)
             ->setFirstResult($offset)
             ->setMaxResults($limit)
             ->getResult();
@@ -137,7 +141,6 @@ class TaxonomyRepository extends ServiceEntityRepository
     private function addFilters(QueryBuilder $qb, array $filters): void
     {
         // TODO: Implement addFilters() method.
-        $qb->leftJoin(Term::class, 't', Join::WITH, 'a.term = t.id');
         if (!empty($filters['_sort'])) {
             $qb->addOrderBy('a.id', 'DESC');
         }

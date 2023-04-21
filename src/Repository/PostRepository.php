@@ -3,10 +3,12 @@
 namespace OctopusPress\Bundle\Repository;
 
 use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\PostMeta;
 use OctopusPress\Bundle\Entity\TermRelationship;
+use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Util\RepositoryTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
@@ -63,7 +65,11 @@ class PostRepository extends ServiceEntityRepository
         if ($closure != null) {
             call_user_func($closure, $queryBuilder);
         }
-        return $queryBuilder->getQuery();
+        $query = $queryBuilder->getQuery()
+            ->enableResultCache(mt_rand(180, 300), 'post_query_' . md5(serialize($filters)))
+            ->setFetchMode(Post::class, "author", ClassMetadata::FETCH_EAGER)
+            ->setFetchMode(Post::class, "parent", ClassMetadata::FETCH_EAGER);
+        return $query->setHint(Query::HINT_READ_ONLY, true);
     }
 
     /**
@@ -110,10 +116,10 @@ class PostRepository extends ServiceEntityRepository
         if (count($attachmentIdArray) < 1) {
             return ;
         }
-        $attachments = $this->findBy([
+        $attachments = $this->createQuery([
             'id' => array_values($attachmentIdArray),
-            'type'=> Post::TYPE_ATTACHMENT,
-        ]);
+            'type' => Post::TYPE_ATTACHMENT,
+        ])->getResult();
         $mapAttachment = [];
         foreach ($attachments as $attachment) {
             $mapAttachment[$attachment->getId()] = $attachment;
@@ -138,8 +144,14 @@ class PostRepository extends ServiceEntityRepository
                 case 'id':
                     $qb->addOrderBy('a.id', $order);
                     break;
-                case 'modifiedAt':
-                    $qb->addOrderBy('a.modifiedAt', $order);
+                case 'title':
+                    $qb->addOrderBy('a.title', $order);
+                    break;
+                case 'createdAt':
+                    $qb->addOrderBy('a.createdAt', $order);
+                    break;
+                case 'menuOrder';
+                    $qb->addOrderBy('a.menuOrder', $order);
                     break;
             }
         }

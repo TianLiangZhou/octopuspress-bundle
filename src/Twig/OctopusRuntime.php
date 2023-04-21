@@ -4,6 +4,7 @@ namespace OctopusPress\Bundle\Twig;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\AST\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -490,6 +491,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
             $filters['_order']= 'DESC';
         }
         $query = $this->post->createQuery($filters);
+        $query->setHint(Query::HINT_READ_ONLY, true);
         if (!empty($filters['id']) && is_array($filters['id'])) {
             $records = $query->getResult();
             [$limit, $count, $page] = [count($filters['id']), count($records), 1];

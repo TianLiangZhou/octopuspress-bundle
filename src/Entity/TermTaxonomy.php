@@ -48,7 +48,7 @@ class TermTaxonomy implements JsonSerializable
     #[GeneratedValue(strategy: "AUTO")]
     private ?int $id = null;
 
-    #[ManyToOne(targetEntity: TermTaxonomy::class, inversedBy: 'children')]
+    #[ManyToOne(targetEntity: TermTaxonomy::class, fetch: 'EAGER', inversedBy: 'children')]
     #[JoinColumn(name: 'parent', referencedColumnName: 'term_taxonomy_id', nullable: true)]
     private ?TermTaxonomy $parent = null;
 

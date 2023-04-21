@@ -205,27 +205,27 @@ class Post implements JsonSerializable
     /**
      * @var Collection<int, PostMeta>
      */
-    #[OneToMany(mappedBy: "post", targetEntity: PostMeta::class, cascade: ["persist", "remove"])]
+    #[OneToMany(mappedBy: "post", targetEntity: PostMeta::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     #[Valid]
     private Collection $metas;
 
     /**
      * @var Collection<int, Comment>
      */
-    #[OneToMany(mappedBy: "post", targetEntity: Comment::class, cascade: ["persist", "remove"])]
+    #[OneToMany(mappedBy: "post", targetEntity: Comment::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     private Collection $comments;
 
     /**
      * @var Collection<int, TermRelationship>
      */
-    #[OneToMany(mappedBy: "post", targetEntity: TermRelationship::class, cascade: ["persist", "remove"])]
+    #[OneToMany(mappedBy: "post", targetEntity: TermRelationship::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     #[Valid]
     private Collection $termRelationships;
 
     /**
      * @var Collection<int, Post>
      */
-    #[OneToMany(mappedBy: 'parent', targetEntity: Post::class)]
+    #[OneToMany(mappedBy: 'parent', targetEntity: Post::class, fetch: 'EXTRA_LAZY')]
     private Collection $children;
 
     /**
@@ -689,7 +689,6 @@ class Post implements JsonSerializable
     public function getTaxonomiesByType(string $type): ArrayCollection
     {
         $taxonomies = new ArrayCollection();
-
         foreach ($this->getTermRelationships() as $relationship) {
             if ($type === $relationship->getTaxonomy()->getTaxonomy()) {
                 $taxonomies->add($relationship->getTaxonomy());

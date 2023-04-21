@@ -2,6 +2,7 @@
 
 namespace OctopusPress\Bundle\Widget;
 
+use Doctrine\ORM\QueryBuilder;
 use OctopusPress\Bundle\Customize\AbstractControl;
 use OctopusPress\Bundle\Customize\Control;
 use OctopusPress\Bundle\Customize\Section;
@@ -73,12 +74,12 @@ EOF;
         if ($author > 0) {
             $filters['author'] = $author;
         }
-        $orderBy = [
-            ($order > 2 ? 'title' : 'id') =>  ['DESC', 'ASC', 'DESC', 'ASC'][$order - 1],
-        ];
+        $filters['_sort'] = $order > 2 ? 'title' : 'id';
+        $filters['_order']= ['DESC', '', 'DESC', ''][$order - 1];
         $filters['status'] = Post::STATUS_PUBLISHED;
-        $posts = $postRepository->findBy($filters, $orderBy, $limit);
-
+        $posts = $postRepository->createQuery($filters)
+            ->setMaxResults($limit)
+            ->getResult();
         $context = [
             'posts' => $posts,
             'displayAuthor'=> isset($attributes['display_author']) && (bool)$attributes['display_author'],

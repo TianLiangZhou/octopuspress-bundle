@@ -68,7 +68,7 @@ class Term implements JsonSerializable
     /**
      * @var Collection<int, TermMeta>
      */
-    #[OneToMany(mappedBy: "term", targetEntity: TermMeta::class, cascade: ["persist", "remove"])]
+    #[OneToMany(mappedBy: "term", targetEntity: TermMeta::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     #[JoinColumn(name: "term_id", referencedColumnName: "term_id")]
     #[Valid]
     private Collection $metas;

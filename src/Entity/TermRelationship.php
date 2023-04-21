@@ -21,12 +21,12 @@ use Doctrine\ORM\Mapping\Table;
 class TermRelationship
 {
     #[Id]
-    #[ManyToOne(targetEntity: Post::class, inversedBy: "termRelationships")]
+    #[ManyToOne(targetEntity: Post::class, fetch: 'EAGER', inversedBy: "termRelationships")]
     #[JoinColumn(name: "object_id", referencedColumnName: "id", nullable: false)]
     private Post $post;
 
     #[Id]
-    #[ManyToOne(targetEntity: TermTaxonomy::class, inversedBy: "relationships")]
+    #[ManyToOne(targetEntity: TermTaxonomy::class, fetch: 'EAGER', inversedBy: "relationships")]
     #[JoinColumn(name: "term_taxonomy_id", referencedColumnName: "term_taxonomy_id", nullable:  false)]
     private ?TermTaxonomy $taxonomy = null;
 

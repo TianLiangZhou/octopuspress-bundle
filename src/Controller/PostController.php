@@ -79,6 +79,7 @@ class PostController extends Controller
         if ($user == null) {
             throw new NotFoundHttpException();
         }
+        $this->getEM()->getUnitOfWork()->markReadOnly($user);
         return new ArchiveDataSet(
             $user,
             $this->filterPostsResult(['author' => $user->getId()])
@@ -122,6 +123,7 @@ class PostController extends Controller
         if ($post == null) {
             throw new NotFoundHttpException();
         }
+        $this->getEM()->getUnitOfWork()->markReadOnly($post);
         if (!empty($attribute['year'])) {
             [$year, $month] = explode('-', $post->getCreatedAt()->format('Y-m'));
             if ($year != $attribute['year'] && $month != $attribute['month']) {
@@ -150,6 +152,7 @@ class PostController extends Controller
         if ($taxonomy == null) {
             throw new NotFoundHttpException();
         }
+        $this->getEM()->getUnitOfWork()->markReadOnly($taxonomy);
         return new ArchiveDataSet(
             $taxonomy,
             $this->filterTaxonomyResult($taxonomy)
@@ -191,15 +194,8 @@ class PostController extends Controller
          */
         $filters['_sort'] = 'id';
         $filters['_order'] = 'DESC';
-        $filters['type'] = [];
+        $filters['type'] = $this->bridger->getPost()->getShowFrontTypes();
         $runtime = $this->bridger->getTwig()->getRuntime(OctopusRuntime::class);
-        $postTypes = $this->bridger->getPost()->getTypes();
-        foreach ($postTypes as $name => $type) {
-            if (!$type->isShowOnFront()) {
-                continue;
-            }
-            $filters['type'][] = $name;
-        }
         return $runtime->getPosts($filters);
     }
 }

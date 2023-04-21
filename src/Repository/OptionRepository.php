@@ -2,6 +2,7 @@
 
 namespace OctopusPress\Bundle\Repository;
 
+use Doctrine\ORM\Query;
 use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Util\RepositoryTrait;
@@ -90,7 +91,12 @@ class OptionRepository extends ServiceEntityRepository
         if (!empty($this->defaultOptions)) {
             return $this->defaultOptions;
         }
-        $options = $this->findBy(['autoload' => 'yes',]);
+        $options = $this->createQueryBuilder('o')
+            ->andWhere('o.autoload = :auto')
+            ->setParameter('auto', 'yes')
+            ->getQuery()
+            ->setHint(Query::HINT_READ_ONLY, true)
+            ->getResult();
         foreach ($options as $option) {
             $this->defaultOptions[$option->getName()] = Formatter::reverseTransform($option->getValue(), true);
         }
