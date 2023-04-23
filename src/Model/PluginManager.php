@@ -93,7 +93,7 @@ class PluginManager
         $pluginDir = $this->getBridger()->getPluginDir() . DIRECTORY_SEPARATOR . $pluginName;
         $allowExt = [
             '*.html', '*.css', '*.js', '*.jpg', '*.jpeg', '*.png', '*.webp', '*.svg', '*.bmp', '*.ico', '*.gif',
-            '*.flv', '*.mp4', '*.wav', '*.mp3', '*.ogg', '*.webm', '*.flac'
+            '*.flv', '*.mp4', '*.wav', '*.mp3', '*.ogg', '*.webm', '*.flac', 'ttf', 'woff', 'eot', 'woff2'
         ];
         $iterator = Finder::create()->name($allowExt)->in($pluginDir)->exclude(['dev', 'node_modules'])->getIterator();
         (new Filesystem())->mirror($pluginDir, $publicPluginDir, $iterator);
