@@ -124,15 +124,12 @@ class OctopusRuntime implements RuntimeExtensionInterface
     }
 
     /**
-     * @param object|null $obj
+     * @param object $obj
      * @param array<string, mixed> $query
      * @return string
      */
-    public function permalink(?object $obj, array $query = []): string
+    public function permalink(object $obj, array $query = []): string
     {
-        if (empty($obj)) {
-            return '';
-        }
         $url = '';
         if ($obj instanceof Post) {
             if ($obj->getType() == Post::TYPE_NAVIGATION && ($itemType = $obj->getMeta('_menu_item_type'))) {
@@ -193,6 +190,13 @@ class OctopusRuntime implements RuntimeExtensionInterface
                 $url .= '.html';
             }
             $url = $this->hookFilter('author_link', $url, $obj);
+        } elseif(isset($obj->url) || isset($obj->route)) {
+            if (isset($obj->url)) {
+                $url = $obj->url;
+            }
+            if (isset($obj->route)) {
+                $url = $this->router->generate($obj->route, $obh->params ?? []);
+            }
         } else {
             // todo
             $url = $this->hookFilter('unknown_link', $url, $obj);

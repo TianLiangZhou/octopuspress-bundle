@@ -95,7 +95,7 @@ class PluginManager
             '*.html', '*.css', '*.js', '*.jpg', '*.jpeg', '*.png', '*.webp', '*.svg', '*.bmp', '*.ico', '*.gif',
             '*.flv', '*.mp4', '*.wav', '*.mp3', '*.ogg', '*.webm', '*.flac'
         ];
-        $iterator = Finder::create()->name($allowExt)->in($pluginDir)->exclude(['dev'])->getIterator();
+        $iterator = Finder::create()->name($allowExt)->in($pluginDir)->exclude(['dev', 'node_modules'])->getIterator();
         (new Filesystem())->mirror($pluginDir, $publicPluginDir, $iterator);
     }
 

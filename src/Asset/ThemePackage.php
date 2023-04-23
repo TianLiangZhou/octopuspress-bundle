@@ -4,6 +4,7 @@ namespace OctopusPress\Bundle\Asset;
 
 use JsonException;
 use OctopusPress\Bundle\Bridge\Bridger;
+use OctopusPress\Bundle\OctopusPressKernel;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use Symfony\Component\Asset\Context\ContextInterface;
 use Symfony\Component\Asset\Exception\RuntimeException;
@@ -38,6 +39,9 @@ class ThemePackage extends Package
      */
     private function loaderThemeVersion(): string
     {
+        if (empty($this->getTheme())) {
+            return OctopusPressKernel::OCTOPUS_PRESS_VERSION;
+        }
         $packagePath = $this->templateDir. DIRECTORY_SEPARATOR . $this->getTheme() . DIRECTORY_SEPARATOR . 'package.json';
         if (!file_exists($packagePath)) {
             throw new RuntimeException(sprintf('Asset manifest file "%s" does not exist. Did you forget to build the assets with npm or yarn?', $packagePath));

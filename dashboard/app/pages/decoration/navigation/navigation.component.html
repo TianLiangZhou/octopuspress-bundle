@@ -182,9 +182,9 @@
         </nb-accordion-item-header>
         <nb-accordion-item-body>
           <form ngForm>
-            <div class="mb-2" *ngIf="node.type == 'link'">
+            <div class="mb-2" *ngIf="node.type == 'custom'">
               <label for="custom_link_id_{{node.nodeId}}" class="label col-form-label">URL</label>
-              <input id="custom_link_id_{{node.nodeId}}" [name]="node.nodeId" [(ngModel)]="node.url"  nbInput fullWidth status="primary" />
+              <input id="custom_link_id_{{node.nodeId}}" [name]="node.nodeId + '_url'" [(ngModel)]="node.url"  nbInput fullWidth status="primary" />
             </div>
             <div class="mb-2">
               <label for="custom_link_name_{{node.nodeId}}" class="label col-form-label">导航名称</label>

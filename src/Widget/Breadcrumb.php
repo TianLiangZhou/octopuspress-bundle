@@ -7,6 +7,7 @@ use OctopusPress\Bundle\Entity\TermTaxonomy;
 use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Support\ArchiveDataSet;
 use Traversable;
+use function Symfony\Component\String\b;
 
 class Breadcrumb extends AbstractWidget implements \IteratorAggregate
 {
@@ -33,41 +34,41 @@ class Breadcrumb extends AbstractWidget implements \IteratorAggregate
         if ($controllerResult == null) {
             $controllerResult = $attributes['entity'] ?? null;
         }
-        if ($controllerResult == null) {
-            return [
-                'crumbs' => [],
-            ];
-        }
         $crumbs = [];
-        if ($controllerResult instanceof Post) {
-            $crumbs = [$controllerResult];
-            $parent = null;
-            if ($parent = $controllerResult->getParent()) {
-                array_unshift($crumbs, $parent);
-            }
-            $categories = $parent ? $parent->getCategories() : $controllerResult->getCategories();
-            foreach ($categories as $category) {
-                array_unshift($crumbs, $category);
-                $parent = $category->getParent();
-                while ($parent != null) {
-                    array_unshift($crumbs, $parent);
-                    $parent = $parent->getParent();
+        if ($controllerResult) {
+            $showedParent = (bool)($attributes['show_parent'] ?? true);
+            if ($controllerResult instanceof Post) {
+                $crumbs = [$controllerResult];
+                $parent = null;
+                if ($showedParent) {
+                    if ($parent = $controllerResult->getParent()) {
+                        array_unshift($crumbs, $parent);
+                    }
                 }
-                break;
+                $categories = $parent ? $parent->getCategories() : $controllerResult->getCategories();
+                foreach ($categories as $category) {
+                    array_unshift($crumbs, $category);
+                    $parent = $category->getParent();
+                    while ($parent != null) {
+                        array_unshift($crumbs, $parent);
+                        $parent = $parent->getParent();
+                    }
+                    break;
+                }
+            } elseif ($controllerResult instanceof ArchiveDataSet) {
+                $taxonomy = $controllerResult->getArchiveTaxonomy();
+                if ($taxonomy instanceof TermTaxonomy) {
+                    $crumbs[] = $taxonomy;
+                    $this->taxonomyCrumbs($taxonomy, $crumbs);
+                } elseif ($taxonomy instanceof User) {
+                    $crumbs[] = (object)['title' => $taxonomy->getNickname()];
+                } else {
+                    $crumbs[] = $taxonomy;
+                }
+            } elseif ($controllerResult instanceof TermTaxonomy) {
+                $crumbs[] = $controllerResult;
+                $this->taxonomyCrumbs($controllerResult, $crumbs);
             }
-        } elseif ($controllerResult instanceof ArchiveDataSet) {
-            $taxonomy = $controllerResult->getArchiveTaxonomy();
-            if ($taxonomy instanceof TermTaxonomy) {
-                $crumbs[] = $taxonomy;
-                $this->taxonomyCrumbs($taxonomy, $crumbs);
-            } elseif ($taxonomy instanceof User) {
-                $crumbs[] = (object) ['title' => $taxonomy->getNickname()];
-            } else {
-                $crumbs[] = $taxonomy;
-            }
-        } elseif ($controllerResult instanceof TermTaxonomy) {
-            $crumbs[] = $controllerResult;
-            $this->taxonomyCrumbs($controllerResult, $crumbs);
         }
         $crumbs = $this->getBridger()
             ->getHook()

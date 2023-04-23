@@ -516,6 +516,20 @@ class Post implements JsonSerializable
     }
 
     /**
+     * @param string $name
+     * @param $default
+     * @return mixed|null
+     */
+    public function getMetaValue(string $name, $default = null): mixed
+    {
+        $meta = $this->getMeta($name);
+        if ($meta == null) {
+            return $default;
+        }
+        return $meta->getMetaValue();
+    }
+
+    /**
      * @return Collection<int, Comment>
      */
     public function getComments(): Collection

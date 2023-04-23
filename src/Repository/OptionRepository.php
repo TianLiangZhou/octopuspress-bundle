@@ -2,7 +2,6 @@
 
 namespace OctopusPress\Bundle\Repository;
 
-use Doctrine\ORM\Query;
 use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Util\RepositoryTrait;
@@ -11,7 +10,6 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
-use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 
 /**
  * @method Option|null find($id, $lockMode = null, $lockVersion = null)
@@ -95,7 +93,7 @@ class OptionRepository extends ServiceEntityRepository
             ->andWhere('o.autoload = :auto')
             ->setParameter('auto', 'yes')
             ->getQuery()
-            ->setHint(Query::HINT_READ_ONLY, true)
+            ->enableResultCache(mt_rand(300, 600), 'default_options')
             ->getResult();
         foreach ($options as $option) {
             $this->defaultOptions[$option->getName()] = Formatter::reverseTransform($option->getValue(), true);
@@ -350,7 +348,7 @@ class OptionRepository extends ServiceEntityRepository
      * @param $offset
      * @return Option[]
      */
-    public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null)
+    public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array
     {
         /**
          * @var $options Option[]
@@ -374,17 +372,6 @@ class OptionRepository extends ServiceEntityRepository
         }
     }
 
-    /*
-    public function findOneBySomeField($value): ?Option
-    {
-        return $this->createQueryBuilder('o')
-            ->andWhere('o.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
     private function addFilters(QueryBuilder $qb, array $filters): void
     {
         // TODO: Implement addFilters() method.
