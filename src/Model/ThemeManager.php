@@ -262,7 +262,7 @@ class ThemeManager
         $themeDir = $this->getThemePath($theme);
         $allowExt = [
             '*.html', '*.css', '*.js', '*.jpg', '*.jpeg', '*.png', '*.webp', '*.svg', '*.bmp', '*.ico', '*.gif',
-            '*.flv', '*.mp4', '*.wav', '*.mp3', '*.ogg', '*.webm', '*.flac', 'ttf', 'woff', 'eot', 'woff2'
+            '*.flv', '*.mp4', '*.wav', '*.mp3', '*.ogg', '*.webm', '*.flac', '*.ttf', '*.woff', '*.eot', '*.woff2'
         ];
         $iterator = Finder::create()->name($allowExt)->in($themeDir)->exclude(['dev', 'node_modules'])->getIterator();
         $this->filesystem->mirror($themeDir, $themeTargetDir, $iterator);
