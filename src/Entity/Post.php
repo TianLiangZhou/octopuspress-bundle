@@ -526,7 +526,7 @@ class Post implements JsonSerializable
         if ($meta == null) {
             return $default;
         }
-        return $meta->getMetaValue();
+        return $meta->getMetaValue(true);
     }
 
     /**

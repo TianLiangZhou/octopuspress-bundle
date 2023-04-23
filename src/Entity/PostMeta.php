@@ -77,7 +77,7 @@ class PostMeta
         return $this;
     }
 
-    public function getMetaValue(bool $format = true): mixed
+    public function getMetaValue(bool $format = false): mixed
     {
         return $format
             ? Formatter::reverseTransform($this->metaValue)
