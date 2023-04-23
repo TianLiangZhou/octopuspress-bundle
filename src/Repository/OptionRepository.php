@@ -93,7 +93,7 @@ class OptionRepository extends ServiceEntityRepository
             ->andWhere('o.autoload = :auto')
             ->setParameter('auto', 'yes')
             ->getQuery()
-            ->enableResultCache(mt_rand(300, 600), 'default_options')
+            ->enableResultCache(mt_rand(60, 120), 'default_options')
             ->getResult();
         foreach ($options as $option) {
             $this->defaultOptions[$option->getName()] = Formatter::reverseTransform($option->getValue(), true);
