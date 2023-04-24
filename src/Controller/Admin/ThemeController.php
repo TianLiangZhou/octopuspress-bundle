@@ -7,6 +7,7 @@ namespace OctopusPress\Bundle\Controller\Admin;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Model\CustomizeManager;
 use OctopusPress\Bundle\Model\ThemeManager;
+use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Service\ServiceCenter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -49,7 +50,8 @@ class ThemeController extends AdminController
     {
         $customizedData = $request->toArray();
         $this->customizeManager->save($customizedData);
-        return $this->json([]);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
+        return $this->json('');
     }
 
     /**
@@ -94,8 +96,7 @@ class ThemeController extends AdminController
             return $this->json(['message' => 'File format is incorrect.',], Response::HTTP_NOT_ACCEPTABLE);
         }
         $this->themeManager->setup($filepath);
-        return $this->json([
-        ]);
+        return $this->json('');
     }
 
 
@@ -109,7 +110,8 @@ class ThemeController extends AdminController
     public function activate(string $name): JsonResponse
     {
         $this->themeManager->activate($name);
-        return $this->json([]);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
+        return $this->json('');
     }
 
     /**
@@ -119,8 +121,7 @@ class ThemeController extends AdminController
     public function setup(string $name): JsonResponse
     {
         $this->themeManager->setup($name);
-        return $this->json([
-        ]);
+        return $this->json('');
     }
 
     /**
@@ -130,8 +131,7 @@ class ThemeController extends AdminController
     public function upgrade(string $name): JsonResponse
     {
         $this->themeManager->setup($name);
-        return $this->json([
-        ]);
+        return $this->json('');
     }
 
     /**
@@ -141,7 +141,6 @@ class ThemeController extends AdminController
     public function delete(string $name): JsonResponse
     {
         $this->themeManager->uninstall($name);
-        return $this->json([
-        ]);
+        return $this->json('');
     }
 }

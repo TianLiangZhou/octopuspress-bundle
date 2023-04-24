@@ -62,6 +62,7 @@ class RoleController extends AdminController
         ];
         $option->setValue($roles);
         $this->optionRepository->add($option);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         return $this->json([
             'id' => count($roles),
         ]);
@@ -94,8 +95,8 @@ class RoleController extends AdminController
         ];
         $option->setValue($roles);
         $this->optionRepository->add($option);
-        return $this->json([
-        ]);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
+        return $this->json('');
     }
 
     #[Route('/{id}/delete', name: 'role_delete', requirements: ['id' => '\d+'], options: ['name' => '删除角色', 'parent' => 'setting_role',  'sort' => 4], methods: Request::METHOD_DELETE)]
@@ -112,6 +113,7 @@ class RoleController extends AdminController
         unset($roles[$id - 1]);
         $option->setValue($roles);
         $this->optionRepository->add($option);
-        return $this->json([]);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
+        return $this->json('');
     }
 }

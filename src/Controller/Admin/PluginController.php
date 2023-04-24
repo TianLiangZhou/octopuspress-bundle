@@ -8,6 +8,7 @@ use OctopusPress\Bundle\Customize\Draw;
 use OctopusPress\Bundle\Customize\Layout\Form;
 use OctopusPress\Bundle\Model\CustomizeManager;
 use OctopusPress\Bundle\Model\PluginManager;
+use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Service\ServiceCenter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -52,7 +53,7 @@ class PluginController extends AdminController
     #[Route('/setup', name: 'market_setup', options: ['name' => '安装插件', 'parent' => 'plugin_market', 'sort' => 0], methods: Request::METHOD_POST)]
     public function setup(Request $request): JsonResponse
     {
-        return $this->json([]);
+        return $this->json('');
     }
 
 
@@ -76,10 +77,11 @@ class PluginController extends AdminController
     {
         try {
             $this->pluginManager->activate($name);
+            $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         } catch (\Exception $exception) {
             return $this->json(['message' => $exception->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        return $this->json([]);
+        return $this->json('');
     }
 
     #[Route('/{name}/deactivate', name: 'installed_deactivate', options: ['name' => '禁用插件', 'parent' => 'plugin_installed', 'sort' => 0], methods: Request::METHOD_POST)]
@@ -87,12 +89,11 @@ class PluginController extends AdminController
     {
         try {
             $this->pluginManager->deactivate($name);
+            $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         } catch (\Exception $exception) {
             return $this->json(['message' => $exception->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        return $this->json([
-
-        ]);
+        return $this->json('');
     }
 
 
@@ -122,8 +123,7 @@ class PluginController extends AdminController
             return $this->json(['message' => 'File format is incorrect.',], Response::HTTP_NOT_ACCEPTABLE);
         }
         $this->pluginManager->setup($filepath);
-        return $this->json([
-        ]);
+        return $this->json('');
     }
 
     /**
@@ -132,8 +132,7 @@ class PluginController extends AdminController
     public function down(string $name): JsonResponse
     {
         $this->pluginManager->down($name);
-        return $this->json([
-        ]);
+        return $this->json('');
     }
 
     /**

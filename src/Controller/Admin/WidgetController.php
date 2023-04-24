@@ -71,7 +71,8 @@ class WidgetController extends AdminController
         }
         $optionBlockWidgets->setValue($widgets);
         $this->option->add($optionBlockWidgets);
-        return $this->json([]);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
+        return $this->json('');
     }
 
     #[Route('/blocks', name: 'blocks', methods: ['GET'])]

@@ -192,7 +192,8 @@ class SiteController extends AdminController
             $hook->action($hookName, $value, $objectManager, $this);
         }
         $objectManager->flush();
-        return $this->json([]);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
+        return $this->json('');
     }
 
     /**
@@ -238,7 +239,7 @@ class SiteController extends AdminController
             $entityManager->persist($item);
         }
         $this->getEM()->flush();
-        return $this->json([
-        ]);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
+        return $this->json('');
     }
 }

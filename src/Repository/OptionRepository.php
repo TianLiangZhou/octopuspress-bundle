@@ -72,6 +72,11 @@ class OptionRepository extends ServiceEntityRepository
     private array $defaultOptions = [];
 
     /**
+     *
+     */
+    const DEFAULT_CACHE_KEY = 'default_options';
+
+    /**
      * @var array
      */
     private array $caches = [];
@@ -93,7 +98,7 @@ class OptionRepository extends ServiceEntityRepository
             ->andWhere('o.autoload = :auto')
             ->setParameter('auto', 'yes')
             ->getQuery()
-            ->enableResultCache(mt_rand(60, 120), 'default_options')
+            ->enableResultCache(mt_rand(300, 900), self::DEFAULT_CACHE_KEY)
             ->getResult();
         foreach ($options as $option) {
             $this->defaultOptions[$option->getName()] = Formatter::reverseTransform($option->getValue(), true);

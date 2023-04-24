@@ -32,6 +32,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 use Twig\Environment;
 
 final class Bridger
@@ -42,6 +43,7 @@ final class Bridger
     private RouterInterface $router;
     private LoggerInterface $logger;
     private ParameterBagInterface $bag;
+    private CacheInterface $cache;
 
 
     /**
@@ -59,6 +61,7 @@ final class Bridger
         RequestStack $requestStack,
         RouterInterface $router,
         LoggerInterface $logger,
+        CacheInterface $cache,
     ) {
         $this->twig = $twig;
         $this->router = $router;
@@ -66,6 +69,7 @@ final class Bridger
         $this->requestStack = $requestStack;
         $this->container = $container;
         $this->bag = $bag;
+        $this->cache = $cache;
     }
 
     /**
@@ -412,6 +416,14 @@ final class Bridger
     public function getEntityManager(string $name = 'default'): EntityManagerInterface
     {
         return $this->getDoctrine()->getManager($name);
+    }
+
+    /**
+     * @return CacheInterface
+     */
+    public function getCache(): CacheInterface
+    {
+        return $this->cache;
     }
 
     /**
