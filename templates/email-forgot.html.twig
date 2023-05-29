@@ -1,48 +1,41 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html lang="zh">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="x-apple-disable-message-reformatting"/>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="color-scheme" content="light dark"/>
     <meta name="supported-color-schemes" content="light dark"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title></title>
     <style type="text/css" rel="stylesheet" media="all">
         /* Base ------------------------------ */
-
-        @import url("https://fonts.googleapis.com/css?family=Nunito+Sans:400,700&display=swap");
-
         body {
             width: 100% !important;
             height: 100%;
             margin: 0;
             -webkit-text-size-adjust: none;
         }
-
         body, table {
             background-color: #edf1f7;
             color: #51545E;
         }
-
         a {
             color: #3869D4;
         }
-
         a img {
             border: none;
         }
-
         td {
             word-break: break-word;
         }
-
         /* Type ------------------------------ */
         body,
         td,
         th {
-            font-family: "Nunito Sans", Helvetica, Arial, sans-serif;
+            font-family: Helvetica, Arial, sans-serif;
         }
-
         h1 {
             margin-top: 0;
             color: #333333;
@@ -106,34 +99,34 @@
         /* Buttons ------------------------------ */
 
         .button {
-            background-color: #3869D4;
-            border-top: 10px solid #3869D4;
-            border-right: 18px solid #3869D4;
-            border-bottom: 10px solid #3869D4;
-            border-left: 18px solid #3869D4;
+            background-color: #3366ff;
+            border-top: 10px solid #3366ff;
+            border-right: 18px solid #3366ff;
+            border-bottom: 10px solid #3366ff;
+            border-left: 18px solid #3366ff;
             display: inline-block;
             color: #FFF;
             text-decoration: none;
             border-radius: 3px;
             box-shadow: 0 2px 3px rgba(0, 0, 0, 0.16);
-            -webkit-text-size-adjust: none;
             box-sizing: border-box;
+            -webkit-text-size-adjust: none;
         }
 
-        .button--green {
-            background-color: #22BC66;
-            border-top: 10px solid #22BC66;
-            border-right: 18px solid #22BC66;
-            border-bottom: 10px solid #22BC66;
-            border-left: 18px solid #22BC66;
+        .button-green {
+            background-color: #00d68f;
+            border-top: 10px solid #00d68f;
+            border-right: 18px solid #00d68f;
+            border-bottom: 10px solid #00d68f;
+            border-left: 18px solid #00d68f;
         }
 
-        .button--red {
-            background-color: #FF6136;
-            border-top: 10px solid #FF6136;
-            border-right: 18px solid #FF6136;
-            border-bottom: 10px solid #FF6136;
-            border-left: 18px solid #FF6136;
+        .button-red {
+            background-color: #ff3d71;
+            border-top: 10px solid #ff3d71;
+            border-right: 18px solid #ff3d71;
+            border-bottom: 10px solid #ff3d71;
+            border-left: 18px solid #ff3d71;
         }
 
         @media only screen and (max-width: 500px) {
@@ -170,18 +163,12 @@
             width: 100%;
             margin: 0;
             padding: 0;
-            -premailer-width: 100%;
-            -premailer-cellpadding: 0;
-            -premailer-cellspacing: 0;
         }
 
         .email-content {
             width: 100%;
             margin: 0;
             padding: 0;
-            -premailer-width: 100%;
-            -premailer-cellpadding: 0;
-            -premailer-cellspacing: 0;
         }
 
         /* Masthead ----------------------- */
@@ -205,9 +192,6 @@
             width: 100%;
             margin: 0;
             padding: 0;
-            -premailer-width: 100%;
-            -premailer-cellpadding: 0;
-            -premailer-cellspacing: 0;
         }
 
         .email-body_inner, .email-body_inner table {
@@ -218,9 +202,6 @@
             width: 570px;
             margin: 0 auto;
             padding: 0;
-            -premailer-width: 570px;
-            -premailer-cellpadding: 0;
-            -premailer-cellspacing: 0;
         }
 
         .email-footer {
@@ -228,9 +209,6 @@
             min-width: 350px;
             margin: 0 auto;
             padding: 0;
-            -premailer-width: 570px;
-            -premailer-cellpadding: 0;
-            -premailer-cellspacing: 0;
             text-align: center;
         }
 
@@ -242,9 +220,6 @@
             width: 100%;
             margin: 30px auto;
             padding: 0;
-            -premailer-width: 100%;
-            -premailer-cellpadding: 0;
-            -premailer-cellspacing: 0;
             text-align: center;
         }
 
@@ -302,7 +277,6 @@
                 text-shadow: none !important;
             }
         }
-
         :root {
             color-scheme: light dark;
             supported-color-schemes: light dark;
@@ -342,8 +316,8 @@
                                                     <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation">
                                                         <tr>
                                                             <td align="center">
-                                                                <a href="<?php echo $link; ?>"
-                                                                   class="f-fallback button button--green f-weight" style="color:#FFF"
+                                                                <a href="{{ link }}"
+                                                                   class="f-fallback button button f-weight" style="color:#FFF"
                                                                    target="_blank">重置密码</a>
                                                             </td>
                                                         </tr>
@@ -352,11 +326,11 @@
                                             </tr>
                                         </table>
                                         <p>
-                                            为了安全起见，此请求是使用<strong><?php echo $browser; ?></strong>浏览器在<strong><?php echo $os;?></strong>
+                                            为了安全起见，此请求是使用<strong>{{ browser }}</strong>浏览器在<strong>{{ os }}</strong>
                                             系统设备发起的。如果您没有请求重设密码，请忽略此电子邮件或在有疑问时联系支持人员。
                                         </p>
                                         <br/>
-                                        <p>谢谢，<?php echo $title; ?>团队。</p>
+                                        <p>{{ title }}团队。</p>
                                         <!-- Sub copy -->
                                         <table class="body-sub" role="presentation">
                                             <tr>
@@ -364,7 +338,7 @@
                                                     <p class="f-fallback sub">
                                                         如果您在使用上面的按钮时遇到问题，请将下面的URL复制并粘贴到您的网络浏览器中。
                                                     </p>
-                                                    <p class="f-fallback sub"><a href="<?php echo $link; ?>"><?php echo $link; ?></a></p>
+                                                    <p class="f-fallback sub"><a href="{{ link }}">{{ link }}</a></p>
                                                 </td>
                                             </tr>
                                         </table>

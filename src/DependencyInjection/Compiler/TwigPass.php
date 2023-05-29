@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 class TwigPass implements CompilerPassInterface
 {
 
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         // TODO: Implement process() method.
         $definition = $container->getDefinition('twig.loader.native_filesystem');

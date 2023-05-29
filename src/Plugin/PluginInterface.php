@@ -6,11 +6,6 @@ use OctopusPress\Bundle\Bridge\Bridger;
 
 interface PluginInterface
 {
-    /**
-     * @return Manifest
-     */
-    public static function manifest(): Manifest;
-
     public function launcher(Bridger $bridger): void;
 
     public function activate(Bridger $bridger): void;

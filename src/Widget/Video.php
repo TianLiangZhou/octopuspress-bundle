@@ -65,7 +65,8 @@ EOF;
         if ($video == null) {
             return $result;
         }
-        $result['video'] = $video->getAttachment($this->getBridger()->getAssetsUrl());
+        $result['video'] = $video->getAttachment();
+        $result['video']['url'] = $this->getBridger()->getPackages()->getUrl($result['video']['url']);
         if (!empty($attributes['poster'])) {
             $image = $this->getBridger()
                 ->getPostRepository()
@@ -73,7 +74,10 @@ EOF;
                     'id' => (int)$attributes['poster'],
                     'type' => Post::TYPE_ATTACHMENT,
                 ]);
-            $result['poster'] = $image?->getAttachment($this->getBridger()->getAssetsUrl());
+            $result['poster'] = $image?->getAttachment();
+            if ($result['poster']) {
+                $result['poster']['url'] = $this->getBridger()->getPackages()->getUrl($result['poster']['url']);
+            }
         }
         return $result;
     }

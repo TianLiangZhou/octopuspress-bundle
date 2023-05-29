@@ -43,7 +43,6 @@ class OctopusRuntime implements RuntimeExtensionInterface
     private TaxonomyRepository $taxonomy;
     private Hook $hook;
     private RouterInterface $router;
-    private array $assetsUrl;
     private UserRepository $user;
     private ActivatedRoute $activatedRoute;
     private PluginManager $pluginManager;
@@ -59,7 +58,6 @@ class OctopusRuntime implements RuntimeExtensionInterface
         $this->user     = $this->bridger->get(UserRepository::class);
         $this->router   = $this->bridger->getRouter();
         $this->activatedRoute = $this->bridger->getActivatedRoute();
-        $this->assetsUrl = $this->bridger->getAssetsUrl();
         $this->pluginManager = $pluginManager;
     }
 
@@ -102,6 +100,15 @@ class OctopusRuntime implements RuntimeExtensionInterface
     public function exist(string $name): bool
     {
         return $this->option->findOneBy(['name' => $name]) != null;
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function isThemeSupport(string $name): bool
+    {
+        return $this->bridger->getTheme()->isThemeSupport($name);
     }
 
     /**
@@ -262,6 +269,11 @@ class OctopusRuntime implements RuntimeExtensionInterface
         return $items;
     }
 
+    public function customLogo()
+    {
+
+    }
+
     /**
      * @param string $feature
      * @param mixed|null $default
@@ -301,10 +313,10 @@ class OctopusRuntime implements RuntimeExtensionInterface
                 return '';
             }
         }
-        $attachment = $post->getAttachment($this->assetsUrl);
+        $attachment = $post->getAttachment();
         return sprintf(
-            '<img src="%s" alt="%s"  class="%s" />',
-            $attachment['url'],
+            '<img src="%s" alt="%s" class="%s" />',
+            $this->bridger->getPackages()->getUrl($attachment['url']),
             $post->getTitle(),
             $class,
         );
@@ -323,7 +335,9 @@ class OctopusRuntime implements RuntimeExtensionInterface
         if ($attachment == null) {
             return null;
         }
-        return $attachment->getAttachment($this->bridger->getAssetsUrl());
+        $attr = $attachment->getAttachment();
+        $attr['url'] = $this->bridger->getPackages()->getUrl($attr['url']);
+        return $attr;
     }
 
     /**
@@ -356,7 +370,8 @@ class OctopusRuntime implements RuntimeExtensionInterface
         }
         $medias = [];
         foreach ($attachments as $attachment) {
-            $attachmentLite = $attachment->getAttachment($this->bridger->getAssetsUrl());
+            $attachmentLite = $attachment->getAttachment();
+            $attachmentLite['url'] = $this->bridger->getPackages()->getUrl($attachmentLite['url']);
             if (isset($formerColumn[$attachmentLite['id']])) {
                 $attachmentLite = array_merge($attachmentLite, $formerColumn[$attachmentLite['id']]);
             }

@@ -1,6 +1,6 @@
 import {Injectable, NgModule} from '@angular/core';
 import {Routes, RouterModule, ExtraOptions, TitleStrategy, RouterStateSnapshot} from '@angular/router';
-import {AuthGuard} from "./@core/services/auth.guard";
+import {authGuard} from "./@core/services/auth.guard";
 import {NotFoundComponent} from "./not-found.component";
 import {Title} from "@angular/platform-browser";
 import {ConfigurationService} from "./@core/services/configuration.service";
@@ -8,7 +8,7 @@ import {ConfigurationService} from "./@core/services/configuration.service";
 const routes: Routes = [
   {
     path: 'app',
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
     loadChildren: () => import('./pages/pages.module').then(m => m.PagesModule),
   },
   {

@@ -4,12 +4,11 @@ namespace OctopusPress\Bundle\Model;
 
 use InvalidArgumentException;
 use OctopusPress\Bundle\Controller\Controller;
+use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\OctopusPressKernel;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Plugin\PluginInterface;
 use OctopusPress\Bundle\Plugin\PluginProviderInterface;
-use OctopusPress\Bundle\Repository\OptionRepository;
-use OctopusPress\Bundle\Util\Formatter;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -18,29 +17,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-use ZipArchive;
-use function Symfony\Component\String\u;
 
-class PluginManager
+class PluginManager extends PackageManager
 {
-    private Bridger $bridger;
-    private OptionRepository $optionRepository;
-
     /**
      * @var array
      */
     private array $registered = [];
 
-    public function __construct(Bridger $bridger)
-    {
-        $this->bridger = $bridger;
-        $this->optionRepository = $bridger->getOptionRepository();
-    }
 
     /**
      * @param string $name
@@ -50,29 +34,37 @@ class PluginManager
      */
     public function activate(string $name): bool
     {
-        $plugin = $this->getPlugin($name);
-        if ($plugin == null) {
-            throw new \InvalidArgumentException("Invalid param `$name`");
+        $installedPlugins = $this->optionRepository->installedPlugins();
+        if (!isset($installedPlugins[$name])) {
+            throw new \InvalidArgumentException('插件还未安装!');
         }
-        $manifest = $plugin::manifest();
-        $minVersion = $manifest->getMinVersion();
-        $minPhpVersion = $manifest->getMinPhpVersion();
-        if (empty($minPhpVersion) || empty($minVersion)) {
-            throw new \RuntimeException("Minimum version number not set");
+        $plugins = $this->getActivatedPlugins();
+        if (in_array($name, $plugins)) {
+            throw new \InvalidArgumentException('插件已激活!');
         }
+        $pluginInfo = $installedPlugins[$name];
+        $minVersion = $pluginInfo['miniOP'];
+        $minPhpVersion = $pluginInfo['miniPHP'];
         if (version_compare(PHP_VERSION, $minPhpVersion) < 0) {
             throw new \RuntimeException("The PHP minimum version is " . $minPhpVersion);
         }
         if (version_compare(OctopusPressKernel::OCTOPUS_PRESS_VERSION, $minVersion) < 0) {
             throw new \RuntimeException("The octopus minimum version is " . $minVersion);
         }
+        if (empty($pluginInfo['entrypoint'])) {
+            throw new \InvalidArgumentException("插件入口不存在!");
+        }
+        $plugin = $this->getPlugin($name, $pluginInfo['entrypoint']);
+        if ($plugin == null) {
+            throw new \InvalidArgumentException("插件入口加载失败!");
+        }
         $meta = $this->optionRepository->findOneByName('active_plugins');
         assert($meta != null);
         $plugin->activate($this->bridger);
         $this->bridger->getHook()->action('plugin.activation', $name);
-        $plugins = Formatter::reverseTransform($meta->getValue() ?: '', true);
+        $plugins = $this->optionRepository->value('active_plugins', []);
         $plugins[] = $name;
-        $meta->setValue(json_encode($plugins) ?: '');
+        $meta->setValue(json_encode($plugins) ?: '[]');
         $this->optionRepository->add($meta);
         $this->migrateTo($name);
         return true;
@@ -108,14 +100,23 @@ class PluginManager
      */
     public function deactivate(string $name)
     {
-        $plugin = $this->getPlugin($name);
+        $installedPlugins = $this->optionRepository->installedPlugins();
+        if (!isset($installedPlugins[$name])) {
+            throw new \InvalidArgumentException('插件还未安装!');
+        }
+        $plugins = $this->getActivatedPlugins();
+        if (!in_array($name, $plugins)) {
+            throw new \InvalidArgumentException('插件还未激活!');
+        }
+        $pluginInfo = $installedPlugins[$name];
+        $plugin = $this->getPlugin($name, $pluginInfo['meta']['entrypoint']);
         if ($plugin == null) {
-            throw new \InvalidArgumentException("Invalid param `$name`");
+            throw new \InvalidArgumentException("插件入口不存在");
         }
         $meta = $this->optionRepository->findOneByName('active_plugins');
         assert($meta != null);
         $this->bridger->getHook()->action('plugin.deactivate', $name);
-        $plugins = Formatter::reverseTransform($meta->getValue() ?: '', true);
+        $plugins = $this->optionRepository->value('active_plugins', []);
         if (($key = array_search($name, $plugins)) !== false) {
             unset($plugins[$key]);
         }
@@ -129,96 +130,39 @@ class PluginManager
      */
     public function plugins(): array
     {
-        if (!file_exists($this->getPluginDir())) {
-            return [];
-        }
         $activePlugins = $this->optionRepository->activePlugins();
-        $dirs = new \DirectoryIterator($this->getPluginDir());
-        $plugins = [];
+        $installedPlugins = $this->optionRepository->installedPlugins();
         $settingPages = $this->bridger->getPlugin()->getSettingPages();
         if ($settingPages) {
             $settingPages = array_column($settingPages, null, 'plugin');
         }
-        foreach ($dirs as $dir) {
-            if (!$dir->isDir()) {
-                continue;
-            }
-            $name = $dir->getFilename();
-            if (in_array($name, ['.', '..'])) {
-                continue;
-            }
-            $plugin = $this->getPlugin($name);
-            if ($plugin == null) {
-                continue;
-            }
-            $information = $plugin::manifest();
-            $alias = u($name)->replaceMatches('/[^A-Za-z0-9_\-]++/', '')->lower()->toString();
+        $plugins = [];
+        foreach ($installedPlugins as $name => $plugin) {
             $actions = [];
-            if (isset($settingPages[$alias])) {
+            if (isset($settingPages[$name])) {
                 $actions[] = [
                     'link' => '/app/system/setting/general',
-                    'query'=> ['page' => $settingPages[$alias]['path']],
+                    'query'=> ['page' => $settingPages[$name]['path']],
                 ];
             }
-            $plugins[] = array_merge($information->jsonSerialize(), [
-                'alias' => $name,
-                'enabled' => in_array($name, $activePlugins),
-                'actions' => in_array($name, $activePlugins)
-                    ? $this->bridger->getHook()->filter('plugin_action_links', $actions, $alias)
-                    : [],
-            ]);
+            $plugin['enabled'] = in_array($name, $activePlugins);
+            $plugin['actions'] = in_array($name, $activePlugins)
+                ? $this->bridger->getHook()->filter('plugin_action_links', $actions, $name)
+                : [];
+            $plugins[] = $plugin;
         }
         return $plugins;
     }
 
     /**
-     * @param string $filename
+     * @param array $packageInfo
      * @return string
-     * @throws \Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function setup(string $filename): string
+    protected function setup(array $packageInfo): string
     {
-        $zipArchive = new ZipArchive();
-        if ($zipArchive->open($filename) !== true) {
-            unlink($filename);
-            throw new InvalidArgumentException('Zip cannot be opened.');
-        }
-        $tempPath = rtrim(sys_get_temp_dir(), '\\/') . DIRECTORY_SEPARATOR . bin2hex(random_bytes(4));
-        if (mkdir($tempPath) === false) {
-            unlink($filename);
-            throw new InvalidArgumentException('Permission denied.');
-        }
-        $zipArchive->extractTo($tempPath);
-        $zipArchive->close();
-        unlink($filename);
-        $finder = Finder::create()
-            ->files()
-            ->name('composer.json')
-            ->in($tempPath);
-        /**
-         * @var SplFileInfo $composerFile
-         */
-        $composerFile = null;
-        foreach ($finder as $file) {
-            $composerFile = $file;
-            break;
-        }
-        if ($composerFile == null) {
-            throw new InvalidArgumentException('Zip archive composer.json file does not exist.');
-        }
-        $pathName = $composerFile->getPathname();
-        $composer = json_decode(file_get_contents($pathName), true);
-        $pluginRootPath = dirname($pathName);
-        $pluginName = $composer['name'] ?? pathinfo($pluginRootPath, PATHINFO_BASENAME) ?? '';
-        if (empty($pluginName)) {
-            throw new InvalidArgumentException('Not in plugin pack format.');
-        }
-        $pluginName = explode('/', $pluginName)[1] ?? $pluginName;
-        $name = Formatter::sanitizeWithDashes($pluginName);
-        $pluginClassName = $this->getNameForClass($name);
-        if (!file_exists($pluginRootPath . DIRECTORY_SEPARATOR . $pluginClassName . '.php')) {
-            throw new InvalidArgumentException('Not in plugin pack format. File `' . $pluginClassName . '.php` not exist ');
-        }
+        $name = $packageInfo['packageName'];
         $pluginPath = $this->getPluginDir(). DIRECTORY_SEPARATOR . $name;
         if (!file_exists($pluginPath)) {
             if (!is_writable($this->getPluginDir())) {
@@ -226,8 +170,20 @@ class PluginManager
             }
             mkdir($pluginPath, 0755);
         }
+        $pluginRootPath = dirname($packageInfo['composerFile']);
         $filesystem = new FileSystem();
         $filesystem->mirror($pluginRootPath, $pluginPath, null, ['override' => true]);
+
+        $option = $this->optionRepository->findOneByName('installed_plugins');
+        if ($option == null) {
+            $option = new Option();
+            $option->setName('installed_plugins');
+        }
+        $installed = $this->optionRepository->value('installed_plugins', []);
+        unset($packageInfo['composerFile'], $packageInfo['packageFile'], $packageInfo['tempDir']);
+        $installed[$name] = $packageInfo;
+        $option->setValue($installed);
+        $this->optionRepository->add($option);
         return $name;
     }
 
@@ -241,25 +197,32 @@ class PluginManager
 
     /**
      * @param string $name
-     * @return string
-     */
-    public function getNameForClass(string $name): string
-    {
-        return u($name)->camel()->title()->toString();
-    }
-
-    /**
-     * @param string $name
      * @return bool
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function down(string $name): bool
     {
-        $plugin = $this->getPlugin($name);
+        $option = $this->optionRepository->findOneByName('installed_plugins');
+        $installedPlugins = $this->optionRepository->value('installed_plugins', []);
+        if (!isset($installedPlugins[$name])) {
+            throw new \InvalidArgumentException("插件没有被安装!");
+        }
+        $plugin = $this->getPlugin($name, $installedPlugins[$name]['meta']['entrypoint']);
         if ($plugin == null) {
-            return false;
+            throw new \InvalidArgumentException("插件入口不存在");
         }
         $plugin->uninstall($this->bridger);
         $this->bridger->getHook()->action('plugin.activation', $name);
+        if (file_exists($this->getPluginDir() . DIRECTORY_SEPARATOR . $name)) {
+            $fileSystem = new Filesystem();
+            $fileSystem->remove([
+                $this->getPluginDir() . DIRECTORY_SEPARATOR . $name
+            ]);
+        }
+        unset($installedPlugins[$name]);
+        $option->setValue($installedPlugins);
+        $this->optionRepository->add($option);
         return true;
     }
 
@@ -272,19 +235,17 @@ class PluginManager
     {
         $dispatcher = $this->bridger->getDispatcher();
         $activePlugins = $this->getActivatedPlugins();
+        $installedPlugins = $this->optionRepository->installedPlugins();
         $pluginDir = $this->getPluginDir();
         $doctrine = $this->bridger->getDoctrine();
         $hook = $this->bridger->getHook();
         foreach ($activePlugins as $name) {
-            $plugin = $this->getPlugin($name);
-            if ($plugin == null) {
+            if (!isset($installedPlugins[$name])) {
                 continue;
             }
-            $alias = u($name)->replaceMatches('/[^A-Za-z0-9_\-]++/', '')->lower()->toString();
-            $manifest = $plugin::manifest();
-            $manifest->setAlias($alias);
-            if (empty($manifest->getPluginDir())) {
-                $manifest->setPluginDir($pluginDir . DIRECTORY_SEPARATOR . $name);
+            $plugin = $this->getPlugin($name, $installedPlugins[$name]['entrypoint']);
+            if ($plugin == null) {
+                continue;
             }
             if ($plugin instanceof EventSubscriberInterface) {
                 $dispatcher->addSubscriber($plugin);
@@ -306,14 +267,13 @@ class PluginManager
                     $dispatcher->addSubscriber($service);
                 }
             }
-            $this->registered[$alias] = [
+            $this->registered[$name] = [
                 'plugin'   => $plugin,
-                'manifest' => $manifest,
                 'provider' => $plugin->provider($this->bridger),
             ];
             $plugin->launcher($this->bridger);
-            $hook->action('plugin_launcher', $alias, $this);
-            $hook->action('plugin_launcher_' . $alias, $this);
+            $hook->action('plugin_launcher', $name, $this);
+            $hook->action('plugin_launcher_' . $name, $this);
         }
     }
 
@@ -346,21 +306,20 @@ class PluginManager
 
     /**
      * @param string $name
+     * @param string $entrypoint
      * @return PluginInterface|null
      */
-    public function getPlugin(string $name): ?PluginInterface
+    public function getPlugin(string $name, string $entrypoint): ?PluginInterface
     {
-        $pluginClassName = $this->getNameForClass($name);
-        $classString = sprintf('OctopusPress\\Plugin\\%s\\%s', $pluginClassName, $pluginClassName);
         $this->registerPlugin($name);
         // 不直接判断存不存在，如果真得不存，直接判断会被composer标记为不存在。
-        if (!class_exists($classString)) {
+        if (!class_exists($entrypoint)) {
             return null;
         }
         /**
          * @var PluginInterface $class
          */
-        $class = new $classString();
+        $class = new $entrypoint();
         if (!$class instanceof PluginInterface) {
             return null;
         }

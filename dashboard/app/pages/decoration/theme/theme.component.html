@@ -4,9 +4,12 @@
   <div class="col-12">
     <nb-card>
       <nb-card-header class="d-flex justify-content-between align-items-center">
-        <span>主题列表</span>
+        <div class="d-flex align-items-center">
+          <span>主题列表</span>
+          <a class="ms-2" nbButton status="success" routerLink="/app/decoration/theme/market">主题市场</a>
+        </div>
         <div class="d-flex">
-          <button nbButton class="me-2" status="danger" (click)="dialog.open(dialogTpl)">在线下载</button>
+          <button nbButton class="mx-2" status="danger" (click)="dialog.open(dialogTpl)">在线下载</button>
           <app-upload (finish)="upload($event)" [suffix]="['zip']" [status]="'primary'"></app-upload>
         </div>
       </nb-card-header>
@@ -14,24 +17,31 @@
   </div>
   <div class="col-12 col-md-6 col-lg-4 col-xxl-3" *ngFor="let theme of themes">
     <nb-card>
-      <nb-card-header class="d-flex justify-content-between">
-        <div>{{theme.name}}</div>
-        <button *ngIf="theme.isUpgrade" nbButton status="warning" [disabled]="!theme.isUpgrade || spinner" (click)="upgrade(theme.alias)">升级</button>
-      </nb-card-header>
+      <nb-card-header>{{theme.name}}</nb-card-header>
       <nb-card-body>
-        <img alt="{{theme.name}}" [src]="sanitizer.bypassSecurityTrustResourceUrl(theme.image)"  *ngIf="theme.image" width="100%"/>
-        <div class="description" *ngIf="!theme.image">
+        <div class="description">
           {{theme.description}}
+        </div>
+        <div class="d-flex py-3 justify-content-between">
+          <span>作者:</span>
+          <span>
+            <a class="d-inline-block mr-1"
+               *ngFor="let author of theme.authors"
+               [href]="author.homepage ? author.homepage : '#'" target="_blank">
+              {{author.name}}
+            </a>
+          </span>
+        </div>
+        <div class="d-flex py-3 justify-content-between">
+          <span>版本:</span>
+          <span>{{theme.version}}</span>
         </div>
       </nb-card-body>
       <nb-card-footer class="d-flex justify-content-between">
-        <button nbButton status="danger" [disabled]="theme.enabled || spinner" [nbSpinner]="spinner" (click)="delete(theme.alias)">删除</button>
-        <button nbButton [status]="theme.enabled ? 'warning' : 'primary'"
-                (click)="activate(theme.alias)"
+        <button nbButton status="danger" [disabled]="theme.enabled || spinner" [nbSpinner]="spinner" (click)="delete(theme.packageName)">删除</button>
+        <button nbButton status="primary" (click)="activate(theme.packageName)"
                 [nbSpinner]="spinner"
-                [disabled]="spinner">
-          {{ theme.enabled ? '重装' : '启用' }}
-        </button>
+                [disabled]="spinner || theme.enabled">启用</button>
       </nb-card-footer>
     </nb-card>
   </div>

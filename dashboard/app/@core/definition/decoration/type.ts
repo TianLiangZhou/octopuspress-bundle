@@ -16,17 +16,6 @@ export type CustomizeResponse = ResponseBody & {
   }
 }
 
-
-export type Theme = {
-  alias: string;
-  name: string;
-  image: string;
-  description?: string;
-  isUpgrade: boolean;
-  enabled: boolean;
-  version: string;
-}
-
 export type Section = {
   id: string;
   label: string;

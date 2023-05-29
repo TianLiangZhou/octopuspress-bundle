@@ -67,3 +67,26 @@ export type ServerEndpoint = {
   show?: string;
   list?: string;
 }
+
+export type Package = {
+  packageName: string;
+  name: string;
+  description: string;
+  version: string;
+  miniOP: string;
+  miniPHP: string;
+  authors?: PackageAuthor[];
+  homepage?: string;
+  logo?: string;
+  screenshot?: string;
+  enabled: boolean;
+  installed: boolean;
+  upgradeable: boolean;
+  actions:{name?:string, link:string, query?: Record<string, string>}[];
+}
+
+export type PackageAuthor = {
+  name?: string;
+  email?: string;
+  homepage?: string;
+}

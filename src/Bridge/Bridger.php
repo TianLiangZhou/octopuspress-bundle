@@ -26,6 +26,7 @@ use OctopusPress\Bundle\Scalable\Widget;
 use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Support\DefaultViewFilter;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -33,6 +34,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Twig\Environment;
 
 final class Bridger
@@ -44,6 +46,8 @@ final class Bridger
     private LoggerInterface $logger;
     private ParameterBagInterface $bag;
     private CacheInterface $cache;
+    private HttpClientInterface $client;
+    private Packages $packages;
 
 
     /**
@@ -53,6 +57,8 @@ final class Bridger
      * @param RequestStack $requestStack
      * @param RouterInterface $router
      * @param LoggerInterface $logger
+     * @param CacheInterface $cache
+     * @param HttpClientInterface $client
      */
     public function __construct(
         ContainerInterface $container,
@@ -62,6 +68,8 @@ final class Bridger
         RouterInterface $router,
         LoggerInterface $logger,
         CacheInterface $cache,
+        HttpClientInterface $client,
+        Packages $packages,
     ) {
         $this->twig = $twig;
         $this->router = $router;
@@ -70,6 +78,8 @@ final class Bridger
         $this->container = $container;
         $this->bag = $bag;
         $this->cache = $cache;
+        $this->client = $client;
+        $this->packages = $packages;
     }
 
     /**
@@ -122,9 +132,9 @@ final class Bridger
         return $this->getParameter('kernel.build_dir');
     }
 
-    public function getBuildAssetDir(): string
+    public function getBuildAssetsDir(): string
     {
-        return $this->getParameter('build_asset_dir');
+        return $this->getParameter('build_assets_dir');
     }
 
     /**
@@ -443,5 +453,21 @@ final class Bridger
     public function getParameter(string $name): mixed
     {
         return $this->bag->get($name);
+    }
+
+    /**
+     * @return HttpClientInterface
+     */
+    public function getClient(): HttpClientInterface
+    {
+        return $this->client;
+    }
+
+    /**
+     * @return Packages
+     */
+    public function getPackages(): Packages
+    {
+        return $this->packages;
     }
 }

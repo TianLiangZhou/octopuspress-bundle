@@ -1,21 +1,22 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {Records, ResponseBody} from "../../../@core/definition/common";
-import {Plugin} from "../../../@core/definition/plugin/type";
+import {OnSpinner, Package, Records, ResponseBody} from "../../../@core/definition/common";
 import {PLUGIN_MARKET, PLUGIN_SETUP} from "../../../@core/definition/plugin/api";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpContext} from "@angular/common/http";
 import {ActivatedRoute} from "@angular/router";
 import {DomSanitizer} from "@angular/platform-browser";
 import {NbSidebarService, NbToastrService} from "@nebular/theme";
 import {timer} from "rxjs";
+import {SPINNER} from "../../../@core/interceptor/authorization";
 
 @Component({
   selector: 'app-plugin-market',
   templateUrl: './market.component.html',
 })
-export class MarketComponent implements OnInit, AfterViewInit {
-  plugins: Plugin[] = [];
+export class MarketComponent implements OnInit, OnSpinner, AfterViewInit {
+  plugins: Package[] = [];
 
   title: string = "";
+  spinner: boolean = false;
 
   constructor(
     private http: HttpClient,
@@ -25,6 +26,10 @@ export class MarketComponent implements OnInit, AfterViewInit {
     private sidebar: NbSidebarService,
   ) {
 
+  }
+
+  onSpinner(spinner: boolean): void {
+    this.spinner = spinner;
   }
 
   ngAfterViewInit(): void {
@@ -45,7 +50,7 @@ export class MarketComponent implements OnInit, AfterViewInit {
   }
 
   private getPlugins() {
-    this.http.get<Records<Plugin>>(PLUGIN_MARKET).subscribe(res => {
+    this.http.get<Records<Package>>(PLUGIN_MARKET).subscribe(res => {
       if (res.records.length > 0) {
         this.plugins = res.records
       }
@@ -53,7 +58,7 @@ export class MarketComponent implements OnInit, AfterViewInit {
   }
 
   setup(name: string) {
-    this.http.post<ResponseBody>(PLUGIN_SETUP, {name: name}).subscribe(res => {
+    this.http.post<ResponseBody>(PLUGIN_SETUP, {name: name}, {context: new HttpContext().set(SPINNER, this)}).subscribe(res => {
       this.getPlugins();
     });
   }

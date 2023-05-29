@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {CommonModule, NgOptimizedImage} from '@angular/common';
 
-import {MemberComponent} from './member.component';
+import {MemberActionComponent, MemberComponent} from './member.component';
 import {ThemeModule} from '../../@theme/theme.module';
 import {Angular2SmartTableModule} from "angular2-smart-table";
 import {RouterModule, Routes} from "@angular/router";
@@ -40,6 +40,7 @@ const routes: Routes = [
   declarations: [
     MemberComponent,
     NewComponent,
+    MemberActionComponent,
   ],
   imports: [
     CommonModule,
@@ -48,6 +49,7 @@ const routes: Routes = [
     Angular2SmartTableModule,
     ControlModule,
     UploadModule,
+    NgOptimizedImage,
   ],
 })
 export class UserModule { }

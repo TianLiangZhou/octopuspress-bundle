@@ -9,6 +9,7 @@ use OctopusPress\Bundle\Model\MasterManager;
 use OctopusPress\Bundle\Model\PluginManager;
 use OctopusPress\Bundle\Plugin\PluginInterface;
 use OctopusPress\Bundle\Repository\OptionRepository;
+use OctopusPress\Bundle\Support\ActivatedTheme;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -88,9 +89,26 @@ class BootstrapListener implements EventSubscriberInterface
             return;
         }
         $this->master->boot();
+        $this->updateActivatedTheme($option);
         $this->pluginLauncher();
     }
 
+
+
+    private function updateActivatedTheme(OptionRepository $option): void
+    {
+        /**
+         * @var $activatedTheme ActivatedTheme
+         */
+        $theme = $option->theme();
+        if (empty($theme)) {
+            return ;
+        }
+        $activatedTheme = $this->container->get('activated_theme');
+        $activatedTheme->setName($theme);
+        $installed = $option->installedThemes();
+        $activatedTheme->setVersion($installed[$theme]['version'] ?? '1.0.0');
+    }
 
     /**
      * @return void

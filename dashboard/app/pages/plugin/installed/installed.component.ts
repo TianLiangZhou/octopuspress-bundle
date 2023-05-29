@@ -1,22 +1,23 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpContext} from "@angular/common/http";
 import {ActivatedRoute} from "@angular/router";
-import {Records, ResponseBody} from "../../../@core/definition/common";
-import {Plugin} from "../../../@core/definition/plugin/type";
+import {OnSpinner, Package, Records, ResponseBody} from "../../../@core/definition/common";
 import {PLUGIN_ACTIVATE, PLUGIN_DOWN, PLUGIN_DEACTIVATE, PLUGIN_INSTALLED, PLUGIN_UPLOAD} from "../../../@core/definition/plugin/api";
 import {NbDialogService, NbSidebarService, NbToastrService} from "@nebular/theme";
 import {DialogRef} from "@angular/cdk/dialog";
 import {timer} from "rxjs";
+import {SPINNER} from "../../../@core/interceptor/authorization";
 
 @Component({
   selector: 'app-plugin-installed',
   templateUrl: './installed.component.html',
 })
-export class InstalledComponent implements OnInit, AfterViewInit {
+export class InstalledComponent implements OnInit, OnSpinner, AfterViewInit {
 
-  plugins: Plugin[] = [];
+  plugins: Package[] = [];
 
   title: string = "";
+  spinner: boolean = false;
 
   constructor(
     private http: HttpClient,
@@ -26,6 +27,10 @@ export class InstalledComponent implements OnInit, AfterViewInit {
     private sidebar: NbSidebarService,
   ) {
 
+  }
+
+  onSpinner(spinner: boolean): void {
+    this.spinner = spinner;
   }
 
   ngAfterViewInit(): void {
@@ -46,7 +51,7 @@ export class InstalledComponent implements OnInit, AfterViewInit {
   }
 
   private getPlugins() {
-    this.http.get<Records<Plugin>>(PLUGIN_INSTALLED).subscribe(res => {
+    this.http.get<Records<Package>>(PLUGIN_INSTALLED).subscribe(res => {
       if (res.records.length > 0) {
         this.plugins = res.records
       }
@@ -54,13 +59,13 @@ export class InstalledComponent implements OnInit, AfterViewInit {
   }
 
   inactivate(name: string) {
-    this.http.post<ResponseBody>(PLUGIN_DEACTIVATE, {name: name}).subscribe(res => {
+    this.http.post<ResponseBody>(PLUGIN_DEACTIVATE, {name: name}, {context: new HttpContext().set(SPINNER, this)}).subscribe(res => {
       this.getPlugins();
     });
   }
 
   activate(name: string) {
-    this.http.post<ResponseBody>(PLUGIN_ACTIVATE, {name: name}).subscribe(res => {
+    this.http.post<ResponseBody>(PLUGIN_ACTIVATE, {name: name}, {context: new HttpContext().set(SPINNER, this)}).subscribe(res => {
       this.getPlugins();
     });
   }
@@ -88,7 +93,7 @@ export class InstalledComponent implements OnInit, AfterViewInit {
   }
 
   remove(alias: string) {
-    this.http.post<ResponseBody>(PLUGIN_DOWN, {name: alias}).subscribe(res => {
+    this.http.post<ResponseBody>(PLUGIN_DOWN, {name: alias}, {context: new HttpContext().set(SPINNER, this)}).subscribe(res => {
       this.getPlugins()
     });
   }

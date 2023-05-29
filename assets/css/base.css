@@ -1,0 +1,1469 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer base {
+  :root {
+    --color-primary-100: theme('colors.primary.100');
+    --color-primary-200: theme('colors.primary.200');
+    --color-primary-300: theme('colors.primary.300');
+    --color-primary-400: theme('colors.primary.400');
+    --color-primary-500: theme('colors.primary.500');
+    --color-primary-600: theme('colors.primary.600');
+    --color-primary-700: theme('colors.primary.700');
+    --color-primary-800: theme('colors.primary.800');
+    --color-primary-900: theme('colors.primary.900');
+    --color-primary-transparent-100: theme('colors.primary.transparent-100');
+    --color-primary-transparent-200: theme('colors.primary.transparent-200');
+    --color-primary-transparent-300: theme('colors.primary.transparent-300');
+    --color-primary-transparent-400: theme('colors.primary.transparent-400');
+    --color-primary-transparent-500: theme('colors.primary.transparent-500');
+    --color-primary-transparent-600: theme('colors.primary.transparent-600');
+    --color-success-100: theme('colors.success.100');
+    --color-success-200: theme('colors.success.200');
+    --color-success-300: theme('colors.success.300');
+    --color-success-400: theme('colors.success.400');
+    --color-success-500: theme('colors.success.500');
+    --color-success-600: theme('colors.success.600');
+    --color-success-700: theme('colors.success.700');
+    --color-success-800: theme('colors.success.800');
+    --color-success-900: theme('colors.success.900');
+    --color-success-transparent-100: theme('colors.success.transparent-100');
+    --color-success-transparent-200: theme('colors.success.transparent-200');
+    --color-success-transparent-300: theme('colors.success.transparent-300');
+    --color-success-transparent-400: theme('colors.success.transparent-400');
+    --color-success-transparent-500: theme('colors.success.transparent-500');
+    --color-success-transparent-600: theme('colors.success.transparent-600');
+    --color-info-100: theme('colors.info.100');
+    --color-info-200: theme('colors.info.200');
+    --color-info-300: theme('colors.info.300');
+    --color-info-400: theme('colors.info.400');
+    --color-info-500: theme('colors.info.500');
+    --color-info-600: theme('colors.info.600');
+    --color-info-700: theme('colors.info.700');
+    --color-info-800: theme('colors.info.800');
+    --color-info-900: theme('colors.info.900');
+    --color-info-transparent-100: theme('colors.info.transparent-100');
+    --color-info-transparent-200: theme('colors.info.transparent-200');
+    --color-info-transparent-300: theme('colors.info.transparent-300');
+    --color-info-transparent-400: theme('colors.info.transparent-400');
+    --color-info-transparent-500: theme('colors.info.transparent-500');
+    --color-info-transparent-600: theme('colors.info.transparent-600');
+    --color-warning-100: theme('colors.warning.100');
+    --color-warning-200: theme('colors.warning.200');
+    --color-warning-300: theme('colors.warning.300');
+    --color-warning-400: theme('colors.warning.400');
+    --color-warning-500: theme('colors.warning.500');
+    --color-warning-600: theme('colors.warning.600');
+    --color-warning-700: theme('colors.warning.700');
+    --color-warning-800: theme('colors.warning.800');
+    --color-warning-900: theme('colors.warning.900');
+    --color-warning-transparent-100: theme('colors.warning.transparent-100');
+    --color-warning-transparent-200: theme('colors.warning.transparent-200');
+    --color-warning-transparent-300: theme('colors.warning.transparent-300');
+    --color-warning-transparent-400: theme('colors.warning.transparent-400');
+    --color-warning-transparent-500: theme('colors.warning.transparent-500');
+    --color-warning-transparent-600: theme('colors.warning.transparent-600');
+    --color-danger-100: theme('colors.danger.100');
+    --color-danger-200: theme('colors.danger.200');
+    --color-danger-300: theme('colors.danger.300');
+    --color-danger-400: theme('colors.danger.400');
+    --color-danger-500: theme('colors.danger.500');
+    --color-danger-600: theme('colors.danger.600');
+    --color-danger-700: theme('colors.danger.700');
+    --color-danger-800: theme('colors.danger.800');
+    --color-danger-900: theme('colors.danger.900');
+    --color-danger-transparent-100: theme('colors.danger.transparent-100');
+    --color-danger-transparent-200: theme('colors.danger.transparent-200');
+    --color-danger-transparent-300: theme('colors.danger.transparent-300');
+    --color-danger-transparent-400: theme('colors.danger.transparent-400');
+    --color-danger-transparent-500: theme('colors.danger.transparent-500');
+    --color-danger-transparent-600: theme('colors.danger.transparent-600');
+    /*Basic colors - for backgrounds and borders and texts*/
+    --color-basic-100: theme('colors.basic.100');
+    --color-basic-200: theme('colors.basic.200');
+    --color-basic-300: theme('colors.basic.300');
+    --color-basic-400: theme('colors.basic.400');
+    --color-basic-500: theme('colors.basic.500');
+    --color-basic-600: theme('colors.basic.600');
+    --color-basic-700: theme('colors.basic.700');
+    --color-basic-800: theme('colors.basic.800');
+    --color-basic-900: theme('colors.basic.900');
+    --color-basic-1000: theme('colors.basic.1000');
+    --color-basic-1100: theme('colors.basic.1100');
+    --color-basic-transparent-100: theme('colors.basic.transparent-100');
+    --color-basic-transparent-200: theme('colors.basic.transparent-200');
+    --color-basic-transparent-300: theme('colors.basic.transparent-300');
+    --color-basic-transparent-400: theme('colors.basic.transparent-400');
+    --color-basic-transparent-500: theme('colors.basic.transparent-500');
+    --color-basic-transparent-600: theme('colors.basic.transparent-600');
+    --color-basic-control-transparent-100: theme('colors.basic.transparent-control-100');
+    --color-basic-control-transparent-200: theme('colors.basic.transparent-control-200');
+    --color-basic-control-transparent-300: theme('colors.basic.transparent-control-300');
+    --color-basic-control-transparent-400: theme('colors.basic.transparent-control-400');
+    --color-basic-control-transparent-500: theme('colors.basic.transparent-control-500');
+    --color-basic-control-transparent-600: theme('colors.basic.transparent-control-600');
+  }
+
+
+  .dark {
+    --color-primary-100: theme('colors.primary.100');
+    --color-primary-200: theme('colors.primary.200');
+    --color-primary-300: theme('colors.primary.300');
+    --color-primary-400: theme('colors.primary.400');
+    --color-primary-500: theme('colors.primary.500');
+    --color-primary-600: theme('colors.primary.600');
+    --color-primary-700: theme('colors.primary.700');
+    --color-primary-800: theme('colors.primary.800');
+    --color-primary-900: theme('colors.primary.900');
+    --color-primary-transparent-100: theme('colors.primary.transparent-100');
+    --color-primary-transparent-200: theme('colors.primary.transparent-200');
+    --color-primary-transparent-300: theme('colors.primary.transparent-300');
+    --color-primary-transparent-400: theme('colors.primary.transparent-400');
+    --color-primary-transparent-500: theme('colors.primary.transparent-500');
+    --color-primary-transparent-600: theme('colors.primary.transparent-600');
+    --color-success-100: theme('colors.success.100');
+    --color-success-200: theme('colors.success.200');
+    --color-success-300: theme('colors.success.300');
+    --color-success-400: theme('colors.success.400');
+    --color-success-500: theme('colors.success.500');
+    --color-success-600: theme('colors.success.600');
+    --color-success-700: theme('colors.success.700');
+    --color-success-800: theme('colors.success.800');
+    --color-success-900: theme('colors.success.900');
+    --color-success-transparent-100: theme('colors.success.transparent-100');
+    --color-success-transparent-200: theme('colors.success.transparent-200');
+    --color-success-transparent-300: theme('colors.success.transparent-300');
+    --color-success-transparent-400: theme('colors.success.transparent-400');
+    --color-success-transparent-500: theme('colors.success.transparent-500');
+    --color-success-transparent-600: theme('colors.success.transparent-600');
+    --color-info-100: theme('colors.info.100');
+    --color-info-200: theme('colors.info.200');
+    --color-info-300: theme('colors.info.300');
+    --color-info-400: theme('colors.info.400');
+    --color-info-500: theme('colors.info.500');
+    --color-info-600: theme('colors.info.600');
+    --color-info-700: theme('colors.info.700');
+    --color-info-800: theme('colors.info.800');
+    --color-info-900: theme('colors.info.900');
+    --color-info-transparent-100: theme('colors.info.transparent-100');
+    --color-info-transparent-200: theme('colors.info.transparent-200');
+    --color-info-transparent-300: theme('colors.info.transparent-300');
+    --color-info-transparent-400: theme('colors.info.transparent-400');
+    --color-info-transparent-500: theme('colors.info.transparent-500');
+    --color-info-transparent-600: theme('colors.info.transparent-600');
+    --color-warning-100: theme('colors.warning.100');
+    --color-warning-200: theme('colors.warning.200');
+    --color-warning-300: theme('colors.warning.300');
+    --color-warning-400: theme('colors.warning.400');
+    --color-warning-500: theme('colors.warning.500');
+    --color-warning-600: theme('colors.warning.600');
+    --color-warning-700: theme('colors.warning.700');
+    --color-warning-800: theme('colors.warning.800');
+    --color-warning-900: theme('colors.warning.900');
+    --color-warning-transparent-100: theme('colors.warning.transparent-100');
+    --color-warning-transparent-200: theme('colors.warning.transparent-200');
+    --color-warning-transparent-300: theme('colors.warning.transparent-300');
+    --color-warning-transparent-400: theme('colors.warning.transparent-400');
+    --color-warning-transparent-500: theme('colors.warning.transparent-500');
+    --color-warning-transparent-600: theme('colors.warning.transparent-600');
+    --color-danger-100: theme('colors.danger.100');
+    --color-danger-200: theme('colors.danger.200');
+    --color-danger-300: theme('colors.danger.300');
+    --color-danger-400: theme('colors.danger.400');
+    --color-danger-500: theme('colors.danger.500');
+    --color-danger-600: theme('colors.danger.600');
+    --color-danger-700: theme('colors.danger.700');
+    --color-danger-800: theme('colors.danger.800');
+    --color-danger-900: theme('colors.danger.900');
+    --color-danger-transparent-100: theme('colors.danger.transparent-100');
+    --color-danger-transparent-200: theme('colors.danger.transparent-200');
+    --color-danger-transparent-300: theme('colors.danger.transparent-300');
+    --color-danger-transparent-400: theme('colors.danger.transparent-400');
+    --color-danger-transparent-500: theme('colors.danger.transparent-500');
+    --color-danger-transparent-600: theme('colors.danger.transparent-600');
+    /*Basic colors - for backgrounds and borders and texts*/
+    --color-basic-100: theme('colors.basic.800');
+    --color-basic-200: theme('colors.basic.900');
+    --color-basic-300: theme('colors.basic.1000');
+    --color-basic-400: theme('colors.basic.1100');
+    --color-basic-500: theme('colors.basic.500');
+    --color-basic-600: theme('colors.basic.600');
+    --color-basic-700: theme('colors.basic.700');
+    --color-basic-800: theme('colors.basic.100');
+    --color-basic-900: theme('colors.basic.200');
+    --color-basic-1000: theme('colors.basic.300');
+    --color-basic-1100: theme('colors.basic.400');
+    --color-basic-transparent-100: theme('colors.basic.transparent-100');
+    --color-basic-transparent-200: theme('colors.basic.transparent-200');
+    --color-basic-transparent-300: theme('colors.basic.transparent-300');
+    --color-basic-transparent-400: theme('colors.basic.transparent-400');
+    --color-basic-transparent-500: theme('colors.basic.transparent-500');
+    --color-basic-transparent-600: theme('colors.basic.transparent-600');
+    --color-basic-control-transparent-100: theme('colors.basic.transparent-control-100');
+    --color-basic-control-transparent-200: theme('colors.basic.transparent-control-200');
+    --color-basic-control-transparent-300: theme('colors.basic.transparent-control-300');
+    --color-basic-control-transparent-400: theme('colors.basic.transparent-control-400');
+    --color-basic-control-transparent-500: theme('colors.basic.transparent-control-500');
+    --color-basic-control-transparent-600: theme('colors.basic.transparent-control-600');
+  }
+
+  :root {
+    /* Status colors states - focus, hover, default, active, disabled*/
+    --color-basic-focus: var(--color-basic-400);
+    --color-basic-hover: var(--color-basic-200);
+    --color-basic-default: var(--color-basic-300);
+    --color-basic-active: var(--color-basic-400);
+    --color-basic-disabled: var(--color-basic-transparent-300);
+    --color-basic-focus-border: var(--color-basic-500);
+    --color-basic-hover-border: var(--color-basic-hover);
+    --color-basic-default-border: var(--color-basic-default);
+    --color-basic-active-border: var(--color-basic-active);
+    --color-basic-disabled-border: var(--color-basic-disabled);
+    --color-basic-transparent-focus: var(--color-basic-transparent-300);
+    --color-basic-transparent-hover: var(--color-basic-transparent-200);
+    --color-basic-transparent-default: var(--color-basic-transparent-100);
+    --color-basic-transparent-active: var(--color-basic-transparent-300);
+    --color-basic-transparent-disabled: var(--color-basic-transparent-200);
+    --color-basic-transparent-focus-border: var(--color-basic-600);
+    --color-basic-transparent-hover-border: var(--color-basic-600);
+    --color-basic-transparent-default-border: var(--color-basic-600);
+    --color-basic-transparent-active-border: var(--color-basic-600);
+    --color-basic-transparent-disabled-border: var(--color-basic-transparent-300);
+    --color-primary-focus: var(--color-primary-600);
+    --color-primary-hover: var(--color-primary-400);
+    --color-primary-default: var(--color-primary-500);
+    --color-primary-active: var(--color-primary-600);
+    --color-primary-disabled: var(--color-basic-transparent-300);
+    --color-primary-focus-border: var(--color-primary-700);
+    --color-primary-hover-border: var(--color-primary-hover);
+    --color-primary-default-border: var(--color-primary-default);
+    --color-primary-active-border: var(--color-primary-active);
+    --color-primary-disabled-border: var(--color-primary-disabled);
+    --color-primary-transparent-focus: var(--color-primary-transparent-300);
+    --color-primary-transparent-hover: var(--color-primary-transparent-200);
+    --color-primary-transparent-default: var(--color-primary-transparent-100);
+    --color-primary-transparent-active: var(--color-primary-transparent-300);
+    --color-primary-transparent-disabled: var(--color-basic-transparent-200);
+    --color-primary-transparent-focus-border: var(--color-primary-500);
+    --color-primary-transparent-hover-border: var(--color-primary-500);
+    --color-primary-transparent-default-border: var(--color-primary-500);
+    --color-primary-transparent-active-border: var(--color-primary-500);
+    --color-primary-transparent-disabled-border: var(--color-basic-transparent-300);
+    --color-success-focus: var(--color-success-600);
+    --color-success-hover: var(--color-success-400);
+    --color-success-default: var(--color-success-500);
+    --color-success-active: var(--color-success-600);
+    --color-success-disabled: var(--color-basic-transparent-300);
+    --color-success-focus-border: var(--color-success-700);
+    --color-success-hover-border: var(--color-success-hover);
+    --color-success-default-border: var(--color-success-default);
+    --color-success-active-border: var(--color-success-active);
+    --color-success-disabled-border: var(--color-success-disabled);
+    --color-success-transparent-focus: var(--color-success-transparent-300);
+    --color-success-transparent-focus-border: var(--color-success-500);
+    --color-success-transparent-hover: var(--color-success-transparent-200);
+    --color-success-transparent-hover-border: var(--color-success-500);
+    --color-success-transparent-default: var(--color-success-transparent-100);
+    --color-success-transparent-default-border: var(--color-success-500);
+    --color-success-transparent-active: var(--color-success-transparent-300);
+    --color-success-transparent-active-border: var(--color-success-500);
+    --color-success-transparent-disabled: var(--color-basic-transparent-200);
+    --color-success-transparent-disabled-border: var(--color-basic-transparent-300);
+    --color-info-focus: var(--color-info-600);
+    --color-info-hover: var(--color-info-400);
+    --color-info-default: var(--color-info-500);
+    --color-info-active: var(--color-info-600);
+    --color-info-disabled: var(--color-basic-transparent-300);
+    --color-info-focus-border: var(--color-info-700);
+    --color-info-hover-border: var(--color-info-hover);
+    --color-info-default-border: var(--color-info-default);
+    --color-info-active-border: var(--color-info-active);
+    --color-info-disabled-border: var(--color-info-disabled);
+    --color-info-transparent-focus: var(--color-info-transparent-300);
+    --color-info-transparent-hover: var(--color-info-transparent-200);
+    --color-info-transparent-default: var(--color-info-transparent-100);
+    --color-info-transparent-active: var(--color-info-transparent-300);
+    --color-info-transparent-disabled: var(--color-basic-transparent-200);
+    --color-info-transparent-focus-border: var(--color-info-500);
+    --color-info-transparent-hover-border: var(--color-info-500);
+    --color-info-transparent-default-border: var(--color-info-500);
+    --color-info-transparent-active-border: var(--color-info-500);
+    --color-info-transparent-disabled-border: var(--color-basic-transparent-300);
+    --color-warning-focus: var(--color-warning-600);
+    --color-warning-hover: var(--color-warning-400);
+    --color-warning-default: var(--color-warning-500);
+    --color-warning-active: var(--color-warning-600);
+    --color-warning-disabled: var(--color-basic-transparent-300);
+    --color-warning-focus-border: var(--color-warning-700);
+    --color-warning-hover-border: var(--color-warning-hover);
+    --color-warning-default-border: var(--color-warning-default);
+    --color-warning-active-border: var(--color-warning-active);
+    --color-warning-disabled-border: var(--color-warning-disabled);
+    --color-warning-transparent-focus: var(--color-warning-transparent-300);
+    --color-warning-transparent-hover: var(--color-warning-transparent-200);
+    --color-warning-transparent-default: var(--color-warning-transparent-100);
+    --color-warning-transparent-active: var(--color-warning-transparent-300);
+    --color-warning-transparent-disabled: var(--color-basic-transparent-200);
+    --color-warning-transparent-focus-border: var(--color-warning-500);
+    --color-warning-transparent-hover-border: var(--color-warning-500);
+    --color-warning-transparent-default-border: var(--color-warning-500);
+    --color-warning-transparent-active-border: var(--color-warning-500);
+    --color-warning-transparent-disabled-border: var(--color-basic-transparent-300);
+    --color-danger-focus: var(--color-danger-600);
+    --color-danger-hover: var(--color-danger-400);
+    --color-danger-default: var(--color-danger-500);
+    --color-danger-active: var(--color-danger-600);
+    --color-danger-disabled: var(--color-basic-transparent-300);
+    --color-danger-focus-border: var(--color-danger-700);
+    --color-danger-hover-border: var(--color-danger-hover);
+    --color-danger-default-border: var(--color-danger-default);
+    --color-danger-active-border: var(--color-danger-active);
+    --color-danger-disabled-border: var(--color-danger-disabled);
+    --color-danger-transparent-focus: var(--color-danger-transparent-300);
+    --color-danger-transparent-hover: var(--color-danger-transparent-200);
+    --color-danger-transparent-default: var(--color-danger-transparent-100);
+    --color-danger-transparent-active: var(--color-danger-transparent-300);
+    --color-danger-transparent-disabled: var(--color-basic-transparent-200);
+    --color-danger-transparent-focus-border: var(--color-danger-500);
+    --color-danger-transparent-hover-border: var(--color-danger-500);
+    --color-danger-transparent-default-border: var(--color-danger-500);
+    --color-danger-transparent-active-border: var(--color-danger-500);
+    --color-danger-transparent-disabled-border: var(--color-basic-transparent-300);
+    --color-control-focus: var(--color-basic-300);
+    --color-control-hover: var(--color-basic-200);
+    --color-control-default: var(--color-basic-100);
+    --color-control-active: var(--color-basic-300);
+    --color-control-disabled: var(--color-basic-transparent-300);
+    --color-control-focus-border: var(--color-basic-500);
+    --color-control-hover-border: var(--color-control-hover);
+    --color-control-default-border: var(--color-control-default);
+    --color-control-active-border: var(--color-control-active);
+    --color-control-disabled-border: var(--color-control-disabled);
+    --color-control-transparent-focus: var(--color-basic-control-transparent-300);
+    --color-control-transparent-hover: var(--color-basic-control-transparent-200);
+    --color-control-transparent-default: var(--color-basic-control-transparent-100);
+    --color-control-transparent-active: var(--color-basic-control-transparent-300);
+    --color-control-transparent-disabled: var(--color-basic-transparent-200);
+    --color-control-transparent-focus-border: var(--color-basic-100);
+    --color-control-transparent-hover-border: var(--color-basic-100);
+    --color-control-transparent-default-border: var(--color-basic-100);
+    --color-control-transparent-active-border: var(--color-basic-100);
+    --color-control-transparent-disabled-border: var(--color-basic-transparent-300);
+    /*Backgrounds and borders - basic, alternative and primary*/
+    --background-basic-color-1: var(--color-basic-100);
+    --background-basic-color-2: var(--color-basic-200);
+    --background-basic-color-3: var(--color-basic-300);
+    --background-basic-color-4: var(--color-basic-400);
+    --border-basic-color-1: var(--color-basic-100);
+    --border-basic-color-2: var(--color-basic-200);
+    --border-basic-color-3: var(--color-basic-300);
+    --border-basic-color-4: var(--color-basic-400);
+    --border-basic-color-5: var(--color-basic-500);
+    --background-alternative-color-1: var(--color-basic-800);
+    --background-alternative-color-2: var(--color-basic-900);
+    --background-alternative-color-3: var(--color-basic-1000);
+    --background-alternative-color-4: var(--color-basic-1100);
+    --border-alternative-color-1: var(--color-basic-800);
+    --border-alternative-color-2: var(--color-basic-900);
+    --border-alternative-color-3: var(--color-basic-1000);
+    --border-alternative-color-4: var(--color-basic-1100);
+    --border-alternative-color-5: var(--color-basic-1100);
+    --background-primary-color-1: var(--color-primary-500);
+    --background-primary-color-2: var(--color-primary-600);
+    --background-primary-color-3: var(--color-primary-700);
+    --background-primary-color-4: var(--color-primary-800);
+    --border-primary-color-1: var(--color-basic-500);
+    --border-primary-color-2: var(--color-basic-600);
+    --border-primary-color-3: var(--color-basic-700);
+    --border-primary-color-4: var(--color-basic-800);
+    --border-primary-color-5: var(--color-basic-900);
+    /*Text colors - general and status */
+    --text-basic-color: var(--color-basic-800);
+    --text-alternate-color: var(--color-basic-100);
+    --text-control-color: var(--color-basic-100);
+    --text-disabled-color: var(--color-basic-transparent-600);
+    --text-hint-color: var(--color-basic-600);
+    --text-primary-color: var(--color-primary-default);
+    --text-primary-focus-color: var(--color-primary-focus);
+    --text-primary-hover-color: var(--color-primary-hover);
+    --text-primary-active-color: var(--color-primary-active);
+    --text-primary-disabled-color: var(--color-primary-400);
+    --text-success-color: var(--color-success-default);
+    --text-success-focus-color: var(--color-success-focus);
+    --text-success-hover-color: var(--color-success-hover);
+    --text-success-active-color: var(--color-success-active);
+    --text-success-disabled-color: var(--color-success-400);
+    --text-info-color: var(--color-info-default);
+    --text-info-focus-color: var(--color-info-focus);
+    --text-info-hover-color: var(--color-info-hover);
+    --text-info-active-color: var(--color-info-active);
+    --text-info-disabled-color: var(--color-info-400);
+    --text-warning-color: var(--color-warning-default);
+    --text-warning-focus-color: var(--color-warning-focus);
+    --text-warning-hover-color: var(--color-warning-hover);
+    --text-warning-active-color: var(--color-warning-active);
+    --text-warning-disabled-color: var(--color-warning-400);
+    --text-danger-color: var(--color-danger-default);
+    --text-danger-focus-color: var(--color-danger-focus);
+    --text-danger-hover-color: var(--color-danger-hover);
+    --text-danger-active-color: var(--color-danger-active);
+    --text-danger-disabled-color: var(--color-danger-400);
+    /*Fonts and text styles - headings, subtitles, paragraphs, captions, button */
+    --font-family-primary: theme('fontFamily.sans');
+    --font-family-secondary: var(--font-family-primary);
+    --text-heading-1-font-family: var(--font-family-secondary);
+    --text-heading-1-font-size: 2.25rem;
+    --text-heading-1-font-weight: theme('fontWeight.bold');
+    --text-heading-1-line-height: 3rem;
+    --text-heading-2-font-family: var(--font-family-secondary);
+    --text-heading-2-font-size: 2rem;
+    --text-heading-2-font-weight: theme('fontWeight.bold');
+    --text-heading-2-line-height: 2.5rem;
+    --text-heading-3-font-family: var(--font-family-secondary);
+    --text-heading-3-font-size: 1.875rem;
+    --text-heading-3-font-weight: theme('fontWeight.bold');
+    --text-heading-3-line-height: 2.5rem;
+    --text-heading-4-font-family: var(--font-family-secondary);
+    --text-heading-4-font-size: 1.625rem;
+    --text-heading-4-font-weight: theme('fontWeight.bold');
+    --text-heading-4-line-height: 2rem;
+    --text-heading-5-font-family: var(--font-family-secondary);
+    --text-heading-5-font-size: 1.375rem;
+    --text-heading-5-font-weight: theme('fontWeight.bold');
+    --text-heading-5-line-height: 2rem;
+    --text-heading-6-font-family: var(--font-family-secondary);
+    --text-heading-6-font-size: 1.125rem;
+    --text-heading-6-font-weight: theme('fontWeight.bold');
+    --text-heading-6-line-height: 1.5rem;
+    --text-subtitle-font-family: var(--font-family-primary);
+    --text-subtitle-font-size: 0.9375rem;
+    --text-subtitle-font-weight: theme('fontWeight.semibold');
+    --text-subtitle-line-height: 1.5rem;
+    --text-subtitle-2-font-family: var(--font-family-primary);
+    --text-subtitle-2-font-size: 0.8125rem;
+    --text-subtitle-2-font-weight: theme('fontWeight.semibold');
+    --text-subtitle-2-line-height: 1.5rem;
+    --text-paragraph-font-family: var(--font-family-primary);
+    --text-paragraph-font-size: 0.9375rem;
+    --text-paragraph-font-weight: theme('fontWeight.normal');
+    --text-paragraph-line-height: 1.25rem;
+    --text-paragraph-2-font-family: var(--font-family-primary);
+    --text-paragraph-2-font-size: 0.8125rem;
+    --text-paragraph-2-font-weight: theme('fontWeight.normal');
+    --text-paragraph-2-line-height: 1.125rem;
+    --text-label-font-family: var(--font-family-primary);
+    --text-label-font-size: 0.75rem;
+    --text-label-font-weight: theme('fontWeight.bold');
+    --text-label-line-height: 1rem;
+    --text-caption-font-family: var(--font-family-primary);
+    --text-caption-font-size: 0.75rem;
+    --text-caption-font-weight: theme('fontWeight.normal');
+    --text-caption-line-height: 1rem;
+    --text-caption-2-font-family: var(--font-family-primary);
+    --text-caption-2-font-size: 0.75rem;
+    --text-caption-2-font-weight: theme('fontWeight.semibold');
+    --text-caption-2-line-height: 1rem;
+    --text-button-font-family: var(--font-family-primary);
+    --text-button-font-weight: theme('fontWeight.bold');
+    --text-button-tiny-font-size: 0.625rem;
+    --text-button-tiny-line-height: theme('lineHeight.3');
+    --text-button-small-font-size: theme('fontSize.xs');
+    --text-button-small-line-height: theme('lineHeight.4');
+    --text-button-medium-font-size: theme('fontSize.sm');
+    --text-button-medium-line-height: theme('lineHeight.4');
+    --text-button-large-font-size: theme('fontSize.base');
+    --text-button-large-line-height: theme('lineHeight.5');
+    --text-button-giant-font-size: theme('fontSize.lg');
+    --text-button-giant-line-height: theme('lineHeight.6');
+    /*Supporting variables - border radius, outline, shadow, divider*/
+    --border-radius: 0.25rem;
+    --outline-width: 0.375rem;
+    --outline-color: var(--color-basic-transparent-200);
+    --scrollbar-color: var(--background-basic-color-4);
+    --scrollbar-background-color: var(--background-basic-color-2);
+    --scrollbar-width: 0.3125rem;
+    --shadow: 0 0.5rem 1rem 0 rgba(44, 51, 73, 0.1);
+    --divider-color: var(--border-basic-color-3);
+    --divider-style: solid;
+    --divider-width: 1px;
+  }
+}
+
+a {
+  @apply
+  text-base
+  ;
+}
+
+a:hover {
+  @apply
+  underline
+  ;
+}
+
+.label {
+  color: var(--text-hint-color);
+  font-family: var(--text-label-font-family);
+  font-size: var(--text-label-font-size);
+  font-weight: var(--text-label-font-weight);
+  line-height: var(--text-label-line-height);
+}
+
+.bg-basic {
+  @apply !bg-[var(--background-basic-color-3)]
+  ;
+  opacity: var(--tw-bg-opacity);
+}
+
+.bg-primary {
+  @apply !bg-[var(--background-primary-color-1)]
+  ;
+  opacity: var(--tw-bg-opacity);
+}
+
+.bg-success {
+  @apply !bg-[var(--color-success-default)]
+  ;
+  opacity: var(--tw-bg-opacity);
+}
+
+.bg-danger {
+  @apply !bg-[var(--color-danger-default)]
+  ;
+  opacity: var(--tw-bg-opacity);
+}
+
+.bg-warning {
+  @apply !bg-[var(--color-warning-default)]
+  ;
+  opacity: var(--tw-bg-opacity);
+}
+
+.bg-info {
+  @apply !bg-[var(--color-info-default)]
+  ;
+  opacity: var(--tw-bg-opacity);
+}
+
+.text-basic {
+  @apply !text-[var(--text-basic-color)];
+}
+
+.text-disabled {
+  @apply !text-[var(--text-disabled-color)];
+}
+
+.text-control {
+  @apply !text-[var(--text-control-color)];
+}
+
+.text-hint {
+  @apply !text-[var(--text-hint-color)];
+}
+
+.text-primary {
+  @apply !text-[var(--text-primary-color)]
+}
+
+.text-danger {
+  @apply !text-[var(--text-danger-color)]
+}
+
+.text-info {
+  @apply !text-[var(--text-info-color)]
+}
+
+.text-warning {
+  @apply !text-[var(--text-warning-color)]
+}
+
+.text-success {
+  @apply !text-[var(--text-success-color)]
+}
+
+.btn {
+  @apply
+  py-3
+  px-5
+  appearance-none
+  text-center
+  inline-flex
+  items-center
+  justify-center
+  whitespace-nowrap
+  align-middle
+  select-none
+  border
+  rounded-md
+  cursor-pointer
+  transition
+  duration-300
+  ease-in-out
+  outline-0
+  hover:no-underline
+  focus:no-underline
+  focus:relative
+  focus:outline-none
+  ;
+  font-family: var(--text-button-font-family);
+  font-weight: var(--text-button-font-weight);
+}
+
+.btn.tiny {
+  @apply
+  leading-[var(--text-button-tiny-line-height)]
+  py-1
+  px-2.5
+  ;
+  font-size: var(--text-button-tiny-font-size);
+}
+
+.btn.small {
+  @apply
+  leading-[var(--text-button-small-line-height)]
+  py-2
+  px-3.5
+  ;
+  font-size: var(--text-button-small-font-size);
+}
+
+.btn.medium {
+  @apply
+  leading-[var(--text-button-medium-line-height)]
+  py-3
+  px-5
+  ;
+  font-size: var(--text-button-medium-font-size);
+}
+
+.btn.large {
+  @apply
+  leading-[var(--text-button-large-line-height)]
+  py-3.5
+  px-5
+  ;
+  font-size: var(--text-button-large-font-size);
+}
+
+.btn.giant {
+  @apply
+  leading-[var(--text-button-giant-line-height)]
+  py-4
+  px-6
+  ;
+  font-size: var(--text-button-giant-font-size);
+}
+
+.btn.basic {
+  @apply
+  bg-[var(--color-basic-default)]
+  border-[var(--color-basic-default-border)]
+  text-[var(--color-basic-800)]
+  focus:bg-[var(--color-basic-focus)]
+  focus:border-[var(--color-basic-focus-border)]
+  hover:bg-[var(--color-basic-hover)]
+  hover:border-[var(--color-basic-hover-border)]
+  active:bg-[var(--color-basic-active)]
+  active:border-[var(--color-basic-active-border)]
+  disabled:bg-[var(--color-basic-disabled)]
+  disabled:border-[var(--color-basic-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+
+.btn.primary {
+  @apply
+  bg-[var(--color-primary-default)]
+  border-[var(--color-primary-default-border)]
+  text-[var(--text-control-color)]
+  focus:bg-[var(--color-primary-focus)]
+  focus:border-[var(--color-primary-focus-border)]
+  hover:bg-[var(--color-primary-hover)]
+  hover:border-[var(--color-primary-hover-border)]
+  active:bg-[var(--color-primary-active)]
+  active:border-[var(--color-primary-active-border)]
+  disabled:bg-[var(--color-primary-disabled)]
+  disabled:border-[var(--color-primary-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.btn.success {
+  @apply
+  bg-[var(--color-success-default)]
+  border-[var(--color-success-default-border)]
+  text-[var(--text-control-color)]
+  focus:bg-[var(--color-success-focus)]
+  focus:border-[var(--color-success-focus-border)]
+  hover:bg-[var(--color-success-hover)]
+  hover:border-[var(--color-success-hover-border)]
+  active:bg-[var(--color-success-active)]
+  active:border-[var(--color-success-active-border)]
+  disabled:bg-[var(--color-success-disabled)]
+  disabled:border-[var(--color-success-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.btn.danger {
+  @apply
+  bg-[var(--color-danger-default)]
+  border-[var(--color-danger-default-border)]
+  text-[var(--text-control-color)]
+  focus:bg-[var(--color-danger-focus)]
+  focus:border-[var(--color-danger-focus-border)]
+  hover:bg-[var(--color-danger-hover)]
+  hover:border-[var(--color-danger-hover-border)]
+  active:bg-[var(--color-danger-active)]
+  active:border-[var(--color-danger-active-border)]
+  disabled:bg-[var(--color-danger-disabled)]
+  disabled:border-[var(--color-danger-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.btn.warning {
+  @apply
+  bg-[var(--color-warning-default)]
+  border-[var(--color-warning-default-border)]
+  text-[var(--text-control-color)]
+  focus:bg-[var(--color-warning-focus)]
+  focus:border-[var(--color-warning-focus-border)]
+  hover:bg-[var(--color-warning-hover)]
+  hover:border-[var(--color-warning-hover-border)]
+  active:bg-[var(--color-warning-active)]
+  active:border-[var(--color-warning-active-border)]
+  disabled:bg-[var(--color-warning-disabled)]
+  disabled:border-[var(--color-warning-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.btn.info {
+  @apply
+  bg-[var(--color-info-default)]
+  border-[var(--color-info-default-border)]
+  text-[var(--text-control-color)]
+  focus:bg-[var(--color-info-focus)]
+  focus:border-[var(--color-info-focus-border)]
+  hover:bg-[var(--color-info-hover)]
+  hover:border-[var(--color-info-hover-border)]
+  active:bg-[var(--color-info-active)]
+  active:border-[var(--color-info-active-border)]
+  disabled:bg-[var(--color-info-disabled)]
+  disabled:border-[var(--color-info-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+
+.outline.btn.basic {
+  @apply
+  bg-[var(--color-basic-transparent-default)]
+  border-[var(--color-basic-transparent-default-border)]
+  text-[var(--text-hint-color)]
+  focus:bg-[var(--color-basic-transparent-focus)]
+  focus:border-[var(--color-basic-transparent-focus-border)]
+  hover:bg-[var(--color-basic-transparent-hover)]
+  hover:border-[var(--color-basic-transparent-hover-border)]
+  active:bg-[var(--color-basic-transparent-active)]
+  active:border-[var(--color-basic-transparent-active-border)]
+  disabled:bg-[var(--color-basic-transparent-disabled)]
+  disabled:border-[var(--color-basic-transparent-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+
+.outline.btn.primary {
+  @apply
+  bg-[var(--color-primary-transparent-default)]
+  border-[var(--color-primary-transparent-default-border)]
+  text-[var(--text-primary-color)]
+  focus:bg-[var(--color-primary-transparent-focus)]
+  focus:border-[var(--color-primary-transparent-focus-border)]
+  hover:bg-[var(--color-primary-transparent-hover)]
+  hover:border-[var(--color-primary-transparent-hover-border)]
+  active:bg-[var(--color-primary-transparent-active)]
+  active:border-[var(--color-primary-transparent-active-border)]
+  disabled:bg-[var(--color-primary-transparent-disabled)]
+  disabled:border-[var(--color-primary-transparent-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.outline.btn.success {
+  @apply
+  bg-[var(--color-success-transparent-default)]
+  border-[var(--color-success-transparent-default-border)]
+  text-[var(--text-success-color)]
+  focus:bg-[var(--color-success-transparent-focus)]
+  focus:border-[var(--color-success-transparent-focus-border)]
+  hover:bg-[var(--color-success-transparent-hover)]
+  hover:border-[var(--color-success-transparent-hover-border)]
+  active:bg-[var(--color-success-transparent-active)]
+  active:border-[var(--color-success-transparent-active-border)]
+  disabled:bg-[var(--color-success-transparent-disabled)]
+  disabled:border-[var(--color-success-transparent-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.outline.btn.danger {
+  @apply
+  bg-[var(--color-danger-transparent-default)]
+  border-[var(--color-danger-transparent-default-border)]
+  text-[var(--text-danger-color)]
+  focus:bg-[var(--color-danger-transparent-focus)]
+  focus:border-[var(--color-danger-transparent-focus-border)]
+  hover:bg-[var(--color-danger-transparent-hover)]
+  hover:border-[var(--color-danger-transparent-hover-border)]
+  active:bg-[var(--color-danger-transparent-active)]
+  active:border-[var(--color-danger-transparent-active-border)]
+  disabled:bg-[var(--color-danger-transparent-disabled)]
+  disabled:border-[var(--color-danger-transparent-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.outline.btn.warning {
+  @apply
+  bg-[var(--color-warning-transparent-default)]
+  border-[var(--color-warning-transparent-default-border)]
+  text-[var(--text-warning-color)]
+  focus:bg-[var(--color-warning-transparent-focus)]
+  focus:border-[var(--color-warning-transparent-focus-border)]
+  hover:bg-[var(--color-warning-transparent-hover)]
+  hover:border-[var(--color-warning-transparent-hover-border)]
+  active:bg-[var(--color-warning-transparent-active)]
+  active:border-[var(--color-warning-transparent-active-border)]
+  disabled:bg-[var(--color-warning-transparent-disabled)]
+  disabled:border-[var(--color-warning-transparent-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.outline.btn.info {
+  @apply
+  bg-[var(--color-info-transparent-default)]
+  border-[var(--color-info-transparent-default-border)]
+  text-[var(--text-info-color)]
+  focus:bg-[var(--color-info-transparent-focus)]
+  focus:border-[var(--color-info-transparent-focus-border)]
+  hover:bg-[var(--color-info-transparent-hover)]
+  hover:border-[var(--color-info-transparent-hover-border)]
+  active:bg-[var(--color-info-transparent-active)]
+  active:border-[var(--color-info-transparent-active-border)]
+  disabled:bg-[var(--color-info-transparent-disabled)]
+  disabled:border-[var(--color-info-transparent-disabled-border)]
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.ghost.btn {
+  @apply
+  bg-transparent
+  border-transparent
+}
+
+.ghost.btn.basic {
+  @apply
+  text-[var(--color-basic-600)]
+  focus:bg-[var(--color-basic-transparent-200)]
+  focus:border-[var(--color-basic-transparent-500)]
+  hover:bg-[var(--color-basic-transparent-100)]
+  hover:border-transparent
+  active:bg-[var(--color-basic-transparent-200)]
+  active:border-transparent
+  disabled:bg-[var(--color-basic-transparent-200)]
+  disabled:border-transparent
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+
+.ghost.btn.primary {
+  @apply
+  text-[var(--text-primary-color)]
+  focus:bg-[var(--color-basic-transparent-200)]
+  focus:border-[var(--color-basic-transparent-500)]
+  hover:bg-[var(--color-basic-transparent-100)]
+  hover:border-transparent
+  active:bg-[var(--color-basic-transparent-200)]
+  active:border-transparent
+  disabled:bg-[var(--color-basic-transparent-200)]
+  disabled:border-transparent
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.ghost.btn.success {
+  @apply
+  text-[var(--text-success-color)]
+  focus:bg-[var(--color-basic-transparent-200)]
+  focus:border-[var(--color-basic-transparent-500)]
+  hover:bg-[var(--color-basic-transparent-100)]
+  hover:border-transparent
+  active:bg-[var(--color-basic-transparent-200)]
+  active:border-transparent
+  disabled:bg-[var(--color-basic-transparent-200)]
+  disabled:border-transparent
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.ghost.btn.danger {
+  @apply
+  text-[var(--text-danger-color)]
+  focus:bg-[var(--color-basic-transparent-200)]
+  focus:border-[var(--color-basic-transparent-500)]
+  hover:bg-[var(--color-basic-transparent-100)]
+  hover:border-transparent
+  active:bg-[var(--color-basic-transparent-200)]
+  active:border-transparent
+  disabled:bg-[var(--color-basic-transparent-200)]
+  disabled:border-transparent
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.ghost.btn.warning {
+  @apply
+  text-[var(--text-warning-color)]
+  focus:bg-[var(--color-basic-transparent-200)]
+  focus:border-[var(--color-basic-transparent-500)]
+  hover:bg-[var(--color-basic-transparent-100)]
+  hover:border-transparent
+  active:bg-[var(--color-basic-transparent-200)]
+  active:border-transparent
+  disabled:bg-[var(--color-basic-transparent-200)]
+  disabled:border-transparent
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.ghost.btn.info {
+  @apply
+  text-[var(--text-info-color)]
+  focus:bg-[var(--color-basic-transparent-200)]
+  focus:border-[var(--color-basic-transparent-500)]
+  hover:bg-[var(--color-basic-transparent-100)]
+  hover:border-transparent
+  active:bg-[var(--color-basic-transparent-200)]
+  active:border-transparent
+  disabled:bg-[var(--color-basic-transparent-200)]
+  disabled:border-transparent
+  disabled:text-[var(--text-disabled-color)]
+  ;
+}
+
+.hero.btn {
+  @apply
+  border-none
+  uppercase
+  ;
+  text-shadow: var(--shadow)
+}
+
+.hero.btn.basic {
+  @apply
+  text-[var(--color-basic-600)]
+  bg-gradient-to-r
+  from-[var(--color-basic-200)]
+  to-[var(--color-basic-default)]
+
+  focus:from-[var(--color-basic-300)]
+  focus:to-[var(--color-basic-focus)]
+  hover:from-[var(--color-basic-100)]
+  hover:to-[var(--color-basic-hover)]
+  active:from-[var(--color-basic-300)]
+  active:to-[var(--color-basic-active)]
+
+  disabled:bg-[var(--color-basic-disabled)]
+  disabled:bg-none
+  disabled:text-[var(--text-disabled-color)]
+  ;
+  box-shadow: 0 0 0 0 var(--color-basic-600), 0 0 0 0 var(--color-basic-700), 0 0 transparent;
+}
+
+.hero.btn.basic:focus {
+  box-shadow: 0 0 0 0 var(--color-basic-600), 0 0 0 0 var(--color-basic-700), 0 0 transparent, 0 0 0 var(--outline-width) var(--outline-color);
+}
+
+.hero.btn.primary {
+  @apply
+  text-[var(--text-control-color)]
+
+  bg-gradient-to-r
+  from-[var(--color-primary-400)]
+  to-[var(--color-primary-default)]
+
+  focus:from-[var(--color-primary-500)]
+  focus:to-[var(--color-primary-focus)]
+  hover:from-[var(--color-primary-300)]
+  hover:to-[var(--color-primary-hover)]
+  active:from-[var(--color-primary-500)]
+  active:to-[var(--color-primary-active)]
+
+  disabled:bg-[var(--color-primary-disabled)]
+  disabled:bg-none
+  disabled:text-[var(--text-disabled-color)]
+  ;
+  box-shadow: 0 0 0 0 var(--color-primary-600), 0 0 0 0 var(--color-primary-700), 0 0 transparent;
+}
+
+.hero.btn.primary:focus {
+  box-shadow: 0 0 0 0 var(--color-primary-600), 0 0 0 0 var(--color-primary-700), 0 0 transparent, 0 0 0 var(--outline-width) var(--outline-color);;
+}
+
+.hero.btn.success {
+  @apply
+  text-[var(--text-control-color)]
+
+  bg-gradient-to-r
+  from-[var(--color-success-400)]
+  to-[var(--color-success-default)]
+
+  focus:from-[var(--color-success-500)]
+  focus:to-[var(--color-success-focus)]
+  hover:from-[var(--color-success-300)]
+  hover:to-[var(--color-success-hover)]
+  active:from-[var(--color-success-500)]
+  active:to-[var(--color-success-active)]
+
+  disabled:bg-[var(--color-success-disabled)]
+  disabled:bg-none
+  disabled:text-[var(--text-disabled-color)]
+  ;
+  box-shadow: 0 0 0 0 var(--color-success-600), 0 0 0 0 var(--color-success-700), 0 0 transparent;
+}
+
+.hero.btn.success:focus {
+  box-shadow: 0 0 0 0 var(--color-success-600), 0 0 0 0 var(--color-success-700), 0 0 transparent, 0 0 0 var(--outline-width) var(--outline-color);;
+}
+
+.hero.btn.danger {
+  @apply
+  text-[var(--text-control-color)]
+
+  bg-gradient-to-r
+  from-[var(--color-danger-400)]
+  to-[var(--color-danger-default)]
+
+  focus:from-[var(--color-danger-500)]
+  focus:to-[var(--color-danger-focus)]
+  hover:from-[var(--color-danger-300)]
+  hover:to-[var(--color-danger-hover)]
+  active:from-[var(--color-danger-500)]
+  active:to-[var(--color-danger-active)]
+
+  disabled:bg-[var(--color-danger-disabled)]
+  disabled:bg-none
+  disabled:text-[var(--text-disabled-color)]
+  ;
+  box-shadow: 0 0 0 0 var(--color-danger-600), 0 0 0 0 var(--color-danger-700), 0 0 transparent;
+}
+
+.hero.btn.danger:focus {
+  box-shadow: 0 0 0 0 var(--color-danger-600), 0 0 0 0 var(--color-danger-700), 0 0 transparent, 0 0 0 var(--outline-width) var(--outline-color);;
+}
+
+.hero.btn.warning {
+  @apply
+  text-[var(--text-control-color)]
+
+  bg-gradient-to-r
+  from-[var(--color-warning-400)]
+  to-[var(--color-warning-default)]
+
+  focus:from-[var(--color-warning-500)]
+  focus:to-[var(--color-warning-focus)]
+  hover:from-[var(--color-warning-300)]
+  hover:to-[var(--color-warning-hover)]
+  active:from-[var(--color-warning-500)]
+  active:to-[var(--color-warning-active)]
+
+  disabled:bg-[var(--color-warning-disabled)]
+  disabled:bg-none
+  disabled:text-[var(--text-disabled-color)]
+  ;
+  box-shadow: 0 0 0 0 var(--color-warning-600), 0 0 0 0 var(--color-warning-700), 0 0 transparent;
+}
+
+.hero.btn.warning:focus {
+  box-shadow: 0 0 0 0 var(--color-warning-600), 0 0 0 0 var(--color-warning-700), 0 0 transparent, 0 0 0 var(--outline-width) var(--outline-color);;
+}
+
+.hero.btn.info {
+  @apply
+  text-[var(--text-control-color)]
+
+  bg-gradient-to-r
+  from-[var(--color-info-400)]
+  to-[var(--color-info-default)]
+
+  focus:from-[var(--color-info-500)]
+  focus:to-[var(--color-info-focus)]
+  hover:from-[var(--color-info-300)]
+  hover:to-[var(--color-info-hover)]
+  active:from-[var(--color-info-500)]
+  active:to-[var(--color-info-active)]
+
+  disabled:bg-[var(--color-info-disabled)]
+  disabled:bg-none
+  disabled:text-[var(--text-disabled-color)]
+  ;
+  box-shadow: 0 0 0 0 var(--color-info-600), 0 0 0 0 var(--color-info-700), 0 0 transparent;
+}
+
+.hero.btn.info:focus {
+  box-shadow: 0 0 0 0 var(--color-info-600), 0 0 0 0 var(--color-info-700), 0 0 transparent, 0 0 0 var(--outline-width) var(--outline-color);;
+}
+
+.btn.radius {
+  @apply rounded-full
+}
+
+.btn:disabled,
+.btn[disabled] {
+  @apply
+  cursor-default
+  hover:shadow-none
+}
+
+
+.input {
+  @apply
+  py-2
+  px-4
+  rounded-md
+  border
+  transition
+  appearance-none
+  placeholder:font-[var(--text-paragraph-font-family)]
+  placeholder:text-ellipsis
+  disabled:cursor-default
+  ;
+  font-family: var(--text-subtitle-font-family);
+  outline: none;
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.input:not(.w-full) {
+  max-width: theme('maxWidth.xs');
+}
+
+.input.tiny {
+  @apply py-0.5 px-4;
+  font-size: var(--text-caption-2-font-size);
+  font-weight: var(--text-caption-2-font-weight);
+  line-height: var(--text-caption-2-line-height);
+}
+
+.input.tiny::placeholder {
+  font-size: var(--text-paragraph-font-size);
+  font-weight: var(--text-paragraph-font-weight);
+  line-height: var(--text-paragraph-line-height);
+}
+
+.input.small {
+  @apply py-1 px-4;
+  font-size: var(--text-subtitle-2-font-size);
+  font-weight: var(--text-subtitle-2-font-weight);
+  line-height: var(--text-subtitle-2-line-height);
+}
+
+.input.small::placeholder {
+  font-size: var(--text-paragraph-font-size);
+  font-weight: var(--text-paragraph-font-weight);
+  line-height: var(--text-paragraph-line-height);
+}
+
+.input.medium {
+  @apply py-2 px-4;
+  font-size: var(--text-subtitle-font-size);
+  font-weight: var(--text-subtitle-font-weight);
+  line-height: var(--text-subtitle-line-height);
+}
+
+.input.medium::placeholder {
+  font-size: var(--text-paragraph-font-size);
+  font-weight: var(--text-paragraph-font-weight);
+  line-height: var(--text-paragraph-line-height);
+}
+
+.input.large {
+  @apply py-3 px-4;
+  font-size: var(--text-subtitle-font-size);
+  font-weight: var(--text-subtitle-font-weight);
+  line-height: var(--text-subtitle-line-height);
+}
+
+.input.large::placeholder {
+  font-size: var(--text-paragraph-font-size);
+  font-weight: var(--text-paragraph-font-weight);
+  line-height: var(--text-paragraph-line-height);
+}
+
+.input.giant {
+  @apply py-3.5 px-4;
+  font-size: var(--text-heading-6-font-size);
+  font-weight: var(--text-heading-6-font-weight);
+  line-height: var(--text-heading-6-line-height);
+}
+
+.input.giant::placeholder {
+  font-size: var(--text-paragraph-font-size);
+  font-weight: var(--text-paragraph-font-weight);
+  line-height: var(--text-paragraph-line-height);
+}
+
+
+.input.basic {
+  @apply
+  bg-[var(--background-basic-color-2)]
+  border-[var(--border-basic-color-4)]
+  text-[var(--text-basic-color)]
+  placeholder-[var(--text-hint-color)]
+  focus:bg-[var(--background-basic-color-1)]
+  focus:border-[var(--color-primary-default-border)]
+  hover:bg-[var(--background-basic-color-3)]
+  hover:border-[var(--border-basic-color-4)]
+  disabled:bg-[var(--background-basic-color-2)]
+  disabled:border-[var(--border-basic-color-4)]
+  disabled:text-[var(--text-disabled-color)]
+  disabled:placeholder-[var(--text-disabled-color)]
+  ;
+}
+
+.input.primary {
+  @apply
+  bg-[var(--background-basic-color-2)]
+  border-[var(--color-primary-default)]
+  text-[var(--text-basic-color)]
+  placeholder-[var(--text-hint-color)]
+  focus:bg-[var(--background-basic-color-1)]
+  focus:border-[var(--color-primary-focus-border)]
+  hover:bg-[var(--background-basic-color-3)]
+  hover:border-[var(--color-primary-hover-border)]
+  disabled:bg-[var(--background-basic-color-2)]
+  disabled:border-[var(--border-basic-color-4)]
+  disabled:text-[var(--text-disabled-color)]
+  disabled:placeholder-[var(--text-disabled-color)]
+  ;
+}
+
+.input.success {
+  @apply
+  bg-[var(--background-basic-color-2)]
+  border-[var(--color-success-default)]
+  text-[var(--text-basic-color)]
+  placeholder-[var(--text-hint-color)]
+  focus:bg-[var(--background-basic-color-1)]
+  focus:border-[var(--color-success-focus-border)]
+  hover:bg-[var(--background-basic-color-3)]
+  hover:border-[var(--color-success-hover-border)]
+  disabled:bg-[var(--background-basic-color-2)]
+  disabled:border-[var(--border-basic-color-4)]
+  disabled:text-[var(--text-disabled-color)]
+  disabled:placeholder-[var(--text-disabled-color)]
+  ;
+}
+
+.input.danger {
+  @apply
+  bg-[var(--background-basic-color-2)]
+  border-[var(--color-danger-default)]
+  text-[var(--text-basic-color)]
+  placeholder-[var(--text-hint-color)]
+  focus:bg-[var(--background-basic-color-1)]
+  focus:border-[var(--color-danger-focus-border)]
+  hover:bg-[var(--background-basic-color-3)]
+  hover:border-[var(--color-danger-hover-border)]
+  disabled:bg-[var(--background-basic-color-2)]
+  disabled:border-[var(--border-basic-color-4)]
+  disabled:text-[var(--text-disabled-color)]
+  disabled:placeholder-[var(--text-disabled-color)]
+  ;
+}
+
+.input.warning {
+  @apply
+  bg-[var(--background-basic-color-2)]
+  border-[var(--color-warning-default)]
+  text-[var(--text-basic-color)]
+  placeholder-[var(--text-hint-color)]
+  focus:bg-[var(--background-basic-color-1)]
+  focus:border-[var(--color-warning-focus-border)]
+  hover:bg-[var(--background-basic-color-3)]
+  hover:border-[var(--color-warning-hover-border)]
+  disabled:bg-[var(--background-basic-color-2)]
+  disabled:border-[var(--border-basic-color-4)]
+  disabled:text-[var(--text-disabled-color)]
+  disabled:placeholder-[var(--text-disabled-color)]
+  ;
+}
+
+.input.info {
+  @apply
+  bg-[var(--background-basic-color-2)]
+  border-[var(--color-info-default)]
+  text-[var(--text-basic-color)]
+  placeholder-[var(--text-hint-color)]
+  focus:bg-[var(--background-basic-color-1)]
+  focus:border-[var(--color-info-focus-border)]
+  hover:bg-[var(--background-basic-color-3)]
+  hover:border-[var(--color-info-hover-border)]
+  disabled:bg-[var(--background-basic-color-2)]
+  disabled:border-[var(--border-basic-color-4)]
+  disabled:text-[var(--text-disabled-color)]
+  disabled:placeholder-[var(--text-disabled-color)]
+  ;
+}
+
+.input.underline {
+  text-decoration-line: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  border-radius: unset;
+  background-color: unset;
+}
+
+.input.border-0 {
+  border: none;
+}
+
+.input.radius {
+  @apply rounded-full
+}
+
+.form-group {
+  @apply flex flex-col sm:flex-row mb-6;
+}
+
+
+.widget {
+
+}
+
+.card {
+  @apply
+  border-solid
+  border
+  text-basic
+  mb-7
+  border-[var(--border-basic-color-4)]
+  bg-[var(--background-basic-color-1)]
+  ;
+  border-radius: var(--border-radius);
+  box-shadow: none;
+  font-family: var(--text-paragraph-font-family);
+  font-size: var(--text-paragraph-font-size);
+  font-weight: var(--text-paragraph-font-weight);
+  line-height: var(--text-paragraph-line-height);
+}
+
+.card::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
+}
+
+.card::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-color);
+  cursor: pointer;
+  border-radius: calc(var(--scrollbar-width) * 0.5);
+}
+
+.card::-webkit-scrollbar-track {
+  background: var(--scrollbar-background-color);
+}
+
+.card::-webkit-scrollbar-corner {
+  background: var(--scrollbar-background-color);
+}
+
+.card-body {
+  @apply
+  relative
+  py-4
+  px-6
+  flex-1
+  overflow-auto
+  ;
+}
+
+.card-body::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-color);
+  cursor: pointer;
+  border-radius: calc(var(--scrollbar-width) * 0.5);
+}
+
+.card-body::-webkit-scrollbar-track {
+  background: var(--scrollbar-background-color);
+}
+
+.card-body::-webkit-scrollbar-corner {
+  background: var(--scrollbar-background-color);
+}
+
+.card-header {
+  @apply
+  py-4
+  px-6
+  ;
+  border-bottom: var(--divider-width) var(--divider-style) var(--divider-color)
+}
+
+.card-footer {
+  @apply
+  py-4
+  px-6
+  ;
+  border-top: var(--divider-width) var(--divider-style) var(--divider-color);
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+}
+
+.card.tiny {
+  @apply h-52;
+}
+
+.card.small {
+  @apply h-80;
+}
+
+.card.medium {
+  @apply h-[28rem];
+}
+
+.card.large {
+  @apply h-[36rem];
+}
+
+.card.giant {
+  @apply h-[44rem];
+}
+
+
+
+
+
+
+
+
+
+
+
+

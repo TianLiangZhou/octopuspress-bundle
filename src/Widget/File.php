@@ -54,7 +54,8 @@ EOF;
             return $result;
         }
         $result['file'] = $file;
-        $result['attachment'] = $file->getAttachment($this->getBridger()->getAssetsUrl());
+        $result['attachment'] = $file->getAttachment();
+        $result['attachment']['url'] = $this->getBridger()->getPackages()->getUrl($result['attachment']['url']);
         return $result;
     }
 

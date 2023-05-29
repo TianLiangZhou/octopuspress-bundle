@@ -24,6 +24,7 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
@@ -201,7 +202,8 @@ class PostController extends AdminController
         }
         $featuredImage = ['id' => null, 'url' => null];
         if ($thumbnailId > 0 && ($attachmentPost = $this->repository->find($thumbnailId))) {
-            $featuredImage = $attachmentPost->getAttachment($this->bridger->getAssetsUrl());
+            $featuredImage = $attachmentPost->getAttachment();
+            $featuredImage['url'] = $this->bridger->getPackages()->getUrl($featuredImage['url']);
         }
         return $this->json(
             array_merge(
@@ -222,7 +224,9 @@ class PostController extends AdminController
         if ($post->getType() !== Post::TYPE_ATTACHMENT) {
             return $this->json(['message' => '错误的附件类型'], Response::HTTP_NOT_ACCEPTABLE);
         }
-        return $this->json($post->getAttachment($this->bridger->getAssetsUrl()));
+        $attachment = $post->getAttachment();
+        $attachment['url'] = $this->bridger->getPackages()->getUrl($attachment['url']);
+        return $this->json($attachment);
     }
 
     /**
@@ -262,31 +266,48 @@ class PostController extends AdminController
     public function update(Post $post, Request $request, #[CurrentUser] User $user): JsonResponse
     {
         $data = $request->toArray();
-        $postExtension = $this->bridger->getPost();
-        $types = $postExtension->getNames();
-        $postType = $postExtension->getType($data['type']);
-        if ($postType == null || !$postType->isShowUi()) {
-            return $this->json(null, Response::HTTP_NOT_ACCEPTABLE);
-        }
-        $oldStatus = $post->getStatus();
         try {
-            $form = $this->validation(PostType::class, $post, $data, [
-                'types' => array_combine($types, $types)
-            ]);
-            $this->handle($form, $post);
-            if ($post->getAuthor() == null) {
-                $post->setAuthor($user);
-            }
+            $this->save($data, $post, $user);
         } catch (\Throwable $exception) {
-            return $this->json(['message' => $exception->getMessage()], Response::HTTP_NOT_ACCEPTABLE);
-        }
-        if (!$this->postManager->save($post, $oldStatus)) {
-            return $this->json(['message' => '保存内容发生错误，请查看日志文件修复!'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json(
+                ['message' => $exception->getMessage()],
+                $exception instanceof HttpException ? $exception->getStatusCode() : Response::HTTP_NOT_ACCEPTABLE
+            );
         }
         return $this->json([
             'id' => $post->getId(),
         ]);
     }
+
+    /**
+     * @param array $data
+     * @param Post $post
+     * @param User $user
+     * @return void
+     * @throws \Throwable
+     */
+    public function save(array $data, Post $post, User $user): void
+    {
+        $postExtension = $this->bridger->getPost();
+        $types = $postExtension->getNames();
+        $postType = $postExtension->getType($data['type']);
+        if ($postType == null || !$postType->isShowUi()) {
+            throw new \InvalidArgumentException('类型无法保存!');
+        }
+        $oldStatus = $post->getStatus();
+        $form = $this->validation(PostType::class, $post, $data, [
+            'types' => array_combine($types, $types)
+        ]);
+        $this->handle($form, $post);
+        if ($post->getAuthor() == null) {
+            $post->setAuthor($user);
+        }
+        if (!$this->postManager->save($post, $oldStatus)) {
+            throw new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, '保存内容发生错误，请查看日志文件修复!');
+        }
+    }
+
+
 
     /**
      * @param Request $request

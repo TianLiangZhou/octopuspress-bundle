@@ -52,7 +52,8 @@ EOF;
         if ($audio == null) {
             return $result;
         }
-        $result['audio'] = $audio->getAttachment($this->getBridger()->getAssetsUrl());
+        $result['audio'] = $audio->getAttachment();
+        $result['audio']['url'] = $this->getBridger()->getPackages()->getUrl($result['audio']['url']);
         return $result;
     }
 

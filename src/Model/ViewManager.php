@@ -137,6 +137,14 @@ class ViewManager
             $template = $this->getHomeTemplate();
         } elseif ($this->activatedRoute->isPlugin()) {
             $template = $this->getPluginTemplate();
+        } elseif ($this->activatedRoute->isSignUp()) {
+            $template = $this->getSignUpTemplate();
+        } elseif ($this->activatedRoute->isSignIn()) {
+            $template = $this->getLoginTemplate();
+        } elseif ($this->activatedRoute->isForgot()) {
+            $template = $this->getForgotTemplate();
+        } elseif ($this->activatedRoute->isReset()) {
+            $template = $this->getResetTemplate();
         }
         if (empty($template)) {
             $template = $this->getIndexTemplate();
@@ -244,6 +252,42 @@ class ViewManager
     {
         $templates = ['home', 'index'];
         return $this->getQueryTemplate('home', $templates);
+    }
+
+    /**
+     * @return string
+     */
+    private function getLoginTemplate(): string
+    {
+        $templates = ['login', '@OctopusPressBundle/login'];
+        return $this->getQueryTemplate('login', $templates);
+    }
+
+    /**
+     * @return string
+     */
+    private function getSignUpTemplate(): string
+    {
+        $templates = ['signup', '@OctopusPressBundle/signup'];
+        return $this->getQueryTemplate('signup', $templates);
+    }
+
+    /**
+     * @return string
+     */
+    private function getForgotTemplate(): string
+    {
+        $templates = ['forgot', '@OctopusPressBundle/forgot'];
+        return $this->getQueryTemplate('forgot', $templates);
+    }
+
+    /**
+     * @return string
+     */
+    private function getResetTemplate(): string
+    {
+        $templates = ['reset', '@OctopusPressBundle/reset'];
+        return $this->getQueryTemplate('reset', $templates);
     }
 
     /**

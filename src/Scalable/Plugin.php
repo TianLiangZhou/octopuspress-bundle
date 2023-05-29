@@ -173,7 +173,7 @@ final class Plugin
      */
     public function addMenu(string $path, string $link, array $args = []): Plugin
     {
-        $path = '/backend/menu' . $path;
+        $path = '/backend/menu/extra' . $path;
         $args['link'] = $link;
         $this->customMenus[$path] = array_merge([
             'path' => $path,

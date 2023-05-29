@@ -1,7 +1,5 @@
 <?php
 declare(strict_types=1);
-
-
 namespace OctopusPress\Bundle\Controller;
 
 use Doctrine\ORM\Exception\ORMException;
@@ -13,6 +11,8 @@ use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Repository\UserRepository;
 use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Util\UserAgent;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
@@ -27,7 +27,6 @@ use Symfony\Component\String\ByteString;
  * Class AuthorizeController
  * @package App\Controller
  */
-#[Route('/authorize', name: 'authorize_')]
 class AuthorizeController extends Controller
 {
     private OptionRepository $option;
@@ -42,11 +41,30 @@ class AuthorizeController extends Controller
         $this->passwordHasher = $passwordHasher;
     }
 
+
+    /**
+     * @return void
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    #[Route('/login', name: 'sign_in', methods: 'GET')]
+    #[Route('/signup', name: 'sign_up', methods: 'GET')]
+    #[Route('/forgot-pass', name: 'forgot', methods: 'GET')]
+    #[Route('/reset-pass', name: 'reset', methods: 'GET')]
+    public function main(): void
+    {
+        $csrf = false;
+        if ($this->container->has('security.csrf.token_manager')) {
+            $csrf = true;
+        }
+        $this->container->get('twig')->addGlobal('csrf', $csrf);
+    }
+
     /**
      * @param Request $request
      * @return Response
      */
-    #[Route('/register', name: 'register', methods: Request::METHOD_POST)]
+    #[Route('/authorize/register', name: 'authorize_register', methods: Request::METHOD_POST)]
     public function register(Request $request): Response
     {
         return $this->json([
@@ -57,7 +75,7 @@ class AuthorizeController extends Controller
      * @param User|null $user
      * @return Response
      */
-    #[Route('/login', name: 'login', methods: Request::METHOD_POST)]
+    #[Route('/authorize/login', name: 'authorize_login', methods: Request::METHOD_POST)]
     public function authenticate(#[CurrentUser] ?User $user): Response
     {
         if (null === $user) {
@@ -84,7 +102,7 @@ class AuthorizeController extends Controller
      * @param MailerInterface $mailer
      * @return Response
      */
-    #[Route('/forgot', name: 'forgot', methods: Request::METHOD_POST)]
+    #[Route('/authorize/forgot', name: 'authorize_forgot', methods: Request::METHOD_POST)]
     public function forgot(Request $request, MailerInterface $mailer): Response
     {
         ['email' => $toEmail, 'dashboard' => $isDashboard] = $request->toArray();
@@ -123,7 +141,12 @@ class AuthorizeController extends Controller
                 ->to($toEmail)
                 ->priority(Email::PRIORITY_HIGH)
                 ->subject('忘记密码了吗？')
-                ->html($this->getForgotEmailTemplate($options));
+                ->html(
+                    $this->renderView(
+                        '@OctopusPressBundle/email-forgot.html.twig',
+                        $options,
+                    )
+                );
             $mailer->send($email);
             $metaToken = $user->getMeta('reset_token');
             if ($metaToken == null) {
@@ -153,7 +176,7 @@ class AuthorizeController extends Controller
      * @throws \Doctrine\ORM\ORMException
      * @throws OptimisticLockException
      */
-    #[Route('/reset', name: 'reset-password', methods: Request::METHOD_POST)]
+    #[Route('/authorize/reset', name: 'authorize_reset_password', methods: Request::METHOD_POST)]
     public function reset(Request $request): Response
     {
         $formData = $request->toArray();
@@ -215,7 +238,7 @@ class AuthorizeController extends Controller
     /**
      * @return Response
      */
-    #[Route('/logout', name: 'logout', methods: Request::METHOD_POST)]
+    #[Route('/authorize/logout', name: 'authorize_logout', methods: [Request::METHOD_POST, Request::METHOD_GET])]
     public function logout(): Response
     {
         return $this->json([]);

@@ -1,22 +1,6 @@
 import {ResponseBody} from "../common";
 import {Control} from "../../../shared/control/type";
 
-export type Plugin = {
-  alias: string;
-  name: string;
-  image: string;
-  version: string;
-  author: PluginAuthor[];
-  description: string;
-  enabled: boolean;
-  actions:{name?:string, link:string, query?: Record<string, string>}[];
-}
-
-export type PluginAuthor = {
-  name?: string;
-  homepage?: string;
-}
-
 
 export type PluginDrawResponse = ResponseBody & {
   title: string;

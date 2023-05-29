@@ -643,24 +643,17 @@ class Post implements JsonSerializable
     }
 
     /**
-     * @param array $assetsUrl
      * @return array
      */
-    public function getAttachment(array $assetsUrl): array
+    public function getAttachment(): array
     {
-        $assetUrl = "";
-        if (!empty($assetsUrl)) {
-            $assetUrl = ($c = count($assetsUrl)) == 1
-                ? $assetsUrl[0]
-                : $assetsUrl[rand(0, $c - 1)];
-        }
         return [
             'id' => $this->getId(),
             'title' => $this->getTitle(),
             'name' => $this->getName(),
             'path'=> $this->getContent(),
             'mime_type' => $this->getMimeType(),
-            'url' => $assetUrl . $this->getContent(),
+            'url' => $this->getContent(),
             'meta' => $this->getAttachmentMetadata(),
         ];
     }

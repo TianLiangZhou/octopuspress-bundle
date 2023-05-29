@@ -9,11 +9,14 @@ use OctopusPress\Bundle\Customize\Layout\Form;
 use OctopusPress\Bundle\Model\CustomizeManager;
 use OctopusPress\Bundle\Model\PluginManager;
 use OctopusPress\Bundle\Repository\OptionRepository;
-use OctopusPress\Bundle\Service\ServiceCenter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 #[Route('/plugin', name: 'plugin_')]
@@ -21,19 +24,16 @@ class PluginController extends AdminController
 {
     private PluginManager $pluginManager;
     private string $tempDir;
-    private ServiceCenter $center;
     private CustomizeManager $customizeManager;
 
     public function __construct(
         Bridger $bridger,
-        ServiceCenter $center,
         PluginManager $pluginManager,
         CustomizeManager $customizeManager,
     )
     {
         parent::__construct($bridger);
         $this->tempDir = $bridger->getTempDir();
-        $this->center = $center;
         $this->pluginManager = $pluginManager;
         $this->customizeManager = $customizeManager;
     }
@@ -41,19 +41,50 @@ class PluginController extends AdminController
     /**
      * 插件列表
      *
+     * @param Request $request
      * @return Response
+     * @throws TransportExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
      */
     #[Route('/market')]
-    public function market(): Response
+    public function market(Request $request): Response
     {
-        return new Response();
+        $response = $this->pluginManager->market('plugin', $request->query->all());
+        $installedPlugins = $this->bridger->getOptionRepository()->installedPlugins();
+        $packages = $response['packages'] ?? [];
+        foreach ($packages as &$package) {
+            $package['installed'] = false;
+            if (isset($installedPlugins[$package['name']])) {
+                $package['installed'] = true;
+                $newVersion = $package['version'];
+                $installedVersion = $installedPlugins[$package['name']]['version'];
+                $package['upgradeable'] = false;
+                if (version_compare($newVersion, $installedVersion, '>')) {
+                    $package['upgradeable'] = true;
+                }
+            }
+        }
+        return $this->json([
+            'total'  => $response['total'],
+            'records'=> $packages,
+        ]);
     }
 
 
-    #[Route('/setup', name: 'market_setup', options: ['name' => '安装插件', 'parent' => 'plugin_market', 'sort' => 0], methods: Request::METHOD_POST)]
-    public function setup(Request $request): JsonResponse
+    /**
+     * @param Request $request
+     * @param string $name
+     * @return JsonResponse
+     * @throws TransportExceptionInterface
+     */
+    #[Route('/{name}/setup', name: 'market_setup', options: ['name' => '安装插件', 'parent' => 'plugin_market', 'sort' => 0], methods: Request::METHOD_POST)]
+    public function setup(Request $request, string $name): JsonResponse
     {
-        return $this->json('');
+        $this->pluginManager->install($name);
+        return $this->json(null);
     }
 
 
@@ -111,9 +142,7 @@ class PluginController extends AdminController
         if (filter_var($uri, FILTER_VALIDATE_URL) === false) {
             $filepath = $this->tempDir . DIRECTORY_SEPARATOR . $uri;
         } else {
-            $filepath = $this->center->downloadPackage($this->center->getGithubDownloadUrl($uri), [
-                'timeout' => (int) ini_get('max_execution_time')
-            ]);
+            $filepath = $this->pluginManager->downloadGithubPackage($uri);
         }
         if (!file_exists($filepath)) {
             return $this->json(['message' => 'File does not exist.',], Response::HTTP_NOT_ACCEPTABLE);
@@ -122,7 +151,7 @@ class PluginController extends AdminController
             unlink($filepath);
             return $this->json(['message' => 'File format is incorrect.',], Response::HTTP_NOT_ACCEPTABLE);
         }
-        $this->pluginManager->setup($filepath);
+        $this->pluginManager->externalInstall($filepath);
         return $this->json('');
     }
 

@@ -22,6 +22,7 @@ use OctopusPress\Bundle\Util\Formatter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use function Symfony\Component\String\u;
@@ -162,7 +163,6 @@ class TaxonomyController extends AdminController
      * @param Request $request
      * @param string $taxonomy
      * @return JsonResponse
-     * @throws NonUniqueResultException
      */
     #[Route('/{taxonomy}/store', name: 'store', options: ['name' => '创建类别',  'sort'=>10,  'parent' => 'post_all'], methods: Request::METHOD_POST)]
     public function store(string $taxonomy, Request $request): JsonResponse
@@ -170,7 +170,18 @@ class TaxonomyController extends AdminController
         if (($response = $this->checkTaxonomy($taxonomy))) {
             return $response;
         }
-        return $this->save(new TermTaxonomy(), $request);
+        $termTaxonomy = new TermTaxonomy();
+        try {
+            $this->save($termTaxonomy, $request->toArray());
+        } catch (\Throwable $exception) {
+            return $this->json(
+                ['message' => $exception->getMessage()],
+                $exception instanceof HttpException ? $exception->getStatusCode() : Response::HTTP_NOT_ACCEPTABLE
+            );
+        }
+        return $this->json(
+            array_merge($termTaxonomy->jsonSerialize(), $termTaxonomy->getTerm()->jsonSerialize())
+        );
     }
 
     /**
@@ -178,7 +189,6 @@ class TaxonomyController extends AdminController
      * @param Request $request
      * @param string $taxonomy
      * @return JsonResponse
-     * @throws NonUniqueResultException
      */
     #[Route('/{taxonomy}/{id}/update', name: 'update', requirements: ['id' => '\d+'], options: ['name' => '更新类别',  'sort'=>11,  'parent' => 'post_all'], methods: Request::METHOD_POST)]
     public function update(string $taxonomy, TermTaxonomy $termTaxonomy, Request $request): JsonResponse
@@ -186,7 +196,17 @@ class TaxonomyController extends AdminController
         if (($response = $this->checkTaxonomy($taxonomy))) {
             return $response;
         }
-        return $this->save($termTaxonomy, $request);
+        try {
+            $this->save($termTaxonomy, $request->toArray());
+        } catch (\Throwable $exception) {
+            return $this->json(
+                ['message' => $exception->getMessage()],
+                $exception instanceof HttpException ? $exception->getStatusCode() : Response::HTTP_NOT_ACCEPTABLE
+            );
+        }
+        return $this->json(
+            array_merge($termTaxonomy->jsonSerialize(), $termTaxonomy->getTerm()->jsonSerialize())
+        );
     }
 
     /**
@@ -283,22 +303,16 @@ class TaxonomyController extends AdminController
 
     /**
      * @param TermTaxonomy $taxonomy
-     * @param Request $request
-     * @return JsonResponse
-     * @throws NonUniqueResultException
+     * @param array $data
+     * @return void
+     * @throws \Throwable
      */
-    private function save(TermTaxonomy $taxonomy, Request $request): JsonResponse
+    public function save(TermTaxonomy $taxonomy, array $data): void
     {
         $taxonomies = $this->bridger->getTaxonomy()->getNames();
-        try {
-            $form = $this->validation(TaxonomyType::class, $taxonomy, $request->toArray(), [
-                'taxonomies' => array_combine($taxonomies, $taxonomies),
-            ]);
-        } catch (\Throwable $exception) {
-            return $this->json([
-                'message' => $exception->getMessage(),
-            ], Response::HTTP_NOT_ACCEPTABLE);
-        }
+        $form = $this->validation(TaxonomyType::class, $taxonomy, $data, [
+            'taxonomies' => array_combine($taxonomies, $taxonomies),
+        ]);
         if (($parentId = (int) $form->get('parent')->getNormData()) > 0) {
             $parent = $this->repository->find($parentId);
             if ($parent && $parent->getTaxonomy() === $taxonomy->getTaxonomy() && $parentId != $taxonomy->getId()) {
@@ -320,7 +334,7 @@ class TaxonomyController extends AdminController
                 'term'     => $existSource,
             ]);
             if ($existTaxonomy && $term == null) {
-                return $this->json(['message' => '已存在相同的类目',], Response::HTTP_NOT_ACCEPTABLE);
+                throw new \InvalidArgumentException('已存在相同的类目');
             }
         }
         $queryBuilder = $this->termRepository->createQueryBuilder('t')
@@ -351,17 +365,12 @@ class TaxonomyController extends AdminController
             $this->metas($form->get('metas')->getNormData(), $taxonomy);
             $this->repository->add($taxonomy);
         } catch (Exception $exception) {
-            return $this->json([
-                'message' => $exception->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            throw new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, $exception->getMessage());
         }
         $eventDispatcher = $this->bridger->getDispatcher();
         $taxonomyEvent = new TaxonomyEvent($taxonomy);
-        $taxonomyEvent->setRequest($request);
+        $taxonomyEvent->setRequest($this->bridger->getRequest());
         $eventDispatcher->dispatch($taxonomyEvent, OctopusEvent::TAXONOMY_SAVE_AFTER);
-        return $this->json(
-            array_merge($taxonomy->jsonSerialize(), $taxonomy->getTerm()->jsonSerialize())
-        );
     }
 
     /**

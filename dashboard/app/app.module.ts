@@ -7,7 +7,6 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {HTTP_INTERCEPTORS, HttpClient, HttpClientModule} from "@angular/common/http";
 import {ThemeModule} from "./@theme/theme.module";
 import {CoreModule} from "./@core/core.module";
-import {AuthGuard} from "./@core/services/auth.guard";
 import {ConfigurationService, getBaseHref, initializeAppFactory} from "./@core/services/configuration.service";
 import {APP_BASE_HREF, PlatformLocation} from "@angular/common";
 import {Authorization} from "./@core/interceptor/authorization";
@@ -35,7 +34,6 @@ import {NbIconLibraries} from "@nebular/theme";
     {
       provide: HTTP_INTERCEPTORS, useClass: Authorization, multi: true
     },
-    AuthGuard,
     ConfigurationService,
     {
       provide: APP_INITIALIZER,

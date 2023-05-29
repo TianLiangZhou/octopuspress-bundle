@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpContext} from "@angular/common/http";
 import {ActivatedRoute} from "@angular/router";
-import {OnSpinner, Records, ResponseBody} from "../../../@core/definition/common";
+import {OnSpinner, Package, Records, ResponseBody} from "../../../@core/definition/common";
 import {
   THEME_ACTIVATE,
   THEME_DELETE,
@@ -9,11 +9,11 @@ import {
   THEME_UPLOAD,
   THEMES
 } from "../../../@core/definition/decoration/api";
-import {Theme} from "../../../@core/definition/decoration/type";
 import {DomSanitizer} from "@angular/platform-browser";
 import {DialogRef} from "@angular/cdk/dialog";
 import {NbDialogService, NbSidebarService, NbToastrService} from "@nebular/theme";
 import {timer} from "rxjs";
+import {SPINNER} from "../../../@core/interceptor/authorization";
 
 @Component({
   selector: 'app-theme',
@@ -21,7 +21,7 @@ import {timer} from "rxjs";
 })
 export class ThemeComponent implements OnInit, OnSpinner, AfterViewInit {
 
-  themes: Theme[] = [];
+  themes: Package[] = [];
 
   title: string = "";
 
@@ -50,7 +50,7 @@ export class ThemeComponent implements OnInit, OnSpinner, AfterViewInit {
   }
 
   private getThemes() {
-    this.http.get<Records<Theme>>(THEMES).subscribe(res => {
+    this.http.get<Records<Package>>(THEMES).subscribe(res => {
       if (res.records.length > 0) {
         this.themes = res.records
       }
@@ -58,13 +58,13 @@ export class ThemeComponent implements OnInit, OnSpinner, AfterViewInit {
   }
 
   activate(name: string) {
-    this.http.post<ResponseBody>(THEME_ACTIVATE, {name: name}).subscribe(res => {
+    this.http.post<ResponseBody>(THEME_ACTIVATE, {name: name}, {context: new HttpContext().set(SPINNER, this)}).subscribe(res => {
       this.getThemes();
     });
   }
 
   upgrade(name: string) {
-    this.http.post<ResponseBody>(THEME_UPGRADE, {name: name}).subscribe(res => {
+    this.http.post<ResponseBody>(THEME_UPGRADE, {name: name}, {context: new HttpContext().set(SPINNER, this)}).subscribe(res => {
       this.getThemes();
     });
   }
@@ -94,7 +94,7 @@ export class ThemeComponent implements OnInit, OnSpinner, AfterViewInit {
 
 
   delete(name: string) {
-    this.http.post<ResponseBody>(THEME_DELETE, {name: name}).subscribe(res => {
+    this.http.post<ResponseBody>(THEME_DELETE, {name: name},{context: new HttpContext().set(SPINNER, this)}).subscribe(res => {
       this.getThemes()
     });
   }

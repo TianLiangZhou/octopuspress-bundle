@@ -60,7 +60,8 @@ EOF;
         if ($image == null) {
             return $result;
         }
-        $result['image'] = $image->getAttachment($this->getBridger()->getAssetsUrl());
+        $result['image'] = $image->getAttachment();
+        $result['image']['url'] = $this->getBridger()->getPackages()->getUrl($result['image']['url']);
         return $result;
     }
 

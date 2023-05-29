@@ -10,6 +10,7 @@ import {UploadModule} from "../../shared/upload/upload.module";
 import {CustomComponent} from "./custom/custom.component";
 import {ControlModule} from "../../shared/control/control.module";
 import {RouterModule, Routes} from "@angular/router";
+import {MarketComponent} from "./theme/market.component";
 
 
 const routes: Routes = [
@@ -29,6 +30,11 @@ const routes: Routes = [
     component: ThemeComponent,
   },
   {
+    path: "theme/market",
+    title: "主题市场",
+    component: MarketComponent,
+  },
+  {
     path: "custom",
     title: '自定义',
     component: CustomComponent,
@@ -43,6 +49,7 @@ const routes: Routes = [
     ThemeComponent,
     CustomComponent,
     WidgetItemComponent,
+    MarketComponent,
   ],
   imports: [
     CommonModule,

@@ -104,6 +104,38 @@ final class ActivatedRoute
         return $this->getRouteName() == 'page';
     }
 
+    /**
+     * @return bool
+     */
+    public function isSignIn(): bool
+    {
+        return $this->getRouteName() == 'sign_in';
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSignUp(): bool
+    {
+        return $this->getRouteName() == 'sign_up';
+    }
+
+    /**
+     * @return bool
+     */
+    public function isForgot(): bool
+    {
+        return $this->getRouteName() == 'forgot';
+    }
+
+    /**
+     * @return bool
+     */
+    public function isReset(): bool
+    {
+        return $this->getRouteName() == 'reset';
+    }
+
     public function is404(): bool
     {
         return $this->getRouteName() == 'error404';

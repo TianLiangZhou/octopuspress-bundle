@@ -22,13 +22,17 @@ use OctopusPress\Bundle\Security\PermissionVoter;
 use OctopusPress\Bundle\Service\Requester;
 use OctopusPress\Bundle\Service\ServiceCenter;
 use OctopusPress\Bundle\Support\ActivatedRoute;
+use OctopusPress\Bundle\Support\ActivatedTheme;
 use OctopusPress\Bundle\Support\DefaultViewFilter;
 use OctopusPress\Bundle\Twig\OctopusExtension;
 use OctopusPress\Bundle\Twig\OctopusRuntime;
+use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\abstract_arg;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
 
@@ -46,6 +50,9 @@ return static function (ContainerConfigurator $container, ContainerBuilder $buil
             service('request_stack'),
             service('router'),
             service('logger'),
+            service(CacheInterface::class),
+            service('http_client'),
+            service(Packages::class),
         ])
         ->alias(Bridger::class, 'octopus_press.bridger');
 
@@ -64,6 +71,10 @@ return static function (ContainerConfigurator $container, ContainerBuilder $buil
             service(Hook::class)
         ])
         ->public();
+    $services->set('activated_theme', ActivatedTheme::class)
+        ->public();
+
+
     $services->set(DefaultViewFilter::class, DefaultViewFilter::class)
         ->args([
             service(Bridger::class),
@@ -100,7 +111,8 @@ return static function (ContainerConfigurator $container, ContainerBuilder $buil
 
     $services->set(ThemePackage::class, ThemePackage::class)
         ->args([
-            service('octopus_press.bridger'),
+            abstract_arg(''),
+            service('activated_theme'),
         ])
         ->tag('assets.package', ['package' => 'theme']);
 
@@ -133,15 +145,6 @@ return static function (ContainerConfigurator $container, ContainerBuilder $buil
             service(ThemeManager::class)
         ])
         ->tag('console.command');
-
-    $services->set(Requester::class, Requester::class)
-        ->args([service(HttpClientInterface::class)]);
-
-    $services->set(ServiceCenter::class, ServiceCenter::class)
-        ->args([
-            service(Requester::class),
-            service(Bridger::class),
-        ]);
 
     $services->set('config_cache_factory', ResourceCheckerConfigCacheFactory::class)
         ->args([

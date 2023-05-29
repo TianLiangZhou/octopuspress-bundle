@@ -6,9 +6,11 @@ namespace OctopusPress\Bundle\DependencyInjection;
 use DoctrineExtensions\Query\Mysql\Day;
 use DoctrineExtensions\Query\Mysql\Month;
 use DoctrineExtensions\Query\Mysql\Year;
+use OctopusPress\Bundle\Asset\ThemePackage;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\CKFinder\CKFinderAuthentication;
 use OctopusPress\Bundle\Entity\User;
+use OctopusPress\Bundle\EventListener\AuthenticateListener;
 use OctopusPress\Bundle\Security\AuthenticationEntryPoint;
 use OctopusPress\Bundle\Security\Handler\AccessDeniedHandler;
 use OctopusPress\Bundle\Security\Handler\LoginFailureHandler;
@@ -36,7 +38,7 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
             $frameworkConfig = $container->getExtensionConfig('framework');
             foreach ($frameworkConfig as $fragment) {
                 if (isset($fragment['assets']['base_urls'])) {
-                    $assetsUrl = (array) $fragment['assets']['base_urls'];
+                    $assetsUrl = $fragment['assets']['base_urls'];
                 }
             }
 
@@ -50,7 +52,7 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
             ]);
         }
         $container->prependExtensionConfig($this->getAlias(), [
-            'assetsUrl' => $assetsUrl,
+            'assets_url' => $assetsUrl,
         ]);
         $selfConfig = $container->getExtensionConfig($this->getAlias());
 
@@ -74,7 +76,6 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
                 ],
                 'logout' => [
                     'path' => 'authorize_logout',
-                    'target' => '/#/auth/login',
                 ],
                 'login_throttling' => [
                     'max_attempts' => 5,
@@ -89,7 +90,7 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
             $securityConfig['access_control'][] = [
                 'path' => '^/backend', 'roles' => 'ROLE_ADMIN'
             ];
-            foreach ($selfConfig['accessControls']??[] as $control) {
+            foreach ($selfConfig['access_controls']??[] as $control) {
                 $securityConfig['access_control'][] = [
                     'path' => $control['path'] ?? '',
                     'roles'=> $control['roles'] ?? AuthenticatedVoter::PUBLIC_ACCESS,
@@ -184,7 +185,7 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
             }
         }
         if (empty($assetsUrl)) {
-            $assetsUrl = ['http://localhost:8080'];
+            $assetsUrl = 'http://127.0.0.1:8080';
         }
         $publicDir = $this->getPublicDir($container);
         $ckfinderConfig = $container->getExtensionConfig('ckfinder')[0] ?? [];
@@ -202,7 +203,7 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
             'chmodFolders'=> 0755,
             'filesystemEncoding'=> 'UTF-8',
         ];
-        $defaultConfig['backends']['default']['baseUrl'] = $assetsUrl[0];
+        $defaultConfig['backends']['default']['baseUrl'] = $assetsUrl;
         $defaultConfig['backends']['default']['root'] = $publicDir;
         $defaultConfig['resourceTypes'][] = [
             'name'              => 'Files', // Single quotes not allowed.
@@ -256,21 +257,21 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
         $config = $this->processConfiguration($configuration, $configs);
 
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
-        $assetsUrl = $config['assetsUrl'];
-        if (empty($assetsUrl)) {
-            $assetsUrl = ['http://localhost:8080'];
-        }
+
         $loader->load('services.php');
-        $container->setParameter('assets.base_urls', $assetsUrl);
-        $container->setParameter('plugin_dir', $config['pluginDir']);
         $publicDir = $this->getPublicDir($container);
-        $buildAssetDir = empty($config['buildAssetDir']) ? $publicDir : $config['buildAssetDir'];
-        $container->setParameter('build_asset_dir', $buildAssetDir);
         $container->setParameter('public_dir', $publicDir);
+        $container->setParameter('plugin_dir', $config['plugin_dir']);
+        $container->setParameter('build_assets_dir', empty($config['build_assets_dir']) ? $publicDir : $config['build_assets_dir']);
+        $container->setParameter('service_center_host', $config['service_center_host']);
         $container->register(AuthenticationEntryPoint::class, AuthenticationEntryPoint::class);
         $container->register(AccessDeniedHandler::class, AccessDeniedHandler::class);
         $container->register(LoginFailureHandler::class, LoginFailureHandler::class);
 
+        $themePackageDefinition = $container->getDefinition(ThemePackage::class);
+        $themePackageDefinition->replaceArgument(0, $config['assets_url']);
+
+        $container->setParameter('assets.base_urls', $config['assets_url']);
         $this->generateRoute($container->getParameter('kernel.project_dir'), $this->getAlias());
     }
 

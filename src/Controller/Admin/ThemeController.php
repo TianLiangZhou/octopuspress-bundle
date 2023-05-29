@@ -4,15 +4,20 @@ declare(strict_types=1);
 namespace OctopusPress\Bundle\Controller\Admin;
 
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Model\CustomizeManager;
 use OctopusPress\Bundle\Model\ThemeManager;
 use OctopusPress\Bundle\Repository\OptionRepository;
-use OctopusPress\Bundle\Service\ServiceCenter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 /**
@@ -24,19 +29,16 @@ class ThemeController extends AdminController
     private ThemeManager $themeManager;
     private string $tempDir;
     private CustomizeManager $customizeManager;
-    private ServiceCenter $center;
 
     public function __construct(
         Bridger $bridger,
         ThemeManager     $themeManager,
         CustomizeManager $customizeManager,
-        ServiceCenter $center,
     ) {
         parent::__construct($bridger);
         $this->themeManager = $themeManager;
         $this->customizeManager = $customizeManager;
         $this->tempDir = $bridger->getTempDir();
-        $this->center = $center;
     }
 
     #[Route('/customize')]
@@ -59,13 +61,46 @@ class ThemeController extends AdminController
      *
      * @return JsonResponse
      */
-    #[Route('')]
+    #[Route('/installed')]
     public function themes(): JsonResponse
     {
         $themes = $this->themeManager->themes();
         return $this->json([
             'total' => count($themes),
             'records' => $themes,
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws TransportExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     */
+    #[Route('/market')]
+    public function market(Request $request): JsonResponse
+    {
+        $response = $this->themeManager->market('theme', $request->query->all());
+        $installedThemes = $this->bridger->getOptionRepository()->installedThemes();
+        $packages = $response['packages'] ?? [];
+        foreach ($packages as &$package) {
+            $package['installed'] = false;
+            if (isset($installedThemes[$package['name']])) {
+                $package['installed'] = true;
+                $newVersion = $package['version'];
+                $installedVersion = $installedThemes[$package['name']]['version'];
+                $package['upgradeable'] = false;
+                if (version_compare($newVersion, $installedVersion, '>')) {
+                    $package['upgradeable'] = true;
+                }
+            }
+        }
+        return $this->json([
+            'total' => $response['total'],
+            'records' => $packages,
         ]);
     }
 
@@ -84,9 +119,7 @@ class ThemeController extends AdminController
         if (filter_var($uri, FILTER_VALIDATE_URL) === false) {
             $filepath = $this->tempDir . DIRECTORY_SEPARATOR . $uri;
         } else {
-            $filepath = $this->center->downloadPackage($this->center->getGithubDownloadUrl($uri), [
-                'timeout' => (int) ini_get('max_execution_time')
-            ]);
+            $filepath = $this->themeManager->downloadGithubPackage($uri);
         }
         if (!file_exists($filepath)) {
             return $this->json(['message' => 'File does not exist.',], Response::HTTP_NOT_ACCEPTABLE);
@@ -95,7 +128,7 @@ class ThemeController extends AdminController
             unlink($filepath);
             return $this->json(['message' => 'File format is incorrect.',], Response::HTTP_NOT_ACCEPTABLE);
         }
-        $this->themeManager->setup($filepath);
+        $this->themeManager->externalInstall($filepath);
         return $this->json('');
     }
 
@@ -115,13 +148,22 @@ class ThemeController extends AdminController
     }
 
     /**
-     * @throws \Exception
+     * @param Request $request
+     * @param string $name
+     * @return JsonResponse
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    #[Route('/{name}/setup', name:'theme_setup', requirements: ['name' => '[a-z-A-Z0-9\-_]{2,}'], options: ['name' => '安装主题', 'parent' => 'appearance_theme'])]
-    public function setup(string $name): JsonResponse
+    #[Route('/{name}/setup', name:'theme_setup', requirements: [], options: ['name' => '安装主题', 'parent' => 'appearance_theme'])]
+    public function setup(Request $request, string $name): JsonResponse
     {
-        $this->themeManager->setup($name);
-        return $this->json('');
+        $this->themeManager->install($name);
+        return $this->json(null);
     }
 
     /**
@@ -130,7 +172,7 @@ class ThemeController extends AdminController
     #[Route('/{name}/upgrade', name:'theme_upgrade', requirements: ['name' => '[a-z-A-Z0-9\-_]{2,}'], options: ['name' => '更新主题', 'parent' => 'appearance_theme'])]
     public function upgrade(string $name): JsonResponse
     {
-        $this->themeManager->setup($name);
+        $this->themeManager->install($name);
         return $this->json('');
     }
 

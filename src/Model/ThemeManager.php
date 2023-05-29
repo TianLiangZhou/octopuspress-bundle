@@ -2,9 +2,11 @@
 
 namespace OctopusPress\Bundle\Model;
 
+use Doctrine\ORM\ORMException;
 use InvalidArgumentException;
 use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\Bridge\Bridger;
+use OctopusPress\Bundle\OctopusPressKernel;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use Closure;
 use OctopusPress\Bundle\Util\Formatter;
@@ -15,19 +17,8 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use ZipArchive;
 
-class ThemeManager
+class ThemeManager extends PackageManager
 {
-    private Filesystem $filesystem;
-    private Bridger $bridger;
-    private OptionRepository $optionRepository;
-
-    public function __construct(Bridger $bridger)
-    {
-        $this->bridger = $bridger;
-        $this->filesystem = new Filesystem();
-        $this->optionRepository = $this->bridger->getOptionRepository();
-    }
-
 
     /**
      * @return void
@@ -50,94 +41,26 @@ class ThemeManager
      */
     public function themes(): array
     {
-        $dirs = new \DirectoryIterator($this->getTemplateDir());
-        $themes = [];
         $currentTheme = $this->optionRepository->theme();
-        foreach ($dirs as $dir) {
-            if (!$dir->isDir()) {
-                continue;
-            }
-            $name = $dir->getFilename();
-            if (in_array($name, ['.', '..', 'static'])) {
-                continue;
-            }
-            $packageFile = $this->getThemePackage($name);
-            if (!file_exists($packageFile)) {
-                continue;
-            }
-            $manifest = json_decode(file_get_contents($packageFile) ?: '[]', true);
-            $screenshot = "";
-            if (!empty($manifest['screenshot'])) {
-                if (str_starts_with($manifest['screenshot'], 'http://') ||
-                    str_starts_with($manifest['screenshot'], 'https://') ||
-                    str_starts_with($manifest['screenshot'], 'data:image/')) {
-                    $screenshot = $manifest['screenshot'];
-                } else {
-                    $filename = $this->getThemePath($name) . ltrim($manifest['screenshot'], "./\\");
-                    if (file_exists($filename) && @getimagesize($filename)) {
-                        $screenshot = 'data:image/png;base64, ' . base64_encode(file_get_contents($filename) ?: '');
-                    }
-                }
-            }
-            $themes[] = [
-                'name' => $manifest['name'],
-                'alias' => $name,
-                'version' => empty($manifest['version']) ? '1.0.0' : $manifest['version'],
-                'description' => $manifest['description'] ?? '',
-                'image' => $screenshot,
-                'isUpgrade' => false,
-                'enabled' => $currentTheme == $name,
-            ];
+        $installedThemes = $this->optionRepository->installedThemes();
+        $themes = [];
+        foreach ($installedThemes as $name => $theme) {
+            $theme['enabled'] = $currentTheme == $name;
+            $themes[] = $theme;
         }
         return $themes;
     }
 
     /**
-     * @param string $filename
+     * @param array $packageInfo
      * @return string
-     * @throws \Exception
+     * @throws ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function setup(string $filename): string
+    protected function setup(array $packageInfo): string
     {
-        $zipArchive = new ZipArchive();
-        if ($zipArchive->open($filename) !== true) {
-            unlink($filename);
-            throw new InvalidArgumentException('Zip cannot be opened.');
-        }
-        $tempPath = rtrim(sys_get_temp_dir(), '\\/') . DIRECTORY_SEPARATOR . bin2hex(random_bytes(4));
-        if (mkdir($tempPath) === false) {
-            unlink($filename);
-            throw new InvalidArgumentException('Permission denied.');
-        }
-        $zipArchive->extractTo($tempPath);
-        $zipArchive->close();
-        unlink($filename);
-        $finder = Finder::create()
-            ->files()
-            ->name('package.json')
-            ->in($tempPath);
-        /**
-         * @var SplFileInfo $packageFile
-         */
-        $packageFile = null;
-        foreach ($finder as $file) {
-            $packageFile = $file;
-            break;
-        }
-        if ($packageFile == null) {
-            throw new InvalidArgumentException('Zip archive manifest.json file does not exist.');
-        }
-        $pathName = $packageFile->getPathname();
-        $manifest = json_decode(file_get_contents($pathName), true);
-        $themeRootPath = dirname($pathName);
-        $themeName = $manifest['name'] ?? pathinfo($themeRootPath, PATHINFO_BASENAME) ?? '';
-        if (empty($themeName)) {
-            throw new InvalidArgumentException('Not in theme pack format.');
-        }
-        if (!file_exists($themeRootPath . DIRECTORY_SEPARATOR . 'functions.php')) {
-            throw new InvalidArgumentException('Not in theme pack format.');
-        }
-        $name = Formatter::sanitizeWithDashes($themeName);
+        $name = $packageInfo['packageName'];
+        $themeRootPath = dirname($packageInfo['packageFile']);
         $templateDir = $this->getTemplateDir();
         $themePath = $templateDir . DIRECTORY_SEPARATOR . $name;
         if (!file_exists($themePath)) {
@@ -150,31 +73,58 @@ class ThemeManager
         if (($currentTheme = $this->theme()) && $currentTheme == $name) {
             $this->migrateTo($name);
         }
+        $option = $this->optionRepository->findOneByName('installed_themes');
+        if ($option == null) {
+            $option = new Option();
+            $option->setName('installed_themes');
+        }
+        unset($packageInfo['composerFile'], $packageInfo['packageFile'], $packageInfo['tempDir']);
+        $installed = $this->optionRepository->value('installed_themes', []);
+        $installed[$name] = $packageInfo;
+        $option->setValue($installed);
+        $this->optionRepository->add($option);
         return $name;
     }
 
     /**
-     * @param string $theme
+     * @param string $themeName
      * @return void
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function activate(string $theme): void
+    public function activate(string $themeName): void
     {
-        $themePath = $this->getThemePath($theme);
-        if (!file_exists($themePath)) {
-            throw new DirectoryNotFoundException("Theme directory does not exist");
+        $installedThemes = $this->optionRepository->installedThemes();
+        if (!isset($installedThemes[$themeName])) {
+            throw new \InvalidArgumentException('主题还未安装!');
         }
         $currentTheme = $this->optionRepository->findOneByName('theme');
         if ($currentTheme == null) {
             $currentTheme = new Option();
-            $currentTheme->setName('theme')->setAutoload('yes');
+            $currentTheme->setName('theme')
+                ->setAutoload('yes');
+        }
+        if ($currentTheme->getValue() === $themeName) {
+            throw new \InvalidArgumentException('主题已激活!');
+        }
+        $themePath = $this->getThemePath($themeName);
+        if (!file_exists($themePath)) {
+            throw new DirectoryNotFoundException("Theme directory does not exist");
+        }
+        $themeInfo = $installedThemes[$themeName];
+        $minVersion = $themeInfo['miniOP'];
+        $minPhpVersion = $themeInfo['miniPHP'];
+        if (version_compare(PHP_VERSION, $minPhpVersion) < 0) {
+            throw new \RuntimeException("The PHP minimum version is " . $minPhpVersion);
+        }
+        if (version_compare(OctopusPressKernel::OCTOPUS_PRESS_VERSION, $minVersion) < 0) {
+            throw new \RuntimeException("The octopus minimum version is " . $minVersion);
         }
         $originTheme = $currentTheme->getValue();
-        $currentTheme->setValue($theme);
-        $this->migrateTo($theme);
+        $currentTheme->setValue($themeName);
+        $this->migrateTo($themeName);
         $this->optionRepository->add($currentTheme);
-        if ($originTheme && strcasecmp($theme, $originTheme) !== 0) {
+        if ($originTheme && strcasecmp($themeName, $originTheme) !== 0) {
             $this->deactivate($originTheme);
         }
     }
@@ -185,8 +135,13 @@ class ThemeManager
      */
     public function uninstall(string $name): void
     {
+        $option = $this->optionRepository->findOneByName('installed_themes');
+        $installedThemes = $this->optionRepository->value('installed_themes', []);
+        if (!isset($installedThemes[$name])) {
+            throw new \InvalidArgumentException("主题没有被安装!");
+        }
         $currentTheme = $this->optionRepository->findOneByName('theme');
-        if ($name == $currentTheme) {
+        if ($name === $currentTheme->getValue()) {
             throw new InvalidArgumentException("Invalid `$name` params");
         }
         if (!file_exists($this->getThemePath($name))) {
@@ -196,6 +151,9 @@ class ThemeManager
         if ($this->targetDir($name)) {
             $this->filesystem->remove([$this->targetDir($name)]);
         }
+        unset($installedThemes[$name]);
+        $option->setValue($installedThemes);
+        $this->optionRepository->add($installedThemes);
     }
 
     /**
@@ -204,7 +162,7 @@ class ThemeManager
      */
     public function targetDir(string $theme): string
     {
-        $targetDir = !empty($bad = $this->bridger->getBuildAssetDir()) ? $bad : $this->bridger->getPublicDir();
+        $targetDir = !empty($bad = $this->bridger->getBuildAssetsDir()) ? $bad : $this->bridger->getPublicDir();
         if (!is_writable($targetDir)) {
             throw new IOException(sprintf('Directory `%s` does not have write permission', $targetDir));
         }
@@ -286,10 +244,5 @@ class ThemeManager
         }, $this->bridger);
         call_user_func($closure, $entryFile);
         $this->bridger->getHook()->action('setup_theme', $theme);
-    }
-
-    private function downloadPackage(string $name)
-    {
-        return "";
     }
 }

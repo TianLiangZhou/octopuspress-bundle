@@ -93,11 +93,18 @@ class DefaultViewFilter
          * @var AssetExtension $extension
          */
         $extension = $this->bridger->getTwig()->getExtension(AssetExtension::class);
+
+        // echo site base css
+        echo sprintf(
+            '<link href="%s" rel="stylesheet" />',
+            $extension->getAssetUrl('bundles/octopuspress/css/base.css')
+        );
+
         $themeExtension = $this->bridger->getTheme();
         if ($themeExtension->isThemeSupport('bootstrap') || $themeExtension->isThemeSupport('nebular')) {
             echo sprintf(
                 '<link href="%s" rel="stylesheet" />',
-                $extension->getAssetUrl('assets/css/bootstrap.css')
+                $extension->getAssetUrl('bundles/octopuspress/css/bootstrap.css')
             );
         }
         if ($themeExtension->isThemeSupport('nebular')) {
@@ -112,12 +119,12 @@ class DefaultViewFilter
                 }
                 echo sprintf(
                     '<link href="%s" rel="stylesheet" />',
-                    $extension->getAssetUrl('assets/css/nebular/' . $themeName . '.css')
+                    $extension->getAssetUrl('bundles/octopuspress/css/nebular/' . $themeName . '.css')
                 );
             }
             echo sprintf(
                 '<link href="%s" rel="stylesheet" />',
-                $extension->getAssetUrl('assets/css/nebular/components.css')
+                $extension->getAssetUrl('bundles/octopuspress/css/nebular/components.css')
             );
         }
         $this->importThemeStyle($this->option->theme());
@@ -135,17 +142,23 @@ class DefaultViewFilter
          * @var AssetExtension $extension
          */
         $extension = $this->bridger->getTwig()->getExtension(AssetExtension::class);
+        // The to base js
+        echo sprintf(
+            '<script src="%s" type="text/javascript"></script>',
+            $extension->getAssetUrl('bundles/octopuspress/js/base.js'),
+        );
+
         $theme = $this->bridger->getTheme();
         if ($theme->isThemeSupport('jQuery')) {
             echo sprintf(
                 '<script src="%s" type="text/javascript"></script>',
-                $extension->getAssetUrl('assets/js/jquery.js'),
+                $extension->getAssetUrl('bundles/octopuspress/js/jquery.js'),
             );
         }
         if ($theme->isThemeSupport('bootstrap')) {
             echo sprintf(
                 '<script src="%s" type="text/javascript"></script>',
-                $extension->getAssetUrl('assets/js/bootstrap.js'),
+                $extension->getAssetUrl('bundles/octopuspress/js/bootstrap.js'),
             );
         }
         $this->importThemeScript($this->option->theme());
@@ -265,7 +278,7 @@ EOF;
          */
         $extension = $this->bridger->getTwig()->getExtension(AssetExtension::class);
         $templateDir = $this->bridger->getTemplateDir();
-        $names = $this->hook->filter('load_theme_resource_names', ['common', 'index', $theme]);
+        $names = $this->hook->filter('load_theme_resource_names', ['common', 'main', 'index', $theme]);
         foreach ($names as $name) {
             $file = sprintf('%s/%s/css/%s.css', $templateDir, $theme, $name);
             if (file_exists($file)) {
@@ -291,7 +304,7 @@ EOF;
          */
         $extension = $this->bridger->getTwig()->getExtension(AssetExtension::class);
         $templateDir = $this->bridger->getTemplateDir();
-        $names = $this->hook->filter('load_theme_resource_names', ['common', 'index', $theme]);
+        $names = $this->hook->filter('load_theme_resource_names', ['common', 'main', 'index', $theme]);
         foreach ($names as $name) {
             $file = sprintf('%s/%s/js/%s.js', $templateDir, $theme, $name);
             if (file_exists($file)) {

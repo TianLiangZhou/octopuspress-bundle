@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {User} from "../../@core/definition/user/type";
 import {USER_DELETE_MEMBER, USER_MEMBER, USER_RESET_EMAIL} from '../../@core/definition/user/api';
 import {HttpClient, HttpContext} from "@angular/common/http";
@@ -9,6 +9,7 @@ import {ConfigurationService} from "../../@core/services/configuration.service";
 import {ActivatedRoute, ActivatedRouteSnapshot} from "@angular/router";
 import {OnSpinner} from "../../@core/definition/common";
 import {SPINNER} from "../../@core/interceptor/authorization";
+import {Post, PostTypeSetting} from "../../@core/definition/content/type";
 
 @Component({
   selector: 'app-user',
@@ -37,7 +38,7 @@ export class MemberComponent implements OnInit, OnSpinner {
 
   ngOnInit(): void {
     this.roles = this.configService.roles();
-    this.settings = this.buildSettings()
+    this.settings = this.buildSettings();
     this.source = new ServerDataSource(this.http, {
       endPoint: USER_MEMBER,
       dataKey: 'records',
@@ -78,12 +79,12 @@ export class MemberComponent implements OnInit, OnSpinner {
       columns: {
         account: {
           title: '用户名',
-          type: IColumnType.Html,
+          type: IColumnType.Custom,
           filter: true,
-          valuePrepareFunction: (account: string, user: User) => {
-            return `<img width="50" alt="" src="${user.avatar}" />
-            <a href="#/app/user/${user.id}">${account}</a>`
-          }
+          renderComponent: MemberActionComponent,
+          onComponentInitFunction: (component: MemberActionComponent) => {
+            component.postTypeSettings = this.configService.postTypes()
+          },
         },
         nickname: {
           title: '显示名称',
@@ -172,5 +173,44 @@ export class MemberComponent implements OnInit, OnSpinner {
 
   onSpinner(spinner: boolean): void {
     this.spinner = spinner;
+  }
+}
+
+
+@Component({
+  selector: 'app-user-action',
+  template: `
+    <div class="d-flex flex-row">
+      <img width="50" alt="" *ngIf="rowData.avatar" [ngSrc]="rowData.avatar"/>
+      <a [class.ms-2]="rowData.avatar" [routerLink]="'/app/user/'+rowData.id" queryParamsHandling="merge">{{value}}</a>
+    </div>
+    <div>
+      <a class="mx-2" [class.ms-0]="i == 0" [routerLink]="'/app/content/'+link.type" queryParamsHandling="merge" [queryParams]="{author:rowData.id}" *ngFor="let link of links; index as i">{{link.label}}</a>
+    </div>
+  `,
+})
+export class MemberActionComponent implements OnInit {
+  @Input() value!: string;
+  @Input() rowData!: User;
+
+  postTypeSettings: Record<string, PostTypeSetting> = {};
+
+  links: {label: string, type: string}[] = [];
+
+  ngOnInit(): void {
+    let links: {label: string, type: string}[] = [];
+    for (let key in this.postTypeSettings) {
+      let typeSetting = this.postTypeSettings[key];
+      if (!typeSetting.visibility.showUi) {
+        continue;
+      }
+      links.push({
+        label: typeSetting.label,
+        type: key,
+      });
+    }
+    if (links) {
+      this.links = links;
+    }
   }
 }

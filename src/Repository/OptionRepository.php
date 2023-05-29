@@ -246,6 +246,22 @@ class OptionRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return array
+     */
+    public function installedPlugins(): array
+    {
+        return $this->getDefaultOptions()['installed_plugins'] ?? [];
+    }
+
+    /**
+     * @return array
+     */
+    public function installedThemes(): array
+    {
+        return $this->getDefaultOptions()['installed_themes'] ?? [];
+    }
+
+    /**
      * @return string
      */
     public function permalinkStructure(): string

@@ -84,6 +84,8 @@ class MasterManager
             'comment_order' => 'desc',
             'comment_moderation' => Formatter::ON,
             'thumbnail_crop' => 1,
+            'installed_themes' => [],
+            'installed_plugins'=> [],
         ];
         $defaultOptions['thumbnail_size_w'] = $defaultOptions['thumbnail_size_h'] = 150;
         $defaultOptions['medium_size_w'] = $defaultOptions['medium_size_h'] = 300;

@@ -10,17 +10,23 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class UploadType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('file', FileType::class, [
             'mapped' => false,
         ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function getBlockPrefix(): string
+    {
+        return '';
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => null,
+            'csrf_protection' => false,
         ]);
     }
 }

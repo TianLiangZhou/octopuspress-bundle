@@ -61,7 +61,7 @@ class UserController extends AdminController
         }
         $jsonSerialize['meta'] = (object) $metaStdclass;
         if ($jsonSerialize['avatar']) {
-            $jsonSerialize['avatar'] = $this->bridger->getAssetUrl() . $jsonSerialize['avatar'];
+            $jsonSerialize['avatar'] = $this->bridger->getPackages()->getUrl($jsonSerialize['avatar']);
         }
         return $this->json($jsonSerialize);
     }

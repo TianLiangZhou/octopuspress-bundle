@@ -2,56 +2,24 @@
 
 namespace OctopusPress\Bundle\Asset;
 
-use JsonException;
-use OctopusPress\Bundle\Bridge\Bridger;
-use OctopusPress\Bundle\OctopusPressKernel;
-use OctopusPress\Bundle\Repository\OptionRepository;
+use OctopusPress\Bundle\Support\ActivatedTheme;
 use Symfony\Component\Asset\Context\ContextInterface;
-use Symfony\Component\Asset\Exception\RuntimeException;
-use Symfony\Component\Asset\Package;
+use Symfony\Component\Asset\UrlPackage;
 use Symfony\Component\Asset\VersionStrategy\StaticVersionStrategy;
 
-class ThemePackage extends Package
+class ThemePackage extends UrlPackage
 {
-    private OptionRepository $repository;
-    private string $templateDir;
-    private static ?string $theme = null;
-    private string $assetUrl;
+    private ActivatedTheme $activatedTheme;
 
-    public function __construct(Bridger $bridger, ContextInterface $context = null)
+    public function __construct(
+        string|array     $assetsUrl,
+        ActivatedTheme   $activatedTheme,
+        ContextInterface $context = null
+    )
     {
-        $this->templateDir = $bridger->getTemplateDir();
-        $this->repository = $bridger->getOptionRepository();
-        $this->assetUrl = $bridger->getAssetUrl();
-        parent::__construct(new StaticVersionStrategy($this->loaderThemeVersion(), '%s?v=%s'), $context);
-    }
 
-    /**
-     * @return string
-     */
-    private function getTheme(): string
-    {
-        return self::$theme ??= $this->repository->theme();
-    }
-
-    /**
-     * @return string
-     */
-    private function loaderThemeVersion(): string
-    {
-        if (empty($this->getTheme())) {
-            return OctopusPressKernel::OCTOPUS_PRESS_VERSION;
-        }
-        $packagePath = $this->templateDir. DIRECTORY_SEPARATOR . $this->getTheme() . DIRECTORY_SEPARATOR . 'package.json';
-        if (!file_exists($packagePath)) {
-            throw new RuntimeException(sprintf('Asset manifest file "%s" does not exist. Did you forget to build the assets with npm or yarn?', $packagePath));
-        }
-        try {
-            $manifestData = json_decode(file_get_contents($packagePath) ?: '[]', true, flags: \JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
-            throw new RuntimeException(sprintf('Error parsing JSON from asset manifest file "%s": ', $packagePath).$e->getMessage(), previous: $e);
-        }
-        return $manifestData['version'] ?? 'v1.0.0';
+        $this->activatedTheme = $activatedTheme;
+        parent::__construct($assetsUrl, new StaticVersionStrategy($this->activatedTheme->getVersion(), '%s?v=%s'), $context);
     }
 
 
@@ -62,7 +30,7 @@ class ThemePackage extends Package
     public function getVersion(string $path): string
     {
         // TODO: Implement getVersion() method.
-        return $this->assetUrl . parent::getVersion('themes' . DIRECTORY_SEPARATOR . $this->getTheme(). DIRECTORY_SEPARATOR . $path);
+        return parent::getVersion('themes' . DIRECTORY_SEPARATOR . $this->activatedTheme->getName(). DIRECTORY_SEPARATOR . $path);
     }
 
     /**
@@ -72,6 +40,6 @@ class ThemePackage extends Package
     public function getUrl(string $path): string
     {
         // TODO: Implement getUrl() method.
-        return $this->assetUrl . parent::getUrl('themes' . DIRECTORY_SEPARATOR . $this->getTheme(). DIRECTORY_SEPARATOR . $path);
+        return parent::getUrl('themes' . DIRECTORY_SEPARATOR . $this->activatedTheme->getName(). DIRECTORY_SEPARATOR . $path);
     }
 }

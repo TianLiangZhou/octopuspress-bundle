@@ -1,0 +1,57 @@
+{% extends layout %}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block body %}
+    <!-- ====== Forms Section Start -->
+    <section class="bg-basic h-screen py-14 lg:py-20">
+        <div class="container mx-auto">
+            <div class="flex flex-wrap">
+                <div class="w-full px-4 mx-auto max-w-lg">
+                    <div class="card relative">
+                        <div class="card-header text-center">
+                            <a href="{{ site_url }}" class="mx-auto inline-block max-w-[160px]">
+                                {% if 'custom_logo' is theme_support %}
+                                    {{ custom_logo() }}
+                                {% else %}
+                                    <svg class="w-16" viewBox="0 0 192 192" version="1.1"
+                                         xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                            <path class="stroke-primary-500"
+                                                  d="M62.10369,112.89631 C73.258339,124.050959 73.258339,142.136218 62.10369,153.290867 C50.949041,164.445517 32.8637816,164.445517 21.7091325,153.290867 C10.5544835,142.136218 10.5544835,124.050959 21.7091325,112.89631 M62.10369,112.89631 C43.061513,93.854133 43.061513,62.980664 62.10369,43.938487 C81.145867,24.89631 112.019336,24.89631 131.061513,43.938487 C150.10369,62.980664 150.10369,93.854133 131.061513,112.89631 M171.254881,112.89631 C182.40953,124.050959 182.40953,142.136218 171.254881,153.290867 C160.100232,164.445517 142.014972,164.445517 130.860323,153.290867 C119.705674,142.136218 119.705674,124.050959 130.860323,112.89631"
+                                                  stroke-width="20" stroke-linecap="round"
+                                                  stroke-linejoin="round"></path>
+                                            <circle class="fill-primary-500" cx="96.5826015" cy="78.4173985"
+                                                    r="18.2852041"></circle>
+                                        </g>
+                                    </svg>
+                                {% endif %}
+                            </a>
+                        </div>
+                        <div class="card-body text-center">
+                            <p id="errorContainer" class="text-danger hidden"></p>
+                            <form class="p-8 pb-0" action="{{ path('authorize_forgot') }}" method="post">
+                                {% if csrf is defined and csrf %}
+                                <input type="hidden" name="_token" value="{{ csrf_token('authenticate') }}">
+                                {% endif %}
+                                <div class="mb-6">
+                                    <input
+                                        required
+                                        name="email"
+                                        type="email"
+                                        placeholder="Email"
+                                        class="input basic w-full"
+                                    />
+                                </div>
+                                {{ hook_action('forgot_form') }}
+                                <div class="mb-10">
+                                    <button id="btnSubmit" disabled type="submit" class="btn primary w-full">发送邮件</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ====== Forms Section End -->
+{% endblock %}

@@ -1,18 +1,14 @@
-import {ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree} from '@angular/router';
+import {Router} from '@angular/router';
 import {NbAuthService} from '@nebular/auth';
-import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
+import {inject} from '@angular/core';
 
-@Injectable()
-export class AuthGuard implements CanActivate {
-  constructor(private authService: NbAuthService) {
+export const authGuard = () => {
+  const authService = inject(NbAuthService);
+  const router = inject(Router);
+
+  if (authService.isAuthenticated()) {
+    return true;
   }
-
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    return this.authService.isAuthenticated();
-  }
-
-}
+  // Redirect to the login page
+  return router.navigateByUrl('/auth/login');
+};
