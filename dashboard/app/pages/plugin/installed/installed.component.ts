@@ -2,7 +2,14 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {HttpClient, HttpContext} from "@angular/common/http";
 import {ActivatedRoute} from "@angular/router";
 import {OnSpinner, Package, Records, ResponseBody} from "../../../@core/definition/common";
-import {PLUGIN_ACTIVATE, PLUGIN_DOWN, PLUGIN_DEACTIVATE, PLUGIN_INSTALLED, PLUGIN_UPLOAD} from "../../../@core/definition/plugin/api";
+import {
+  PLUGIN_ACTIVATE,
+  PLUGIN_DOWN,
+  PLUGIN_DEACTIVATE,
+  PLUGIN_INSTALLED,
+  PLUGIN_UPLOAD,
+  PLUGIN_UPGRADE
+} from "../../../@core/definition/plugin/api";
 import {NbDialogService, NbSidebarService, NbToastrService} from "@nebular/theme";
 import {DialogRef} from "@angular/cdk/dialog";
 import {timer} from "rxjs";
@@ -66,6 +73,12 @@ export class InstalledComponent implements OnInit, OnSpinner, AfterViewInit {
 
   activate(name: string) {
     this.http.post<ResponseBody>(PLUGIN_ACTIVATE, {name: name}, {context: new HttpContext().set(SPINNER, this)}).subscribe(res => {
+      this.getPlugins();
+    });
+  }
+
+  upgrade(name: string) {
+    this.http.post<ResponseBody>(PLUGIN_UPGRADE, {name: name}, {context: new HttpContext().set(SPINNER, this)}).subscribe(res => {
       this.getPlugins();
     });
   }

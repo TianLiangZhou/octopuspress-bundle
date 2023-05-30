@@ -162,6 +162,13 @@ class PostRepository extends ServiceEntityRepository
                 $qb->andWhere('a.id = :id')->setParameter('id', (int) $filters['id']);
             }
         }
+        if (!empty($filters['name'])) {
+            if (is_array($filters['name'])) {
+                $qb->andWhere('a.name IN (:name)')->setParameter('name', $filters['name']);
+            }  else {
+                $qb->andWhere('a.name = :name')->setParameter('name', (string) $filters['name']);
+            }
+        }
         if (!empty($filters['author'])) {
             if (is_array($filters['author'])) {
                 $qb->andWhere('a.author IN (:author)')->setParameter('author', array_map('intval', $filters['author']));

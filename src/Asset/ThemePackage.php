@@ -5,21 +5,15 @@ namespace OctopusPress\Bundle\Asset;
 use OctopusPress\Bundle\Support\ActivatedTheme;
 use Symfony\Component\Asset\Context\ContextInterface;
 use Symfony\Component\Asset\UrlPackage;
-use Symfony\Component\Asset\VersionStrategy\StaticVersionStrategy;
 
 class ThemePackage extends UrlPackage
 {
     private ActivatedTheme $activatedTheme;
 
-    public function __construct(
-        string|array     $assetsUrl,
-        ActivatedTheme   $activatedTheme,
-        ContextInterface $context = null
-    )
+    public function __construct(string|array $assetsUrl, ActivatedTheme $activatedTheme, ContextInterface $context = null)
     {
-
         $this->activatedTheme = $activatedTheme;
-        parent::__construct($assetsUrl, new StaticVersionStrategy($this->activatedTheme->getVersion(), '%s?v=%s'), $context);
+        parent::__construct($assetsUrl, new ThemeVersionStrategy($this->activatedTheme, '%s?v=%s'), $context);
     }
 
 

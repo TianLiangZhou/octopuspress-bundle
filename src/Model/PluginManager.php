@@ -137,6 +137,15 @@ class PluginManager extends PackageManager
             $settingPages = array_column($settingPages, null, 'plugin');
         }
         $plugins = [];
+        $registeredInfo = [];
+        if ($installedPlugins) {
+            $response = $this->market('plugin', [
+                'name' => array_keys($installedPlugins),
+            ]);
+            if (!empty($response['packages'])) {
+                $registeredInfo = array_column($response['packages'], null, 'packageName');
+            }
+        }
         foreach ($installedPlugins as $name => $plugin) {
             $actions = [];
             if (isset($settingPages[$name])) {
@@ -149,6 +158,12 @@ class PluginManager extends PackageManager
             $plugin['actions'] = in_array($name, $activePlugins)
                 ? $this->bridger->getHook()->filter('plugin_action_links', $actions, $name)
                 : [];
+            $plugin['upgradeable'] = false;
+            if (isset($registeredInfo[$name])) {
+                if (version_compare($registeredInfo[$name]['version'], $plugin['version'], '>')) {
+                    $plugin['upgradeable'] = true;
+                }
+            }
             $plugins[] = $plugin;
         }
         return $plugins;
@@ -173,7 +188,10 @@ class PluginManager extends PackageManager
         $pluginRootPath = dirname($packageInfo['composerFile']);
         $filesystem = new FileSystem();
         $filesystem->mirror($pluginRootPath, $pluginPath, null, ['override' => true]);
-
+        $activatedPlugins = $this->getActivatedPlugins();
+        if (in_array($name, $activatedPlugins)) {
+            $this->migrateTo($name);
+        }
         $option = $this->optionRepository->findOneByName('installed_plugins');
         if ($option == null) {
             $option = new Option();

@@ -59,6 +59,7 @@ final class Bridger
      * @param LoggerInterface $logger
      * @param CacheInterface $cache
      * @param HttpClientInterface $client
+     * @param Packages $packages
      */
     public function __construct(
         ContainerInterface $container,

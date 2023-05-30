@@ -227,7 +227,8 @@ abstract class PackageManager
             'no_proxy' => '127.0.0.1,localhost',
             'headers' => [
                 'Content-Type' => 'application/json',
-            ]
+            ],
+            'query'   => $condition,
         ])->toArray();
     }
 

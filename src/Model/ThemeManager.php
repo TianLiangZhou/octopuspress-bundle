@@ -5,17 +5,16 @@ namespace OctopusPress\Bundle\Model;
 use Doctrine\ORM\ORMException;
 use InvalidArgumentException;
 use OctopusPress\Bundle\Entity\Option;
-use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\OctopusPressKernel;
-use OctopusPress\Bundle\Repository\OptionRepository;
 use Closure;
-use OctopusPress\Bundle\Util\Formatter;
 use Symfony\Component\Filesystem\Exception\IOException;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
-use ZipArchive;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class ThemeManager extends PackageManager
 {
@@ -38,14 +37,33 @@ class ThemeManager extends PackageManager
 
     /**
      * @return array<int, array<string, mixed>>
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     public function themes(): array
     {
         $currentTheme = $this->optionRepository->theme();
         $installedThemes = $this->optionRepository->installedThemes();
-        $themes = [];
+        $themes = $registeredInfo = [];
+        if ($installedThemes) {
+            $response = $this->market('theme', [
+                'name' => array_keys($installedThemes),
+            ]);
+            if (!empty($response['packages'])) {
+                $registeredInfo = array_column($response['packages'], null, 'packageName');
+            }
+        }
         foreach ($installedThemes as $name => $theme) {
             $theme['enabled'] = $currentTheme == $name;
+            $theme['upgradeable'] = false;
+            if (isset($registeredInfo[$name])) {
+                if (version_compare($registeredInfo[$name]['version'], $theme['version'], '>')) {
+                    $theme['upgradeable'] = true;
+                }
+            }
             $themes[] = $theme;
         }
         return $themes;

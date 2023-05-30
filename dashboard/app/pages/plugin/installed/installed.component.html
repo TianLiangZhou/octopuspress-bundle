@@ -34,13 +34,18 @@
       </nb-card-body>
       <nb-card-footer class="d-flex justify-content-between">
         <button [disabled]="plugin.enabled || spinner" [nbSpinner]="spinner" nbButton status="danger" (click)="remove(plugin.packageName)">删除</button>
-        <button nbButton
-                [disabled]="spinner"
-                [nbSpinner]="spinner"
-                [status]="plugin.enabled ? 'control' : 'primary'"
-                (click)="plugin.enabled ? inactivate(plugin.packageName) : activate(plugin.packageName)">
-          {{ plugin.enabled ? '禁用' : '启用' }}
-        </button>
+        <div class="d-flex">
+          <button nbButton
+                  [disabled]="spinner"
+                  [nbSpinner]="spinner"
+                  [status]="plugin.enabled ? 'control' : 'primary'"
+                  (click)="plugin.enabled ? inactivate(plugin.packageName) : activate(plugin.packageName)">
+            {{ plugin.enabled ? '禁用' : '启用' }}
+          </button>
+          <button *ngIf="plugin.upgradeable" class="ms-2" (click)="upgrade(plugin.packageName)" nbButton status="control">
+            <nb-icon icon="sync-outline"></nb-icon>
+          </button>
+        </div>
       </nb-card-footer>
       <nb-card-footer class="d-flex justify-content-between" *ngIf="plugin.enabled && plugin.actions.length > 0">
         <a nbButton

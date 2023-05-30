@@ -165,6 +165,15 @@ class PluginController extends AdminController
     }
 
     /**
+     */
+    #[Route('/{name}/upgrade', name:'plugin_upgrade', requirements: [], options: ['name' => '更新插件', 'parent' => 'plugin_installed'], methods: Request::METHOD_POST)]
+    public function upgrade(string $name): JsonResponse
+    {
+        $this->pluginManager->install($name);
+        return $this->json('');
+    }
+
+    /**
      * @param Request $request
      * @return JsonResponse
      */

@@ -39,9 +39,14 @@
       </nb-card-body>
       <nb-card-footer class="d-flex justify-content-between">
         <button nbButton status="danger" [disabled]="theme.enabled || spinner" [nbSpinner]="spinner" (click)="delete(theme.packageName)">删除</button>
+        <div class="d-flex">
         <button nbButton status="primary" (click)="activate(theme.packageName)"
                 [nbSpinner]="spinner"
                 [disabled]="spinner || theme.enabled">启用</button>
+        <button *ngIf="theme.upgradeable" class="ms-2" (click)="upgrade(theme.packageName)" nbButton status="control">
+          <nb-icon icon="sync-outline"></nb-icon>
+        </button>
+        </div>
       </nb-card-footer>
     </nb-card>
   </div>
