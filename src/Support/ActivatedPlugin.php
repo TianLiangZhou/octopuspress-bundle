@@ -14,8 +14,7 @@ final class ActivatedPlugin
 
     public function add(Plugin $plugin): static
     {
-        $this->registered[] = $plugin;
-
+        $this->registered[$plugin->getName()] = $plugin;
         return $this;
     }
 
