@@ -135,7 +135,7 @@ class ThemeController extends AdminController
         }
         $this->themeManager->externalInstall($filepath);
         $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
-        return $this->json('');
+        return $this->json(null);
     }
 
 
@@ -150,7 +150,7 @@ class ThemeController extends AdminController
     {
         $this->themeManager->activate($name);
         $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
-        return $this->json('');
+        return $this->json(null);
     }
 
     /**
@@ -181,7 +181,7 @@ class ThemeController extends AdminController
     {
         $this->themeManager->install($name);
         $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
-        return $this->json('');
+        return $this->json(null);
     }
 
     /**
@@ -192,6 +192,6 @@ class ThemeController extends AdminController
     {
         $this->themeManager->uninstall($name);
         $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
-        return $this->json('');
+        return $this->json(null);
     }
 }

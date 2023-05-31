@@ -19,6 +19,7 @@ use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Scalable\Hook;
 use OctopusPress\Bundle\Scalable\Plugin;
 use OctopusPress\Bundle\Security\PermissionVoter;
+use OctopusPress\Bundle\Support\ActivatedPlugin;
 use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Support\ActivatedTheme;
 use OctopusPress\Bundle\Support\DefaultViewFilter;
@@ -69,6 +70,10 @@ return static function (ContainerConfigurator $container, ContainerBuilder $buil
         ])
         ->public();
     $services->set('activated_theme', ActivatedTheme::class)
+        ->alias(ActivatedTheme::class, 'activated_theme')
+        ->public();
+    $services->set('activated_plugin', ActivatedPlugin::class)
+        ->alias(ActivatedPlugin::class, 'activated_plugin')
         ->public();
 
 
@@ -109,7 +114,7 @@ return static function (ContainerConfigurator $container, ContainerBuilder $buil
     $services->set(ThemePackage::class, ThemePackage::class)
         ->args([
             abstract_arg(''),
-            service('activated_theme'),
+            service(ActivatedTheme::class),
         ])
         ->tag('assets.package', ['package' => 'theme']);
 

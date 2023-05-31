@@ -7,10 +7,12 @@ use OctopusPress\Bundle\Controller\Controller;
 use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\OctopusPressKernel;
 use OctopusPress\Bundle\Bridge\Bridger;
+use OctopusPress\Bundle\Plugin\Plugin;
 use OctopusPress\Bundle\Plugin\PluginInterface;
 use OctopusPress\Bundle\Plugin\PluginProviderInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use OctopusPress\Bundle\Support\ActivatedPlugin;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -254,9 +256,9 @@ class PluginManager extends PackageManager
         $dispatcher = $this->bridger->getDispatcher();
         $activePlugins = $this->getActivatedPlugins();
         $installedPlugins = $this->optionRepository->installedPlugins();
-        $pluginDir = $this->getPluginDir();
         $doctrine = $this->bridger->getDoctrine();
         $hook = $this->bridger->getHook();
+        $activatedPlugin = $this->bridger->get(ActivatedPlugin::class);
         foreach ($activePlugins as $name) {
             if (!isset($installedPlugins[$name])) {
                 continue;
@@ -285,10 +287,11 @@ class PluginManager extends PackageManager
                     $dispatcher->addSubscriber($service);
                 }
             }
-            $this->registered[$name] = [
-                'plugin'   => $plugin,
-                'provider' => $plugin->provider($this->bridger),
-            ];
+            $activatedPlugin->add(new Plugin(
+                $plugin,
+                $name,
+                $installedPlugins[$name]['version']
+            ));
             $plugin->launcher($this->bridger);
             $hook->action('plugin_launcher', $name, $this);
             $hook->action('plugin_launcher_' . $name, $this);
@@ -327,10 +330,10 @@ class PluginManager extends PackageManager
      * @param string $entrypoint
      * @return PluginInterface|null
      */
-    public function getPlugin(string $name, string $entrypoint): ?PluginInterface
+    private function getPlugin(string $name, string $entrypoint): ?PluginInterface
     {
         $this->registerPlugin($name);
-        // 不直接判断存不存在，如果真得不存，直接判断会被composer标记为不存在。
+        // 不直接判断存不存在，如果真得不存在，直接判断会被composer标记为不存在。
         if (!class_exists($entrypoint)) {
             return null;
         }

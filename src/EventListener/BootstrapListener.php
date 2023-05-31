@@ -104,7 +104,7 @@ class BootstrapListener implements EventSubscriberInterface
         if (empty($theme)) {
             return ;
         }
-        $activatedTheme = $this->container->get('activated_theme');
+        $activatedTheme = $this->container->get(ActivatedTheme::class);
         $activatedTheme->setName($theme);
         $installed = $option->installedThemes();
         $activatedTheme->setVersion($installed[$theme]['version'] ?? '1.0.0');

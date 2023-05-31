@@ -21,6 +21,7 @@ use OctopusPress\Bundle\Repository\RelationRepository;
 use OctopusPress\Bundle\Repository\TaxonomyRepository;
 use OctopusPress\Bundle\Repository\UserRepository;
 use OctopusPress\Bundle\Scalable\Hook;
+use OctopusPress\Bundle\Support\ActivatedPlugin;
 use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Widget\AbstractWidget;
@@ -45,9 +46,9 @@ class OctopusRuntime implements RuntimeExtensionInterface
     private RouterInterface $router;
     private UserRepository $user;
     private ActivatedRoute $activatedRoute;
-    private PluginManager $pluginManager;
+    private ActivatedPlugin $activatedPlugin;
 
-    public function __construct(Bridger $bridger, PluginManager $pluginManager)
+    public function __construct(Bridger $bridger)
     {
         $this->bridger = $bridger;
         $this->hook = $this->bridger->getHook();
@@ -58,7 +59,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
         $this->user     = $this->bridger->get(UserRepository::class);
         $this->router   = $this->bridger->getRouter();
         $this->activatedRoute = $this->bridger->getActivatedRoute();
-        $this->pluginManager = $pluginManager;
+        $this->activatedPlugin = $this->bridger->get(ActivatedPlugin::class);
     }
 
     /**
@@ -117,7 +118,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
      */
     public function isPluginActivated(string $name): bool
     {
-        return $this->pluginManager->isRegistered($name);
+        return $this->activatedPlugin->has($name);
     }
 
     /**
@@ -295,7 +296,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
      */
     public function getPlugin(string $name): ?PluginProviderInterface
     {
-        return $this->pluginManager->provider($name);
+        return $this->activatedPlugin->get($name)?->getProvider($this->bridger);
     }
 
     /**

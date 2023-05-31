@@ -113,7 +113,7 @@ class PluginController extends AdminController
         } catch (\Exception $exception) {
             return $this->json(['message' => $exception->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        return $this->json('');
+        return $this->json(null);
     }
 
     #[Route('/{name}/deactivate', name: 'installed_deactivate', options: ['name' => '禁用插件', 'parent' => 'plugin_installed', 'sort' => 0], methods: Request::METHOD_POST)]
@@ -125,7 +125,7 @@ class PluginController extends AdminController
         } catch (\Exception $exception) {
             return $this->json(['message' => $exception->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        return $this->json('');
+        return $this->json(null);
     }
 
 
@@ -154,7 +154,7 @@ class PluginController extends AdminController
         }
         $this->pluginManager->externalInstall($filepath);
         $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
-        return $this->json('');
+        return $this->json(null);
     }
 
     /**
@@ -164,7 +164,7 @@ class PluginController extends AdminController
     {
         $this->pluginManager->down($name);
         $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
-        return $this->json('');
+        return $this->json(null);
     }
 
     /**
@@ -174,7 +174,7 @@ class PluginController extends AdminController
     {
         $this->pluginManager->install($name);
         $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
-        return $this->json('');
+        return $this->json(null);
     }
 
     /**
