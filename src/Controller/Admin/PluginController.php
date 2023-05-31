@@ -84,6 +84,7 @@ class PluginController extends AdminController
     public function setup(Request $request, string $name): JsonResponse
     {
         $this->pluginManager->install($name);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         return $this->json(null);
     }
 
@@ -152,6 +153,7 @@ class PluginController extends AdminController
             return $this->json(['message' => 'File format is incorrect.',], Response::HTTP_NOT_ACCEPTABLE);
         }
         $this->pluginManager->externalInstall($filepath);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         return $this->json('');
     }
 
@@ -161,6 +163,7 @@ class PluginController extends AdminController
     public function down(string $name): JsonResponse
     {
         $this->pluginManager->down($name);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         return $this->json('');
     }
 
@@ -170,6 +173,7 @@ class PluginController extends AdminController
     public function upgrade(string $name): JsonResponse
     {
         $this->pluginManager->install($name);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         return $this->json('');
     }
 

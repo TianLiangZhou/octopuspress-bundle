@@ -38,7 +38,6 @@ abstract class PackageManager
     }
 
     /**
-     * @param string $packageType
      * @param string $packageName
      * @return void
      * @throws ClientExceptionInterface
@@ -46,9 +45,6 @@ abstract class PackageManager
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws \Exception
      */
     public function install(string $packageName): void
     {
@@ -74,6 +70,7 @@ abstract class PackageManager
             throw $e;
         }
         $this->setup(array_merge($packageInfo, $officialInfo));
+        unlink($zipFile);
     }
 
 
@@ -92,6 +89,7 @@ abstract class PackageManager
         }
         $packageInfo['packageName'] = str_replace('/', '_', $packageInfo['packageName']);
         $this->setup($packageInfo);
+        unlink($zipFile);
     }
 
     /**
@@ -270,6 +268,9 @@ abstract class PackageManager
      */
     public function downloadPackage(string $url, string $filename, array $options = []): string
     {
+        if (!file_exists($this->bridger->getTempDir())) {
+            mkdir($this->bridger->getTempDir(), 0755, true);
+        }
         $file = sprintf('%s/%s.zip', $this->bridger->getTempDir(), $filename);
         $fd = fopen($file, 'w');
         $this->download($url, $fd, $options);

@@ -60,6 +60,11 @@ class ThemeController extends AdminController
      * 已安装的主题列表
      *
      * @return JsonResponse
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     #[Route('/installed')]
     public function themes(): JsonResponse
@@ -129,6 +134,7 @@ class ThemeController extends AdminController
             return $this->json(['message' => 'File format is incorrect.',], Response::HTTP_NOT_ACCEPTABLE);
         }
         $this->themeManager->externalInstall($filepath);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         return $this->json('');
     }
 
@@ -163,6 +169,7 @@ class ThemeController extends AdminController
     public function setup(Request $request, string $name): JsonResponse
     {
         $this->themeManager->install($name);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         return $this->json(null);
     }
 
@@ -173,6 +180,7 @@ class ThemeController extends AdminController
     public function upgrade(string $name): JsonResponse
     {
         $this->themeManager->install($name);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         return $this->json('');
     }
 
@@ -183,6 +191,7 @@ class ThemeController extends AdminController
     public function delete(string $name): JsonResponse
     {
         $this->themeManager->uninstall($name);
+        $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         return $this->json('');
     }
 }
