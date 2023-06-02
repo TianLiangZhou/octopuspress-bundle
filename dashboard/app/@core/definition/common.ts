@@ -14,7 +14,8 @@ export interface AppConfiguration {
   timestamp: number;
   name: string;
   logo: string;
-  editor?: string;
+  editor?: 'ckeditor';
+  markdown?: boolean;
   taxonomies: Record<string, TaxonomySetting>;
   postTypes: Record<string, PostTypeSetting>;
   postMeta: Record<string, Meta[]>;

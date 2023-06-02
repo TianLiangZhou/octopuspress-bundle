@@ -6,10 +6,10 @@ import {FormsModule} from "@angular/forms";
 
 
 @NgModule({
-    imports: [
-        CKEditorModule,
-        FormsModule
-    ],
+  imports: [
+    CKEditorModule,
+    FormsModule
+  ],
   exports: [
     CkeditorComponent
   ],

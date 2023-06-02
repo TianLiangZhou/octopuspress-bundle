@@ -2,14 +2,13 @@
 
 namespace OctopusPress\Bundle\CKFinder;
 
-use CKSource\CKFinder\Authentication\AuthenticationInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use CKSource\Bundle\CKFinderBundle\Authentication\AuthenticationInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  *
  */
-class CKFinderAuthentication implements ContainerAwareInterface, AuthenticationInterface
+class CKFinderAuthentication implements AuthenticationInterface
 {
 
     /**

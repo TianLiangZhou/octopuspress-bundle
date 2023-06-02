@@ -72,3 +72,4 @@ Thumbs.db
 ### phpstan
 .phpstan-dba.cache
 
+ckeditor5/build
