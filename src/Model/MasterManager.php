@@ -17,6 +17,7 @@ use OctopusPress\Bundle\Widget\Categories;
 use OctopusPress\Bundle\Widget\Cover;
 use OctopusPress\Bundle\Widget\File;
 use OctopusPress\Bundle\Widget\Gallery;
+use OctopusPress\Bundle\Widget\Group;
 use OctopusPress\Bundle\Widget\Image;
 use OctopusPress\Bundle\Widget\LatestComments;
 use OctopusPress\Bundle\Widget\LatestPosts;
@@ -354,6 +355,7 @@ class MasterManager
                 Audio::class,
                 File::class,
                 MediaText::class,
+                Group::class,
                 Cover::class,
                 Pagination::class,
                 PreviousNext::class,

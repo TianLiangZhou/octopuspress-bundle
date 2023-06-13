@@ -25,6 +25,7 @@ import {FormControl, FormGroup} from "@angular/forms";
 import {OnSpinner, PostEntity, Records} from "../../@core/definition/common";
 import {distinctUntilChanged, map, switchMap} from "rxjs/operators";
 import {NbSidebarService} from "@nebular/theme";
+import {ht} from "date-fns/locale";
 
 @Component({
   selector: 'app-post',
@@ -58,6 +59,12 @@ import {NbSidebarService} from "@nebular/theme";
               <nb-select fullWidth [formControl]="getControl('date')">
                 <nb-option [value]="''">全部日期</nb-option>
                 <nb-option [value]="option.value" *ngFor="let option of dateFilters">{{option.label}}</nb-option>
+              </nb-select>
+            </div>
+            <div class="ms-sm-3 mt-3 mt-sm-0">
+              <nb-select fullWidth [formControl]="getControl('author')">
+                <nb-option [value]="''">全部作者</nb-option>
+                <nb-option [value]="option.value" *ngFor="let option of authorFilters!">{{option.label}}</nb-option>
               </nb-select>
             </div>
             <ng-container *ngFor="let taxonomyFilter of taxonomyFilters">
@@ -100,9 +107,12 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
   filterControls = new FormGroup<any>({
     status: new FormControl<string>(''),
     date: new FormControl<string>(''),
+    author: new FormControl<number|string>(''),
   });
   spinner: boolean = false;
   taxonomyFilters: {label: string, slug: string, hidden: boolean, options: TermTaxonomy[]}[] = [];
+  private authorMap: Map<number, true> = new Map();
+  authorFilters: {label: string, value: number}[] = [];
   dateFilters: {label: string, value: string}[] = [];
   parent: Post | null = null;
   tableTypeSettings: Record<string, Settings> = {};
@@ -161,6 +171,30 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
         pagerLimitKey: 'limit',
         filterFieldKey: '#field#',
       });
+      this.source.onChanged().subscribe(item => {
+        let options :{label: string, value: number}[] = [];
+        if (item.elements) {
+          item.elements.forEach((row: Post, index: number) => {
+            if (row.author && row.author.id < 1) {
+              return
+            }
+            let id = row.author?.id ?? 0;
+            if (this.authorMap.has(id)) {
+              return ;
+            }
+            this.authorMap.set(id, true);
+            options.push({label: row.author?.nickname ?? '', value: id});
+          });
+        }
+        if (options.length > 0) {
+          this.authorFilters.push(...options);
+        }
+        if (httpParams.get('author')) {
+          timer(100).subscribe(() => {
+            this.filterControls.controls.author.setValue(parseInt(httpParams.get('author') ?? '', 10));
+          });
+        }
+      });
     });
     this.$parentChangeSourceRefresh.pipe(
       switchMap(parent => {
@@ -202,7 +236,7 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
         } else if (this.parent) {
           this.parent = null;
         }
-        if ((maps['status'] ?? '') != this.filterControls.status) {
+        if ((maps['status'] ?? '') != this.filterControls.controls.status.value) {
           this.filterControls.controls.status.setValue(maps['status'] ?? '');
         }
         this.$conditionChangeSourceRefresh.next(maps);

@@ -192,7 +192,8 @@ class Pagination extends AbstractWidget implements IteratorAggregate
     public function delayRegister(): void
     {
         // TODO: Implement delayRegister() method.
+        $this->setLabel("分页");
+        $this->setIcon('more-horizontal-outline');
         $this->addTemplate('@OctopusPressBundle/default/bootstrap.pagination.twig');
-
     }
 }

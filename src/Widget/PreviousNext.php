@@ -59,5 +59,7 @@ class PreviousNext extends AbstractWidget
     public function delayRegister(): void
     {
         // TODO: Implement delayRegister() method.
+        $this->setLabel("上下文向导");
+        $this->setIcon('swap-outline');
     }
 }

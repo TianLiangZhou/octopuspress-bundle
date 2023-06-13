@@ -9,7 +9,7 @@
           <nb-icon [class.sidebar-widget-toggle-animation]="!hasHiddenWidgetSidebar" icon="plus-outline"></nb-icon>
         </button>
         <div class="d-flex justify-content-end">
-          <button nbButton status="danger" (click)="save($event)">更新</button>
+          <button nbButton status="success" (click)="save($event)">更新</button>
           <div class="mx-2"></div>
           <button nbButton status="primary" type="button" id="settingSidebarBtn" (click)="toggleSettingSidebar($event)">
             <nb-icon icon="settings-2"></nb-icon>
@@ -54,23 +54,22 @@
             <nb-card class="p-0 rounded-0 border-0 bg-transparent h-100">
               <nb-card-body>
                 <div class="row">
-                  <div class="col-8 mx-auto">
+                  <div class="col-12 col-lg-10 col-xl-8 mx-auto">
                     <nb-accordion tabindex="0" class="mt-5" (focus)="selectorBlock($event, i)"
                                   *ngFor="let block of blocks; index as i;">
                       <nb-accordion-item>
-                        <nb-accordion-item-header tabindex="0"
-                                                  (focus)="selectorBlock($event, i)">
+                        <nb-accordion-item-header tabindex="0" (focus)="selectorBlock($event, i)">
                           {{block.label}}
                         </nb-accordion-item-header>
                         <nb-accordion-item-body>
-                          <widget-item #widgetItemComponent
+                          <widget-item [class.selected]="product.selected" [id]="product.id" #widgetItemComponent
                                        tabindex="0"
                                        [product]="product"
                                        (focus)="selectorWidget($event)"
                                        (blur)="unselectWidget($event)"
                                        *ngFor="let product of getBlockWidgets(block.name)">
                           </widget-item>
-                          <button tabindex="0" nbButton fullWidth status="control"
+                          <button nbButton fullWidth status="basic"
                                   (nbPopoverShowStateChange)="quickToggle($event, i)"
                                   [nbPopover]="quickInsertWidgetDialog"
                                   nbPopoverTrigger="click">
@@ -97,9 +96,16 @@
                     <nb-tab class="p-0 h-100" *ngIf="blocks.length > 0"
                             [tabTitle]="blocks[selectBlockIndex].label || ''">
                       <nb-list class="p-0 sidebar-setting-widgets-list">
-                        <nb-list-item *ngFor="let product of getBlockWidgets(blocks[selectBlockIndex].name)">
-                          <nb-icon [pack]="product.widget.icon.startsWith('fa-') ? 'fa': ''" [icon]="product.widget.icon"></nb-icon>
-                          <span>{{product.widget.label}}</span>
+                        <nb-list-item class="d-flex justify-content-between" [class.selected]="product.selected" tabindex="0" *ngFor="let product of getBlockWidgets(blocks[selectBlockIndex].name)">
+                          <a routerLink="./" [fragment]="product.id" (click)="selected(product)" class="d-flex justify-content-between text-decoration-none flex-grow-1">
+                            <div class="d-flex align-items-center">
+                              <span><nb-icon [pack]="product.widget.icon.startsWith('fa-') ? 'fa': ''" [icon]="product.widget.icon"></nb-icon></span>
+                              <span class="ms-2">{{product.widget.label}}</span>
+                            </div>
+                            <span class="more">
+                              <nb-icon icon="more-vertical-outline"></nb-icon>
+                            </span>
+                          </a>
                         </nb-list-item>
                       </nb-list>
                     </nb-tab>
@@ -147,7 +153,7 @@
       <div class="d-flex flex-row flex-wrap">
           <div *ngFor="let widget of historyWidgets; index as i;" class="sidebar-widget-item"
                (click)="insertWidget(widget.name, true)">
-              <nb-icon [icon]="widget.icon"></nb-icon>
+              <nb-icon [pack]="widget.icon.startsWith('fa-') ? 'fa': ''" [icon]="widget.icon"></nb-icon>
               <span class="py-4">{{widget.label}}</span>
           </div>
       </div>

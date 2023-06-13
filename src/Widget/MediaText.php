@@ -26,7 +26,7 @@ class MediaText extends AbstractWidget
         // TODO: Implement delayRegister() method.
         $this->setCategory('media');
         $this->setLabel('媒体和文本');
-        $this->setIcon('fa-photo-film-music');
+        $this->setIcon('file-text-outline');
         $section = new Section('media');
         $section->addControl(
             new ImageControl('image', [

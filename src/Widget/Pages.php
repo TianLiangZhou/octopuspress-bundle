@@ -14,8 +14,10 @@ class Pages extends AbstractWidget
 <ul class="pages-list">
     {% for item in pages %}
     <li class="pages-list-item">
-        <a href="{{permalink(item)}}">{{item.title}}</a>
+        <a href="{{ permalink(item) }}">{{item.title}}</a>
     </li>
+    {% else %}
+    <li class="pages-list-item">无记录</li>
     {% endfor %}
 </ul>
 EOF;
@@ -39,6 +41,6 @@ EOF;
     {
         // TODO: Implement registerForm() method.
         $this->setLabel("页面列表");
-        $this->setIcon('fa-page');
+        $this->setIcon('fa-newspaper');
     }
 }

@@ -20,14 +20,15 @@ import {
 import {NbSidebarService} from "@nebular/theme";
 import {combineLatest, Observable, of, Subscription, timer} from "rxjs";
 import {DOCUMENT} from "@angular/common";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
+import {DomSanitizer} from "@angular/platform-browser";
 import {FormGroup} from "@angular/forms";
 import {buildFormGroup} from "../../../shared/control/type";
 
 type ProductWidget = {
   id: string;
-  widget: Widget,
-  form: FormGroup,
+  widget: Widget;
+  form: FormGroup;
+  selected: boolean;
 }
 
 
@@ -102,10 +103,11 @@ export class WidgetComponent implements OnInit, AfterViewInit {
               return ;
             }
             let controls = widget.sections.map(section => section.controls);
-            let product = {
+            let product: ProductWidget = {
               id: widgetData.id,
               widget: Object.assign({}, widget),
               form: new FormGroup(buildFormGroup(controls.flat(1))),
+              selected: false,
             };
             for (const key in widgetData.attributes) {
               if (product.form.contains(key)) {
@@ -184,6 +186,10 @@ export class WidgetComponent implements OnInit, AfterViewInit {
 
   selectorWidget($event: Event) {
     let id = ($event.target as HTMLElement).id
+    this.selectedWidgetComponent(id);
+  }
+
+  private selectedWidgetComponent(id: string) {
     for (let item of this.widgetItems) {
       if (id != item.Id) {
         continue;
@@ -191,11 +197,15 @@ export class WidgetComponent implements OnInit, AfterViewInit {
       if (this.selectedWidget && this.selectedWidget.Id == id) {
         continue;
       }
+      if (this.selectedWidget !== undefined) {
+        this.selectedWidget.product.selected = false;
+      }
+      item.product.selected = true;
       this.selectedWidget = item;
+      break;
     }
   }
   unselectWidget($event: FocusEvent) {
-    console.log($event);
     if ($event.relatedTarget) {
       let id = ($event.relatedTarget as HTMLElement).id;
       if (id == "settingSidebarBtn") {
@@ -211,6 +221,9 @@ export class WidgetComponent implements OnInit, AfterViewInit {
         return ;
       }
     }
+    if (this.selectedWidget !== undefined) {
+      this.selectedWidget.product.selected = false;
+    }
     this.selectedWidget = undefined;
   }
 
@@ -223,6 +236,7 @@ export class WidgetComponent implements OnInit, AfterViewInit {
         id: this.generateUUID(),
         widget: Object.assign({}, widget),
         form: new FormGroup<any>(buildFormGroup(controls.flat(1))),
+        selected: false,
       });
       if (!isQuick) {
         this.historyWidgets.unshift(widget);
@@ -280,17 +294,39 @@ export class WidgetComponent implements OnInit, AfterViewInit {
     });
     return uuid;
   }
+
+  selected(product: ProductWidget) {
+    if (product.selected) {
+      return ;
+    }
+    this.selectedWidgetComponent(product.id);
+  }
 }
 
 
 @Component({
   selector: 'widget-item',
   template: `
-    <div #container class="widget-container widget-{{product.widget.name}}">
-      <nb-icon *ngIf="isMedia()"
-               style="width: 100px; height: 100px" [pack]="product.widget.icon.startsWith('fa-') ? 'fa': ''"
-               [icon]="product.widget.icon">
-      </nb-icon>
+    <div class="position-relative widget-container">
+      <div #container class="widget-{{product.widget.name}}">
+        <nb-icon *ngIf="isMedia()"
+                 style="width: 100px; height: 100px" [pack]="product.widget.icon.startsWith('fa-') ? 'fa': ''"
+                 [icon]="product.widget.icon">
+        </nb-icon>
+      </div>
+      <ng-template [ngIf]="product.widget.name === 'group'">
+        <div class="d-flex flex-column py-5 px-3">
+          <div class="d-flex mb-2">
+            <nb-icon [pack]="product.widget.icon.startsWith('fa-') ? 'fa': ''"
+                     [icon]="product.widget.icon">
+            </nb-icon>
+            <span>{{ product.widget.label }}</span>
+          </div>
+          <button nbButton fullWidth status="basic" nbPopoverTrigger="click">
+            <nb-icon icon="plus-outline"></nb-icon>
+          </button>
+        </div>
+      </ng-template>
     </div>
   `,
   styles: [

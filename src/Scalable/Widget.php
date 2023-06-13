@@ -76,7 +76,7 @@ final class Widget
             [
                 'slug'  => 'reusable',
                 'label' => 'Reusable Blocks',
-                'icon'  => 'repeat-outlin   e',
+                'icon'  => 'repeat-outline',
             ],
         ];
         return $this->bridger->getHook()->filter('block_categories_all', $defaults);

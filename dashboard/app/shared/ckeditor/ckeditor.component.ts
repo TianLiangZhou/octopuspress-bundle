@@ -26,6 +26,40 @@ export class CkeditorComponent implements OnInit {
     language: 'zh-cn',
     placeholder: "在这里撰写你的内容",
     removePlugins: [],
+    codeBlock: {
+      languages: [
+        { language: 'plaintext', label: 'Plain text' }, // The default language.
+        { language: 'c', label: 'C' },
+        { language: 'cs', label: 'C#' },
+        { language: 'cpp', label: 'C++' },
+        { language: 'css', label: 'CSS' },
+        { language: 'diff', label: 'Diff' },
+        { language: 'html', label: 'HTML' },
+        { language: 'java', label: 'Java' },
+        { language: 'javascript', label: 'JavaScript' },
+        { language: 'php', label: 'PHP' },
+        { language: 'python', label: 'Python' },
+        { language: 'ruby', label: 'Ruby' },
+        { language: 'typescript', label: 'TypeScript' },
+        { language: 'xml', label: 'XML' },
+        { language: 'bash', label: 'Bash' },
+        { language: 'go', label: 'Golang' },
+        { language: 'rust', label: 'Rust' },
+        { language: 'yaml', label: 'Yaml' },
+        { language: 'kotlin', label: 'Kotlin' },
+        { language: 'csharp', label: 'C#' },
+        { language: 'ini', label: 'INI' },
+        { language: 'json', label: 'Json' },
+        { language: 'nginx', label: 'Nginx' },
+        { language: 'objectivec', label: 'Objective-C' },
+        { language: 'perl', label: 'Perl' },
+        { language: 'jsx', label: 'Jsx' },
+        { language: 'scss', label: 'Scss' },
+        { language: 'swift', label: 'Swift' },
+        { language: 'aspnet', label: 'AspNet' },
+        { language: 'docker', label: 'Docker' },
+      ]
+    },
   };
 
   constructor(

@@ -19,12 +19,14 @@ class Categories extends AbstractWidget
     {% set c = item.getCount() %}
     {% if c > 0 or displayEmpty %}
     <li class="categories-item">
-        <a href="{{permalink(item)}}">{{item.name}}</a>
+        <a href="{{ permalink(item) }}">{{item.name}}</a>
         {% if displayCount and c > 0 %}
         <span>({{c}})</span>
         {% endif %}
     </li>
     {% endif %}
+    {% else %}
+    <li class="categories-item">无记录</li>
 {% endfor %}
 </ul>
 EOF;

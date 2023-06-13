@@ -26,7 +26,7 @@ class Cover extends AbstractWidget
         // TODO: Implement delayRegister() method.
         $this->setCategory('media');
         $this->setLabel('封面');
-        $this->setIcon('fa-image-landscape');
+        $this->setIcon('camera-outline');
         $section = new Section('media', [
             'label' => '封面'
         ]);

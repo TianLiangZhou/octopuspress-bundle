@@ -47,6 +47,8 @@ class LatestPosts extends AbstractWidget implements \IteratorAggregate
                 </div>
                 {% endif %}
             </li>
+        {% else %}
+            <li class="latest-posts-list-item">无记录</li>
         {% endfor %}
     </ul>
 EOF;
@@ -98,8 +100,8 @@ EOF;
     public function delayRegister(): void
     {
         // TODO: Implement delayRegister() method.
-
-        $user = $this->getBridger()->getUserRepository();
+        $bridger = $this->getBridger();
+        $user = $bridger->getUserRepository();
         $users = $user->findAll();
         $userOptions = [];
         foreach ($users as $user) {
@@ -110,7 +112,20 @@ EOF;
         $section = new Section('content', [
             'label' => '文章内容设置'
         ]);
-        $section->addControl(
+        $post = $bridger->getPost();
+        $showFrontTypes = $post->getShowFrontTypes();
+        $typeOptions = [];
+        foreach ($showFrontTypes as $name) {
+            $typeOptions[] = [
+                'value' => $name,
+                'label' => $post->getType($name)->getLabel(),
+            ];
+        }
+        $section->addControl(Control::create('type', '文章类型', [
+            'type'  => AbstractControl::SELECT,
+            'multiple' => true,
+            'options' => $typeOptions,
+        ],))->addControl(
             (new Control('display_excerpt', [
                 'type' => AbstractControl::SWITCH,
                 'label' => '文章摘要',
