@@ -75,6 +75,14 @@ final class ActivatedRoute
     /**
      * @return bool
      */
+    public function isSearch(): bool
+    {
+        return $this->getRouteName() == 'search';
+    }
+
+    /**
+     * @return bool
+     */
     public function isInstalled(): bool
     {
         return $this->getRouteName() == 'install';

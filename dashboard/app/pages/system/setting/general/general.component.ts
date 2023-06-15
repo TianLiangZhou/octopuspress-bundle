@@ -17,6 +17,14 @@ export class GeneralComponent implements OnInit, OnSpinner {
   filteredOptions$: Observable<string[]> | undefined;
   @ViewChild('autoInput') input: ElementRef | undefined;
   submitted: boolean = false;
+
+  searchEngines = [
+    {alias: '', name: '内部'},
+    {alias: 'google', name: '谷歌'},
+    {alias: 'bing', name: '必应'},
+    {alias: 'baidu', name: '百度'},
+  ];
+
   constructor(private readonly http: HttpClient,) { }
 
   onSpinner(spinner: boolean): void {

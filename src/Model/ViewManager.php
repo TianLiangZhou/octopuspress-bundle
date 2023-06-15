@@ -145,12 +145,16 @@ class ViewManager
             $template = $this->getForgotTemplate();
         } elseif ($this->activatedRoute->isReset()) {
             $template = $this->getResetTemplate();
+        } elseif ($this->activatedRoute->isSearch()) {
+            $template = $this->getSearchTemplate();
         }
         if (empty($template)) {
             $template = $this->getIndexTemplate();
         }
         return $this->hook->filter('template_include', $template);
     }
+
+
 
     /**
      * @return string
@@ -252,6 +256,15 @@ class ViewManager
     {
         $templates = ['home', 'index'];
         return $this->getQueryTemplate('home', $templates);
+    }
+
+    /**
+     * @return string
+     */
+    private function getSearchTemplate(): string
+    {
+        $templates = ['search'];
+        return $this->getQueryTemplate('search', $templates);
     }
 
     /**

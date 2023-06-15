@@ -33,6 +33,7 @@ class OptionRepository extends ServiceEntityRepository
         'timezone',
         'lang',
         'charset',
+        'search_engine',
     ];
 
     /**
@@ -318,6 +319,14 @@ class OptionRepository extends ServiceEntityRepository
     public function lang(): string
     {
         return $this->value('lang', 'zh_CN');
+    }
+
+    /**
+     * @return string
+     */
+    public function searchEngine(): string
+    {
+        return $this->value('search_engine', 'google');
     }
 
 

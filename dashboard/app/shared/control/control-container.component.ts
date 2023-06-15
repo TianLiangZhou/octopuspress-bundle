@@ -12,7 +12,7 @@ import {FormGroup} from "@angular/forms";
 import {buildFormGroup, Control} from "./type";
 import {DynamicResourceLoaderService} from "../../@core/services/dynamic-resource-loader.service";
 import {ControlComponent} from "./control.component";
-import {ReplaySubject, Subject, timer} from "rxjs";
+import {ReplaySubject, timer} from "rxjs";
 
 @Component({
   selector: "control-container",
@@ -63,8 +63,7 @@ export class ControlContainerComponent implements OnInit, OnChanges, AfterViewIn
           nameMap[filename] = id;
         });
       });
-      console.log(resources);
-      console.log(nameMap);
+      console.log(resources, nameMap);
       this.resourceLoader.push(waitResources);
       this.resourceLoader.load(...waitResources.map<string>((item) => item.name)).then((results) => {
         console.log(results);
@@ -135,35 +134,46 @@ export class ControlContainerComponent implements OnInit, OnChanges, AfterViewIn
     if (depends == undefined || depends.length < 1) {
       return ;
     }
-    for (let depend of depends) {
-      const dependMode = depend.split(":");
-      if (dependMode.length < 2 || dependMode[1] === "d") { // 显示
-        control.hidden = !this.form.controls[depend].value;
-        this.form.controls[depend].valueChanges.subscribe(value => {
-          control.hidden = !value;
+    for (let dependStr of depends) {
+      const depend = dependStr.split(":");
+      if (depend.length < 2) {
+        continue;
+      }
+      const dependId = depend[0];
+      if (depend[1] === "d") { // 显示
+        if (depend[2] !== undefined)  {
+          control.hidden = this.form.controls[dependId].value !== depend[2];
+        } else {
+          control.hidden = !this.form.controls[dependId].value;
+        }
+        this.form.controls[dependId].valueChanges.subscribe(value => {
+          if (depend[2] !== undefined) {
+            control.hidden = value !== depend[2];
+          } else {
+            control.hidden = !value;
+          }
         });
-      } else if (dependMode[1] === "e") { // 互斥
+      } else if (depend[1] === "e") { // 互斥
         this.form.controls[control.id].valueChanges.subscribe((value: any) => {
-          const type = typeof value;
           const options = {
             onlySelf: false,
             emitEvent: false,
             emitModelToViewChange: true,
             emitViewToModelChange: true,
           };
-          switch (type) {
+          switch (typeof value) {
             case "boolean":
-              this.form.controls[dependMode[0]].setValue(false, options);
+              this.form.controls[dependId].setValue(false, options);
               break;
             case "number":
             case "bigint":
-              this.form.controls[dependMode[0]].setValue(0, options);
+              this.form.controls[dependId].setValue(0, options);
               break;
             case "string":
-              this.form.controls[dependMode[0]].setValue("", options);
+              this.form.controls[dependId].setValue("", options);
               break;
             default:
-              this.form.controls[dependMode[0]].setValue(null, options);
+              this.form.controls[dependId].setValue(null, options);
           }
         });
       }

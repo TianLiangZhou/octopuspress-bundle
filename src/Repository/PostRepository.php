@@ -118,6 +118,7 @@ class PostRepository extends ServiceEntityRepository
         $attachments = $this->createQuery([
             'id' => array_values($attachmentIdArray),
             'type' => Post::TYPE_ATTACHMENT,
+            'status'=> Post::STATUS_INHERIT,
         ])->getResult();
         $mapAttachment = [];
         foreach ($attachments as $attachment) {

@@ -53,6 +53,17 @@
     </div>
 
     <div class="mb-3 row">
+      <label class="label col-form-label col-2" for="search_engine">搜素跳转</label>
+      <div class="col-8">
+        <nb-radio-group id="search_engine" name="search_engine" [(ngModel)]="option.search_engine">
+          <nb-radio class="d-flex justify-content-between" [value]="engine.alias" *ngFor="let engine of searchEngines">
+            {{engine.name}}
+          </nb-radio>
+        </nb-radio-group>
+      </div>
+    </div>
+
+    <div class="mb-3 row">
       <label class="label col-form-label col-2" for="timezone">时区</label>
       <div class="col-8">
         <input #autoInput

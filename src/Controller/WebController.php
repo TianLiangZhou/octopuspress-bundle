@@ -49,6 +49,25 @@ class WebController extends Controller
         return null;
     }
 
+    /**
+     * @param Request $request
+     * @return Response|null
+     */
+    #[Route('/search', name: 'search', methods: [Request::METHOD_GET])]
+    public function search(Request $request): ?Response
+    {
+        $q = $request->query->get('q', '');
+        $redirect = $this->bridger->getOptionRepository()->searchEngine();
+        $siteUrl = $this->bridger->getOptionRepository()->siteUrl();
+        $query = urlencode(sprintf('site:%s/ %s', str_replace(['https://', 'http://'], '', $siteUrl), $q));
+        return match ($redirect) {
+            'baidu' => $this->redirect('https://www.bing.com/search?q='. $query),
+            'bing' => $this->redirect('https://www.baidu.com/s?wd='. $query),
+            'google' => $this->redirect('https://www.google.com/search?q='. $query),
+            default => $this->internalSearch($q),
+        };
+    }
+
     #[Route('/install', name: 'install', methods: [Request::METHOD_GET, Request::METHOD_POST])]
     public function install(Request $request): Response
     {
@@ -84,5 +103,16 @@ class WebController extends Controller
             }
         }
         return $this->render('@OctopusPressBundle/install.html.twig', $vars);
+    }
+
+    /**
+     * @param string $query
+     * @return null
+     */
+    private function internalSearch(string $query)
+    {
+
+
+        return null;
     }
 }
