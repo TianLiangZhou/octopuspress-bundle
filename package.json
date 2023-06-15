@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config=dashboard/proxy.conf.js",
-    "build": "ng build",
+    "build": "ng build --configuration=production --base-href=/bundles/octopuspress/dashboard/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "build-ckeditor": "cd ckeditor5 && webpack --mode production && tsc --emitDeclarationOnly"
