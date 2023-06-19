@@ -45,7 +45,7 @@ import {ht} from "date-fns/locale";
             >{{link.label}}</a>
           </ng-container>
         </div>
-        <div class="mb-2 row">
+        <div class="mb-2 d-flex flex-column flex-lg-row">
           <form class="col-auto d-flex" (ngSubmit)="batch()">
             <nb-select name="batchMode" fullWidth [(ngModel)]="batchMode">
               <nb-option [value]="option.value" *ngFor="let option of batches">{{option.label}}</nb-option>
@@ -54,28 +54,31 @@ import {ht} from "date-fns/locale";
               <button nbButton status="primary" [disabled]="!batchMode || spinner" [nbSpinner]="spinner" type="submit">应用</button>
             </div>
           </form>
-          <form class="col-auto d-flex flex-column flex-sm-row">
-            <div class="ms-sm-3 mt-3 mt-sm-0">
+          <form class="col-auto d-flex flex-column flex-md-row mt-3 mt-lg-0">
+            <div class="ms-0 ms-lg-3">
+              <input nbInput [formControl]="getControl('title')" fullWidth placeholder="搜索标题..." />
+            </div>
+            <div class="ms-md-3 mt-3 mt-md-0">
               <nb-select fullWidth [formControl]="getControl('date')">
                 <nb-option [value]="''">全部日期</nb-option>
                 <nb-option [value]="option.value" *ngFor="let option of dateFilters">{{option.label}}</nb-option>
               </nb-select>
             </div>
-            <div class="ms-sm-3 mt-3 mt-sm-0">
+            <div class="ms-md-3 mt-3 mt-md-0">
               <nb-select fullWidth [formControl]="getControl('author')">
                 <nb-option [value]="''">全部作者</nb-option>
                 <nb-option [value]="option.value" *ngFor="let option of authorFilters!">{{option.label}}</nb-option>
               </nb-select>
             </div>
             <ng-container *ngFor="let taxonomyFilter of taxonomyFilters">
-              <div class="ms-sm-3 mt-3 mt-sm-0" *ngIf="!taxonomyFilter.hidden">
+              <div class="ms-md-3 mt-3 mt-md-0" *ngIf="!taxonomyFilter.hidden">
                 <nb-select fullWidth [formControl]="getControl(taxonomyFilter.slug)">
                   <nb-option [value]="''">全部{{taxonomyFilter.label}}</nb-option>
                   <nb-option [value]="option.id" *ngFor="let option of taxonomyFilter.options">{{option.name}}</nb-option>
                 </nb-select>
               </div>
             </ng-container>
-            <div class="ms-sm-3 mt-3 mt-sm-0">
+            <div class="ms-md-3 mt-3 mt-md-0">
               <a status="primary" nbButton [routerLink]="['./']" [queryParams]="filterControls.getRawValue()" queryParamsHandling="merge">筛选</a>
             </div>
           </form>
@@ -105,6 +108,7 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
     {label: `回收站`, value: 'trash'},
   ];
   filterControls = new FormGroup<any>({
+    title: new FormControl<string>(''),
     status: new FormControl<string>(''),
     date: new FormControl<string>(''),
     author: new FormControl<number|string>(''),
@@ -189,11 +193,14 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
         if (options.length > 0) {
           this.authorFilters.push(...options);
         }
-        if (httpParams.get('author')) {
-          timer(100).subscribe(() => {
+        timer(100).subscribe(() => {
+          if (httpParams.get('author')) {
             this.filterControls.controls.author.setValue(parseInt(httpParams.get('author') ?? '', 10));
-          });
-        }
+          }
+          if (httpParams.get('title')) {
+            this.filterControls.controls.title.setValue(httpParams.get('title'));
+          }
+        });
       });
     });
     this.$parentChangeSourceRefresh.pipe(
@@ -293,7 +300,7 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
       title: {
         title: '标题',
         type: IColumnType.Custom,
-        filter: true,
+        filter: false,
         renderComponent: PostActionsComponent,
         onComponentInitFunction: (component: PostActionsComponent) => {
           component.setTypes(this.type, this.config.postTypes());
