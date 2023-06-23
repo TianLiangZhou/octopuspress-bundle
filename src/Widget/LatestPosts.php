@@ -76,7 +76,7 @@ EOF;
         if ($author > 0) {
             $filters['author'] = $author;
         }
-        $filters['_sort'] = $order > 2 ? 'title' : 'id';
+        $filters['_sort'] = $order > 2 ? 'title' : 'createdAt';
         $filters['_order']= ['DESC', '', 'DESC', ''][$order - 1];
         $filters['status'] = Post::STATUS_PUBLISHED;
         $posts = $postRepository->createQuery($filters)
