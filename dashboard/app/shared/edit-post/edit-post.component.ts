@@ -4,14 +4,14 @@ import {
   ElementRef,
   Inject,
   Input,
-  OnInit,
+  OnInit, TemplateRef,
   ViewChild
 } from '@angular/core';
 import {
   NB_DATE_ADAPTER,
   NbAccordionComponent,
   NbDatepickerAdapter,
-  NbDateTimePickerComponent,
+  NbDateTimePickerComponent, NbDialogRef, NbDialogService,
   NbSidebarService,
   NbTagInputDirective,
   NbToastrService
@@ -36,7 +36,7 @@ import {
   TAXONOMY_STORE
 } from "../../@core/definition/content/api";
 import {SPINNER} from "../../@core/interceptor/authorization";
-import {Observable, of, ReplaySubject, Subject, Subscription, timer} from "rxjs";
+import {merge, Observable, of, ReplaySubject, Subject, Subscription, timer} from "rxjs";
 import {User} from "../../@core/definition/user/type";
 import {USER_MEMBER} from "../../@core/definition/user/api";
 import {CkeditorComponent} from "../ckeditor/ckeditor.component";
@@ -295,12 +295,13 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
       .subscribe( res => {
         this.id = res.id;
         this.entity.id = res.id;
+        this.entity.previewUrl = res.previewUrl || '';
       });
   }
 
   preview() {
-    if (this.id > 0) {
-      window.open(location.protocol + "//" + location.host + "/post/" + this.id + '?preview=true')
+    if (this.id > 0 && this.entity.previewUrl) {
+      window.open(this.entity.previewUrl);
     } else {
       this.toastService.danger("只有保存之后才可以预览", "预览");
     }
@@ -386,12 +387,15 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
                        status="primary"
                        (checkedChange)="changeSelector($event, option)"
                        [checked]="option.checked">
-            {{ option.name }}
+            {{ option.name }} {{option.checked}}
           </nb-checkbox>
         </div>
-        <button nbButton status="primary" type="button">添加新分类目录</button>
+        <button nbButton (click)="open(dialog)" status="primary" type="button">{{taxonomySetting ? taxonomySetting.labels['addNewItem'] : '添加目录'}}</button>
       </div>
     </div>
+    <ng-template #dialog let-data let-ref="dialogRef">
+      <app-taxonomy-create [setting]="taxonomySetting!" (create)="onCreate($event)"></app-taxonomy-create>
+    </ng-template>
   `,
 })
 export class HierarchicalTermSelectorComponent implements OnInit {
@@ -401,10 +405,14 @@ export class HierarchicalTermSelectorComponent implements OnInit {
   @Input() control: FormControl<TermTaxonomy[]|null> | undefined;
 
   filtered$: Observable<CheckTermTaxonomy[]> | undefined;
+  private dialogRef: NbDialogRef<any> | undefined;
 
-  constructor(protected http: HttpClient) {
+  constructor(protected http: HttpClient, protected dialogService: NbDialogService) {
   }
 
+  open(dialog: TemplateRef<any>) {
+    this.dialogRef = this.dialogService.open(dialog, {});
+  }
 
   changeSelector(checked: boolean, option: TermTaxonomy) {
     let relationships = this.control?.value ?? [];
@@ -433,6 +441,13 @@ export class HierarchicalTermSelectorComponent implements OnInit {
         })
       );
   }
+
+  onCreate(termTaxonomy: TermTaxonomy) {
+    (termTaxonomy as CheckTermTaxonomy).checked = true;
+    this.changeSelector(true, termTaxonomy);
+    this.filtered$ = merge(this.filtered$!, of([termTaxonomy as CheckTermTaxonomy]));
+    this.dialogRef?.close();
+  }
 }
 
 @Component({
@@ -444,7 +459,8 @@ export class HierarchicalTermSelectorComponent implements OnInit {
                 [text]="tag.name" removable="true"></nb-tag>
         <input type="text" [name]="taxonomySetting!.slug" [formControl]="inputControl"
                placeholder="添加标签"
-               status="primary" nbTagInput
+               status="primary"
+               nbTagInput
                autocomplete="off"
                [nbAutocomplete]="autocomplete" (keydown.enter)="$event.preventDefault();" (tagAdd)="onTextAdd($event);" fullWidth/>
         <nb-autocomplete #autocomplete (selectedChange)="onTagAdd($event)">
@@ -456,7 +472,7 @@ export class HierarchicalTermSelectorComponent implements OnInit {
   `,
 })
 
-export class FlatTermSelectorComponent implements OnInit {
+export class FlatTermSelectorComponent implements OnInit, OnSpinner {
 
   @Input() control: FormControl<TermTaxonomy[] | null> | undefined;
 
@@ -470,11 +486,13 @@ export class FlatTermSelectorComponent implements OnInit {
 
   related: TermTaxonomy[] = [];
 
-  private confirmTerm$: Subject<string> = new Subject<string>();
-
-  private subscription: Subscription | undefined;
+  private spinner: boolean = false;
 
   constructor(protected http: HttpClient) {
+  }
+
+  onSpinner(spinner: boolean): void {
+    this.spinner = spinner;
   }
 
   ngOnInit(): void {
@@ -490,9 +508,6 @@ export class FlatTermSelectorComponent implements OnInit {
     this.related = relationships.filter(item => item.taxonomy == this.taxonomySetting?.slug);
   }
 
-
-
-
   onTagRemove(taxonomy: TermTaxonomy): void {
     let relationships = this.control?.value ?? [];
     let index = relationships.findIndex(item => item.id == taxonomy.id);
@@ -506,7 +521,6 @@ export class FlatTermSelectorComponent implements OnInit {
   }
 
   onTagAdd(termTaxonomy: TermTaxonomy): void {
-    this.subscription?.unsubscribe();
     if (!termTaxonomy) {
       return ;
     }
@@ -522,17 +536,20 @@ export class FlatTermSelectorComponent implements OnInit {
   }
 
   onTextAdd(event: NbTagInputAddEvent) {
-    this.subscription = this.confirmTerm$.pipe(delay(100)).subscribe(text => {
-      this.http.post<TermTaxonomy>(TAXONOMY_STORE, {
-        name: text, slug: text, parent: null, taxonomy: this.taxonomySetting?.slug
-      }).subscribe({next: result => {
-          this.onTagAdd(result);
-        },
-        error: error => {
-          this.subscription?.unsubscribe();
-        }
-      });
+    if (this.spinner || event.value == "") {
+      return ;
+    }
+    this.http.post<TermTaxonomy>(
+      TAXONOMY_STORE,
+      {name: event.value, slug: event.value, parent: null, taxonomy: this.taxonomySetting?.slug,},
+      {context:new HttpContext().set(SPINNER, this)}
+    ).subscribe({
+      next: result => {
+        this.onTagAdd(result);
+      },
+      error: (error) => {
+        console.log(error);
+      }
     });
-    this.confirmTerm$.next(event.value);
   }
 }

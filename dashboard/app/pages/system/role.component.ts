@@ -74,7 +74,7 @@ type ResponseMenus = {menus: Capability[]} & ResponseBody;
   `,
 })
 export class RoleComponent implements OnInit, OnSpinner {
-  settings = {};
+  settings: Settings = {columns: {}};
   source: ServerDataSource | undefined;
   menus: Capability[] = [];
   formGroup = new FormGroup({
@@ -194,7 +194,7 @@ export class RoleComponent implements OnInit, OnSpinner {
       columns: {
         name: {
           title: '名称',
-          filter: true,
+          isFilterable: true,
         }
       }
     }

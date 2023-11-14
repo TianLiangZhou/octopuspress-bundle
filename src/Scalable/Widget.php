@@ -87,12 +87,19 @@ final class Widget
      * @param class-string $className
      * @return $this
      */
-    public function registerForClassName(string $className): Widget
+    public function registerForClassName(string $className, array $args = []): Widget
     {
         $name = b(basename(
             str_replace('\\', '/', $className)
         ))->snake()->toString();
-        return $this->register(new $className($this->bridger, $name));
+        /**
+         * @var $widget AbstractWidget
+         */
+        $widget = new $className($this->bridger, $name, $args);
+        if (!$widget instanceof AbstractWidget) {
+            return $this;
+        }
+        return $this->register($widget);
     }
 
 

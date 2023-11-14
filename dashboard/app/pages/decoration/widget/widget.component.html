@@ -102,9 +102,9 @@
                               <span><nb-icon [pack]="product.widget.icon.startsWith('fa-') ? 'fa': ''" [icon]="product.widget.icon"></nb-icon></span>
                               <span class="ms-2">{{product.widget.label}}</span>
                             </div>
-                            <span class="more">
+                            <button class="more" nbButton outline [nbPopover]="itemMore" [nbPopoverContext]="{item:product, name: blocks[selectBlockIndex].name}" nbPopoverPlacement="bottom">
                               <nb-icon icon="more-vertical-outline"></nb-icon>
-                            </span>
+                            </button>
                           </a>
                         </nb-list-item>
                       </nb-list>
@@ -163,5 +163,23 @@
               (click)="widgetSidebarBtnRef.nativeElement.click()">浏览全部
       </button>
     </nb-card-footer>
+  </nb-card>
+</ng-template>
+
+<ng-template #itemMore let-data>
+  <nb-card class="border-0 mb-0" style="width: 22rem;">
+    <nb-card-body class="p-0">
+      <nb-list class="p-0">
+        <nb-list-item>
+          <a class="d-block text-basic text-decoration-none w-100" (click)="onPrevious(data.name, data.item)" role="button">向上移动</a>
+        </nb-list-item>
+        <nb-list-item>
+          <a class="d-block  text-basic text-decoration-none w-100" (click)="onNext(data.name, data.item)"  role="button">向下移动</a>
+        </nb-list-item>
+        <nb-list-item>
+          <a class="d-block  text-basic text-decoration-none w-100" (click)="onRemove(data.name, data.item)"  role="button">删除</a>
+        </nb-list-item>
+      </nb-list>
+    </nb-card-body>
   </nb-card>
 </ng-template>

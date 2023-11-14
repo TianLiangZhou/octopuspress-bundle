@@ -301,6 +301,35 @@ export class WidgetComponent implements OnInit, AfterViewInit {
     }
     this.selectedWidgetComponent(product.id);
   }
+
+  onNext(name: string, item: ProductWidget) {
+    const index = this.blockWidgets[name].findIndex(ele => ele.id == item.id);
+    if (index > - 1) {
+      const next = this.blockWidgets[name][index+1];
+      if (next) {
+        this.blockWidgets[name][index + 1] = item;
+        this.blockWidgets[name][index] = next;
+      }
+    }
+  }
+
+  onPrevious(name: string, item: ProductWidget) {
+    const index = this.blockWidgets[name].findIndex(ele => ele.id == item.id);
+    if (index > -1) {
+      const pre = this.blockWidgets[name][index - 1];
+      if (pre) {
+        this.blockWidgets[name][index - 1] = item;
+        this.blockWidgets[name][index] = pre;
+      }
+    }
+  }
+  onRemove(name: string, item: ProductWidget) {
+    const index = this.blockWidgets[name].findIndex(ele => ele.id == item.id);
+    if (index > -1) {
+      this.blockWidgets[name].splice(index, 1);
+    }
+  }
+
 }
 
 
@@ -322,7 +351,7 @@ export class WidgetComponent implements OnInit, AfterViewInit {
             </nb-icon>
             <span>{{ product.widget.label }}</span>
           </div>
-          <button nbButton fullWidth status="basic" nbPopoverTrigger="click">
+          <button nbButton fullWidth status="basic">
             <nb-icon icon="plus-outline"></nb-icon>
           </button>
         </div>

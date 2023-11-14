@@ -10,6 +10,7 @@ use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Support\DefaultViewFilter;
 use OctopusPress\Bundle\Util\Formatter;
+use OctopusPress\Bundle\Widget\AbstractWidget;
 use OctopusPress\Bundle\Widget\Archives;
 use OctopusPress\Bundle\Widget\Audio;
 use OctopusPress\Bundle\Widget\Breadcrumb;
@@ -33,6 +34,8 @@ use OctopusPress\Bundle\Widget\Video;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\String\ByteString;
+use Twig\Loader\FilesystemLoader;
+use function Symfony\Component\String\b;
 
 class MasterManager
 {
@@ -338,7 +341,7 @@ class MasterManager
     public function createInitialWidgets(): void
     {
         $hook = $this->bridger->getHook();
-        $hook->add('setup_theme', function () {
+        $hook->add('setup_theme', function (string $theme) {
             $defaults = [
                 Navigation::class,
                 Breadcrumb::class,
@@ -363,9 +366,41 @@ class MasterManager
             if ($this->bridger->getTheme()->getThemeSupport('custom_logo')) {
                 $defaults[] = SiteLogo::class;
             }
-            $wg = $this->bridger->getWidget();
-            foreach ($defaults as $class) {
-                $wg->registerForClassName($class);
+            $customWidgets = (array) $this->bridger->getHook()->filter('register_custom_widgets', []);
+            $widget = $this->bridger->getWidget();
+            /**
+             * @var $loader FilesystemLoader
+             */
+            $loader = $this->bridger->getTwig()->getLoader();
+            $widgets = array_merge($defaults, $customWidgets);
+            $namespaces = [];
+            if ($loader instanceof FilesystemLoader) {
+                $namespaces = $loader->getNamespaces();
+            }
+            foreach ($widgets as $className) {
+                if (!class_exists($className)) {
+                    continue;
+                }
+                $name = b(basename(str_replace('\\', '/', $className)))->snake()->toString();;
+                $template = sprintf('%s/%s.html.twig', $theme, $name);
+                $templates = [];
+                if ($loader->exists($template)) {
+                    $templates[] = $template;
+                }
+                foreach ($namespaces as $namespace) {
+                    if ($namespace === FilesystemLoader::MAIN_NAMESPACE) {
+                        continue;
+                    }
+                    $template = sprintf('%s/%s.html.twig', '@'. $namespace, $name);
+                    if ($loader->exists($template)) {
+                        $templates[] = $template;
+                    }
+                }
+                $wg = new $className($this->bridger, $name, ['templates' => $templates]);
+                if (!$wg instanceof AbstractWidget) {
+                    continue;
+                }
+                $widget->register($wg);
             }
         });
     }

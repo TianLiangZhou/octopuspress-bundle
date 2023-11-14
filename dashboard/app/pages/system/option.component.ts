@@ -1,7 +1,7 @@
 import {Component, OnInit, TemplateRef} from '@angular/core';
-import {OPTION_STORE, OPTION_UPDATE, OPTIONS} from "../../@core/definition/system/api";
+import {OPTIONS} from "../../@core/definition/system/api";
 import {Option} from "../../@core/definition/system/type";
-import {IColumnType, ServerDataSource} from "angular2-smart-table";
+import {ServerDataSource} from "angular2-smart-table";
 import {Settings} from "angular2-smart-table/lib/lib/settings";
 import {HttpClient} from "@angular/common/http";
 import {FormArray, FormControl, FormGroup, Validators} from "@angular/forms";
@@ -14,7 +14,7 @@ import {EditEvent} from "angular2-smart-table/lib/lib/events";
 })
 export class OptionComponent implements OnInit {
 
-  settings = {};
+  settings: Settings = {columns: {}};
   source: ServerDataSource | undefined;
   dataType = [
     {t: 1, n: '开关类型'},
@@ -175,7 +175,7 @@ export class OptionComponent implements OnInit {
         },
         value: {
           title: '值',
-          type: IColumnType.Html,
+          type: 'html',
           valuePrepareFunction: (value: any) => {
             if (this.isArray(value)) {
               return `<pre>` + JSON.stringify(value, undefined, 2) + `</pre>`;
@@ -185,7 +185,7 @@ export class OptionComponent implements OnInit {
             }
             return value;
           },
-          filter: false,
+          isFilterable: false,
         }
       }
     }

@@ -11,6 +11,7 @@ import {CustomComponent} from "./custom/custom.component";
 import {ControlModule} from "../../shared/control/control.module";
 import {RouterModule, Routes} from "@angular/router";
 import {MarketComponent} from "./theme/market.component";
+import { NbContextMenuModule } from '@nebular/theme';
 
 
 const routes: Routes = [
@@ -58,6 +59,7 @@ const routes: Routes = [
     DragDropModule,
     UploadModule,
     ControlModule,
+    NbContextMenuModule,
   ]
 })
 export class DecorationModule {

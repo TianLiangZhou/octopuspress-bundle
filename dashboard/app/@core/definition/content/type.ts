@@ -31,6 +31,7 @@ export interface Post {
   featuredImage: Partial<Attachment>,
   createdAt?: string,
   modifiedAt?: string,
+  previewUrl?: string,
 }
 
 

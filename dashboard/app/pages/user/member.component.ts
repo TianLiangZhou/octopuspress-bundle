@@ -2,21 +2,23 @@ import {Component, Input, OnInit} from '@angular/core';
 import {User} from "../../@core/definition/user/type";
 import {USER_DELETE_MEMBER, USER_MEMBER, USER_RESET_EMAIL} from '../../@core/definition/user/api';
 import {HttpClient, HttpContext} from "@angular/common/http";
-import {IColumnType, ServerDataSource} from "angular2-smart-table";
+import {Cell, ServerDataSource} from "angular2-smart-table";
 import {DeleteEvent} from "angular2-smart-table/lib/lib/events";
 import {Settings} from "angular2-smart-table/lib/lib/settings";
 import {ConfigurationService} from "../../@core/services/configuration.service";
 import {ActivatedRoute, ActivatedRouteSnapshot} from "@angular/router";
 import {OnSpinner} from "../../@core/definition/common";
 import {SPINNER} from "../../@core/interceptor/authorization";
-import {Post, PostTypeSetting} from "../../@core/definition/content/type";
+import {PostTypeSetting} from "../../@core/definition/content/type";
 
 @Component({
   selector: 'app-user',
   templateUrl: './member.component.html',
 })
 export class MemberComponent implements OnInit, OnSpinner {
-  settings = {};
+  settings: Settings = {
+    columns: {},
+  };
   source: ServerDataSource | undefined;
   batches = [
     {'label': '批量操作', 'value': ''},
@@ -79,25 +81,28 @@ export class MemberComponent implements OnInit, OnSpinner {
       columns: {
         account: {
           title: '用户名',
-          type: IColumnType.Custom,
-          filter: true,
+          type: 'custom',
+          isFilterable: true,
           renderComponent: MemberActionComponent,
-          onComponentInitFunction: (component: MemberActionComponent) => {
+          componentInitFunction: (component: MemberActionComponent, cell: Cell) => {
+            component.value = cell.getValue();
+            component.rowData = cell.getRow().getData();
             component.postTypeSettings = this.configService.postTypes()
           },
         },
         nickname: {
           title: '显示名称',
-          type: IColumnType.Text,
-          filter: true,
-          valuePrepareFunction: (nickname: string, user: User) => {
-            return nickname == user.account ? '-' : nickname;
+          type: 'text',
+          isFilterable: true,
+          valuePrepareFunction: (nickname: string, user: Cell) => {
+            return nickname == user.getRow().getData().account ? '-' : nickname;
           }
         },
         roles: {
           title: '角色',
-          type: IColumnType.Text,
-          valuePrepareFunction: (roles: number[], user: User) => {
+          type: 'text',
+          isFilterable: false,
+          valuePrepareFunction: (roles: number[], user: Cell) => {
             if (roles.length < 1) {
               return '-';
             }
@@ -112,16 +117,16 @@ export class MemberComponent implements OnInit, OnSpinner {
         },
         email: {
           title: '邮箱',
-          type: IColumnType.Html,
-          filter: true,
-          valuePrepareFunction: (email: string, user: User) => {
+          type: 'html',
+          isFilterable: true,
+          valuePrepareFunction: (email: string, user: Cell) => {
             return `<a href="mailto:${email}">${email}</a>`
           }
         },
         registeredAt: {
           title: '加入时间',
-          type: IColumnType.Text,
-          filter: false,
+          type: 'text',
+          isFilterable: false,
         },
       }
     }
@@ -181,7 +186,7 @@ export class MemberComponent implements OnInit, OnSpinner {
   selector: 'app-user-action',
   template: `
     <div class="d-flex flex-row">
-      <img width="50" alt="" *ngIf="rowData.avatar" [ngSrc]="rowData.avatar"/>
+      <img width="50" alt="" *ngIf="rowData.avatar" [src]="rowData.avatar"/>
       <a [class.ms-2]="rowData.avatar" [routerLink]="'/app/user/'+rowData.id" queryParamsHandling="merge">{{value}}</a>
     </div>
     <div>

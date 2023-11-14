@@ -7,10 +7,11 @@ import {Angular2SmartTableModule} from "angular2-smart-table";
 import {RouterModule, Routes} from "@angular/router";
 import {
   ConvertDialogComponent,
-  EditTaxonomyComponent,
   TaxonomyActionsComponent,
   TaxonomyComponent
 } from "./taxonomy.component";
+import {TaxonomyModule as CommonTaxonomyModule} from "../../shared/taxonomy/taxonomy.module";
+import {EditTaxonomyComponent} from "../../shared/taxonomy/taxonomy.component";
 
 
 
@@ -28,16 +29,17 @@ let routes: Routes = [
 @NgModule({
   declarations: [
     TaxonomyComponent,
-    EditTaxonomyComponent,
     TaxonomyActionsComponent,
     ConvertDialogComponent,
+  ],
+  exports: [
   ],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
     Angular2SmartTableModule,
     ThemeModule,
-    ControlModule,
+    CommonTaxonomyModule,
   ]
 })
 export class TaxonomyModule {

@@ -16,7 +16,7 @@ import {
   Subject,
   timer,
 } from "rxjs";
-import {IColumnType, ServerDataSource} from "angular2-smart-table";
+import {Cell, FilterSettings, IColumnType, ServerDataSource} from "angular2-smart-table";
 import {IColumn, Settings} from "angular2-smart-table/lib/lib/settings";
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {Post, PostTypeSetting, TaxonomySetting, TermTaxonomy} from "../../@core/definition/content/type";
@@ -299,10 +299,12 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
     const defaultColumns: Record<string, IColumn> = {
       title: {
         title: '标题',
-        type: IColumnType.Custom,
-        filter: false,
+        type: 'custom',
+        isFilterable: false,
         renderComponent: PostActionsComponent,
-        onComponentInitFunction: (component: PostActionsComponent) => {
+        componentInitFunction: (component: PostActionsComponent, cell: Cell) => {
+          component.value = cell.getValue();
+          component.rowData = cell.getRow().getData();
           component.setTypes(this.type, this.config.postTypes());
           component.onClick().subscribe(action => {
             this.executeAction(action.action, [action.id], component.rowData.title)
@@ -312,9 +314,10 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
       },
       author: {
         title: '作者',
-        type: IColumnType.Custom,
-        filter: false,
+        type: 'custom',
+        isFilterable: false,
         renderComponent: PostAuthorComponent,
+        componentInitFunction: PostAuthorComponent.initComponent,
         width: '10%',
         isSortable: false,
       },
@@ -335,12 +338,14 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
       if (taxonomies[slug].visibility.showPostTable[this.type]) {
         dynamicColumns[slug] = {
           title: taxonomies[slug].label,
-          type: IColumnType.Custom,
+          type: 'custom',
           renderComponent: PostTaxonomyComponent,
-          onComponentInitFunction: (component: PostTaxonomyComponent) => {
+          componentInitFunction: (component: PostTaxonomyComponent, cell: Cell) => {
+            component.value = cell.getValue();
+            component.rowData = cell.getRow().getData();
             component.taxonomy = slug;
           },
-          filter: false,
+          isFilterable: false,
           width: '15%',
           isSortable: false,
         };
@@ -352,11 +357,11 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
       }
     }
 
-    const columns = Object.assign(defaultColumns, dynamicColumns, {
+    const columns: Record<string, IColumn> = Object.assign(defaultColumns, dynamicColumns, {
       modifiedAt: {
         title: '日期',
-        type: IColumnType.Html,
-        filter: false,
+        type: 'html',
+        isFilterable: false,
         width: '15%',
         valuePrepareFunction: (time: string, post: Post) => {
           return "最后修改<br/>" + time;
@@ -554,5 +559,10 @@ export class PostAuthorComponent implements OnInit {
   @Input() rowData: Post | undefined;
 
   ngOnInit(): void {
+  }
+
+  static initComponent(instance: PostAuthorComponent, cell: Cell) {
+    instance.value = cell.getRawValue() as User;
+    instance.rowData = cell.getRow().getData();
   }
 }

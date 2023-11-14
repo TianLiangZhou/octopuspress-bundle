@@ -17,9 +17,9 @@ use OctopusPress\Bundle\Event\PostStatusUpdateEvent;
 use OctopusPress\Bundle\Form\Type\PostType;
 use OctopusPress\Bundle\Model\PostManager;
 use OctopusPress\Bundle\Repository\PostRepository;
-use Doctrine\ORM\ORMException;
 use OctopusPress\Bundle\Repository\RelationRepository;
 use OctopusPress\Bundle\Repository\UserRepository;
+use OctopusPress\Bundle\Twig\OctopusRuntime;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,6 +27,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Twig\Error\RuntimeError;
 
 /**
  * Class PostsController
@@ -109,13 +110,7 @@ class PostController extends AdminController
         $yearMonths = $ymResults ? array_map(function ($item) {
             return ['label' => $item['y'] . '-' . $item['m'], 'value' => $item['y'] . '-' . $item['m']];
         }, $ymResults) : [];
-        $data = [
-            'all' => 0,
-            'publish' => 0,
-            'draft' => 0,
-            'trash' => 0,
-            'yearMonths' => $yearMonths,
-        ];
+        $data = ['yearMonths' => $yearMonths];
         $qb = $this->repository->createQueryBuilder('a');
         if (!empty($queries['relations'])) {
             $qb->innerJoin(
@@ -170,6 +165,11 @@ class PostController extends AdminController
     }
 
 
+    /**
+     * @param int $id
+     * @return JsonResponse
+     * @throws RuntimeError
+     */
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'])]
     public function show(int $id): JsonResponse
     {
@@ -213,6 +213,9 @@ class PostController extends AdminController
                     'featuredImage' => $featuredImage,
                     'relationships' => $relationships,
                     'meta' => (object) $metas,
+                    'previewUrl'    => $this->bridger->getTwig()
+                        ->getRuntime(OctopusRuntime::class)
+                        ->permalink($post, ['preview' => true, 'nonce' => bin2hex(random_bytes(4))]),
                 ]
             ),
         );
@@ -248,6 +251,7 @@ class PostController extends AdminController
      * @param Request $request
      * @param User $user
      * @return JsonResponse
+     * @throws RuntimeError
      */
     #[Route('/store', name: 'store', options: ['name' => '创建文章', 'sort'=> 0, 'parent' => 'post_all'], methods: Request::METHOD_POST)]
     public function store(Request $request, #[CurrentUser] User $user): JsonResponse
@@ -261,6 +265,7 @@ class PostController extends AdminController
      * @param Request $request
      * @param User $user
      * @return JsonResponse
+     * @throws RuntimeError
      */
     #[Route('/{id}/update', name: 'update', options: ['name' => '更新文章', 'sort'=>1, 'parent' => 'post_all'], methods: Request::METHOD_POST)]
     public function update(Post $post, Request $request, #[CurrentUser] User $user): JsonResponse
@@ -276,6 +281,9 @@ class PostController extends AdminController
         }
         return $this->json([
             'id' => $post->getId(),
+            'previewUrl' => $this->bridger->getTwig()
+                ->getRuntime(OctopusRuntime::class)
+                ->permalink($post, ['preview' => true, 'nonce' => bin2hex(random_bytes(4))]),
         ]);
     }
 

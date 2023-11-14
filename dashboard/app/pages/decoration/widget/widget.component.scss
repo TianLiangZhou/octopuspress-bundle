@@ -86,19 +86,21 @@
 
   nb-list-item a {
     color: var(--text-basic-color);
-    span.more {
+    .more {
       visibility: hidden;
+      background-color: inherit;
+      border: none;
     }
     &:hover {
       color: var(--text-primary-color);
-      span.more {
+      more {
         visibility: visible;
       }
     }
   }
   nb-list-item.selected {
     background-color: var(--background-basic-color-3);
-    a span.more {
+    a .more {
       visibility: visible;
     }
   }

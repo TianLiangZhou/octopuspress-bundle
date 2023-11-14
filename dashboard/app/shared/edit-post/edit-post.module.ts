@@ -9,6 +9,7 @@ import {ControlModule} from "../control/control.module";
 import {ThemeModule} from "../../@theme/theme.module";
 import {CKFinderService} from "../../@core/services/ckfinder.service";
 import {CkeditorModule} from "../ckeditor/ckeditor.module";
+import {TaxonomyModule} from "../taxonomy/taxonomy.module";
 
 
 
@@ -21,14 +22,15 @@ import {CkeditorModule} from "../ckeditor/ckeditor.module";
   exports: [
     EditPostComponent,
   ],
-  imports: [
-    CommonModule,
-    ThemeModule,
-    CKEditorModule,
-    NbListModule,
-    ControlModule,
-    CkeditorModule
-  ],
+    imports: [
+        CommonModule,
+        ThemeModule,
+        CKEditorModule,
+        NbListModule,
+        ControlModule,
+        CkeditorModule,
+        TaxonomyModule
+    ],
   providers: [
     CKFinderService
   ]

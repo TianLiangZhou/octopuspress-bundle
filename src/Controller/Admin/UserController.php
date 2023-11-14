@@ -44,6 +44,13 @@ class UserController extends AdminController
     public function members(Request $request): JsonResponse
     {
         $pagination = $this->userRepository->pagination($request, AbstractQuery::HYDRATE_OBJECT);
+        $package = $this->bridger->getPackages();
+        foreach($pagination['records'] as &$item) {
+            if ($item['avatar']) {
+                $item['avatar'] = $package->getPackage()->getUrl($item['avatar']);
+            }
+        }
+        unset($item);
         return $this->json($pagination);
     }
 

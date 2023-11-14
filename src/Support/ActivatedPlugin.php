@@ -38,4 +38,12 @@ final class ActivatedPlugin
         }
         return null;
     }
+
+    /**
+     * @return Plugin[]
+     */
+    public function all(): array
+    {
+        return $this->registered;
+    }
 }

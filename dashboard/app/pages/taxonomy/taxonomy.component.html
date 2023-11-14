@@ -1,28 +1,6 @@
 <div class="row">
-  <div class="col-12 col-md-4" *ngIf="controls.length > 0">
-    <nb-card>
-      <nb-card-header>
-        {{formGroup!.controls['id'].value < 1 ? taxonomySetting!.labels.addNewItem : taxonomySetting!.labels.editItem}}
-      </nb-card-header>
-      <nb-card-body>
-        <form (ngSubmit)="onSubmit($event)" [formGroup]="formGroup!">
-          <control-container [controls]="controls" [form]="formGroup!"></control-container>
-          <control-container [controls]="metaControls" [form]="metaGroup!"></control-container>
-          <div class="my-3  d-flex justify-content-between">
-            <label class="label col-form-label"></label>
-            <button
-              type="submit"
-              status="primary"
-              size="small"
-              [disabled]="formGroup!.invalid || spinner"
-              [nbSpinner]="spinner"
-              nbButton>
-              {{formGroup!.controls['id'].value < 1 ? taxonomySetting!.labels.addNewItem : '更新'}}
-            </button>
-          </div>
-        </form>
-      </nb-card-body>
-    </nb-card>
+  <div class="col-12 col-md-4">
+    <app-taxonomy-create [setting]="taxonomySetting!"></app-taxonomy-create>
   </div>
   <div class="col-12 col-md-8">
     <nb-card>

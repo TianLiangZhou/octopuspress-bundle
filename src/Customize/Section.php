@@ -20,7 +20,7 @@ class Section implements \JsonSerializable
 
     /**
      * @param string $id
-     * @param array{title?:string, description?:string, priority?:integer} $args
+     * @param array{label?:string, description?:string, priority?:integer} $args
      */
     public function __construct(string $id, array $args = [])
     {

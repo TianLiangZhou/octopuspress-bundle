@@ -58,6 +58,7 @@ export type PostEntity = ResponseBody & Post;
 
 export type ActionBody = ResponseBody & {
   id: number;
+  previewUrl?: string;
 }
 
 

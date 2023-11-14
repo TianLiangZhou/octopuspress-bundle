@@ -1,4 +1,4 @@
-@import 'themes';
+@use 'themes';
 
 @mixin nb-overrides() {
   nb-select.size-medium button {

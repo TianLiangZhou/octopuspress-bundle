@@ -1,10 +1,10 @@
-import {Component, EventEmitter, HostListener, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit} from '@angular/core';
 import {HttpClient, HttpContext, HttpParams} from "@angular/common/http";
 import {EditEvent} from "angular2-smart-table/lib/lib/events";
-import {IColumnType, ServerDataSource} from "angular2-smart-table";
+import {Cell, ServerDataSource} from "angular2-smart-table";
 import {Settings} from "angular2-smart-table/lib/lib/settings";
 import {FormControl, NgForm} from "@angular/forms";
-import {ActivatedRoute, ActivatedRouteSnapshot, convertToParamMap, Params} from "@angular/router";
+import {ActivatedRoute, ActivatedRouteSnapshot, Params} from "@angular/router";
 import {LocationStrategy} from "@angular/common";
 import {ConfigurationService} from "../../@core/services/configuration.service";
 import {OnSpinner} from "../../@core/definition/common";
@@ -21,7 +21,9 @@ export class CommentComponent implements OnInit, OnSpinner {
   radioFilter = new FormControl('all');
   radios: {label: string, value: string}[] = [];
 
-  settings: Settings = {};
+  settings: Settings = {
+    columns: {},
+  };
   batches = [
     {'label': '批量操作', 'value': ''},
     {'label': '驳回', 'value': 'unapproved'},
@@ -112,14 +114,16 @@ export class CommentComponent implements OnInit, OnSpinner {
       columns: {
         author: {
           title: "作者",
-          filter: false,
+          isFilterable: false,
         },
         content: {
           title: "评论",
-          filter: true,
-          type: IColumnType.Custom,
+          isFilterable: true,
+          type: 'custom',
           renderComponent: CommentContentComponent,
-          onComponentInitFunction: (component: CommentContentComponent) => {
+          componentInitFunction: (component: CommentContentComponent, cell: Cell) => {
+            component.value = cell.getValue();
+            component.rowData = cell.getRow().getData();
             component.onClick().subscribe(data => {
               this.updateStatus(data.action, [data.id]);
             });
@@ -127,13 +131,14 @@ export class CommentComponent implements OnInit, OnSpinner {
         },
         post: {
           title: "回复至",
-          type: IColumnType.Custom,
+          type: 'custom',
           renderComponent: CommentPostComponent,
-          filter: false,
+          componentInitFunction: CommentPostComponent.initComponent,
+          isFilterable: false,
         },
         createdAt: {
           title: "评论于",
-          filter: false,
+          isFilterable: false,
         }
       }
     };
@@ -349,4 +354,8 @@ export class CommentPostComponent implements OnInit {
 
   }
 
+  static initComponent(instance: CommentPostComponent, cell: Cell) {
+    instance.value = cell.getRawValue() as Post;
+    instance.rowData = cell.getRow().getData();
+  }
 }
