@@ -234,6 +234,7 @@ class SiteController extends AdminController
             }
             if ($item == null) {
                 $item = new Option();
+                $item->setAutoload('yes');
             }
             $item->setName($name)->setValue($options[$name]);
             $entityManager->persist($item);

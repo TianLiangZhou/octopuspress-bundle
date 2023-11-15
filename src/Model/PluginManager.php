@@ -80,7 +80,11 @@ class PluginManager extends PackageManager
      */
     private function migrateTo(string $pluginName): void
     {
-        $publicPluginDir = $this->bridger->getPublicDir(). DIRECTORY_SEPARATOR .'plugins' . DIRECTORY_SEPARATOR . $pluginName;
+        $openPluginDir = $this->getBridger()->getPublicDir(). DIRECTORY_SEPARATOR .'plugins';
+        if (!is_writable($openPluginDir)) {
+            throw new \UnexpectedValueException(sprintf("Directory `%s/plugins` does not have write permission", $openPluginDir), );
+        }
+        $publicPluginDir = $openPluginDir . DIRECTORY_SEPARATOR . $pluginName;
         if (!\file_exists($publicPluginDir)) {
             \mkdir($publicPluginDir, 0755, true);
         }

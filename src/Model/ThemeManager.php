@@ -181,8 +181,8 @@ class ThemeManager extends PackageManager
     public function targetDir(string $theme): string
     {
         $targetDir = !empty($bad = $this->bridger->getBuildAssetsDir()) ? $bad : $this->bridger->getPublicDir();
-        if (!is_writable($targetDir)) {
-            throw new IOException(sprintf('Directory `%s` does not have write permission', $targetDir));
+        if (!is_writable($targetDir . DIRECTORY_SEPARATOR . 'themes')) {
+            throw new IOException(sprintf('Directory `%s/themes` does not have write permission', $targetDir));
         }
         return $targetDir . DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR . $theme;
     }

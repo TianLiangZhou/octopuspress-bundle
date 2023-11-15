@@ -53,6 +53,10 @@ export class ContentComponent implements OnInit, OnSpinner {
     this.submitted = spinner;
   }
 
+  editorSupportMarkdown($event: boolean): void {
+    this.option.editor_support_markdown = $event ? 'open' : '';
+  }
+
   defaultCommentStatus($event: boolean) {
     this.option.default_comment_status = $event ? 'open' : '';
   }

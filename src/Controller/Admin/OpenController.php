@@ -57,6 +57,7 @@ class OpenController extends AdminController
         return $this->json([
             'name' => $this->optionRepository->title(),
             'siteUrl' => $this->optionRepository->siteUrl(),
+            'markdown' => $this->optionRepository->markdown(),
             'assetsUrl' => $this->bridger->getAssetsUrl(),
             'timestamp' => time(),
             'roles' => $roles,

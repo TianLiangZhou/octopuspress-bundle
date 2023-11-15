@@ -60,6 +60,7 @@ class OptionRepository extends ServiceEntityRepository
         'default_category',
         'default_post_format',
         'posts_per_page',
+        'editor_support_markdown',
         'default_comment_status',
         'comment_moderation',
         'page_comments',
@@ -223,6 +224,15 @@ class OptionRepository extends ServiceEntityRepository
     public function siteIcon(): int
     {
         return (int) ($this->getDefaultOptions()['site_icon'] ?? 0);
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function markdown(): bool
+    {
+        return ($this->getDefaultOptions()['editor_support_markdown'] ?? '') === 'open';
     }
 
     /**

@@ -387,7 +387,7 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
                        status="primary"
                        (checkedChange)="changeSelector($event, option)"
                        [checked]="option.checked">
-            {{ option.name }} {{option.checked}}
+            {{ option.name }}
           </nb-checkbox>
         </div>
         <button nbButton (click)="open(dialog)" status="primary" type="button">{{taxonomySetting ? taxonomySetting.labels['addNewItem'] : '添加目录'}}</button>
