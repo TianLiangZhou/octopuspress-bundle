@@ -488,6 +488,8 @@ export class FlatTermSelectorComponent implements OnInit, OnSpinner {
 
   private spinner: boolean = false;
 
+  private subscription: Subscription | undefined;
+
   constructor(protected http: HttpClient) {
   }
 
@@ -521,6 +523,7 @@ export class FlatTermSelectorComponent implements OnInit, OnSpinner {
   }
 
   onTagAdd(termTaxonomy: TermTaxonomy): void {
+    this.subscription?.unsubscribe();
     if (!termTaxonomy) {
       return ;
     }
@@ -539,17 +542,20 @@ export class FlatTermSelectorComponent implements OnInit, OnSpinner {
     if (this.spinner || event.value == "") {
       return ;
     }
-    this.http.post<TermTaxonomy>(
-      TAXONOMY_STORE,
-      {name: event.value, slug: event.value, parent: null, taxonomy: this.taxonomySetting?.slug,},
-      {context:new HttpContext().set(SPINNER, this)}
-    ).subscribe({
-      next: result => {
-        this.onTagAdd(result);
-      },
-      error: (error) => {
-        console.log(error);
-      }
+    this.subscription = of(event.value).pipe(delay(100)).subscribe(text => {
+      this.http.post<TermTaxonomy>(
+        TAXONOMY_STORE,
+        {name: text, slug: text, parent: null, taxonomy: this.taxonomySetting?.slug,},
+        {context:new HttpContext().set(SPINNER, this)}
+      ).subscribe({
+        next: result => {
+          this.onTagAdd(result);
+        },
+        error: (error) => {
+          console.log(error);
+          this.subscription?.unsubscribe();
+        }
+      });
     });
   }
 }

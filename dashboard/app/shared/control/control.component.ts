@@ -1,14 +1,14 @@
-import {
-  Component,
-  Inject,
-  Input, LOCALE_ID,
-  OnInit,
-} from "@angular/core";
+import {Component, Inject, Input, LOCALE_ID, OnInit} from "@angular/core";
 import {CKFinderService} from "../../@core/services/ckfinder.service";
-import {buildFormGroup, Control} from "./type";
+import {buildFormGroup, Control, ControlOption} from "./type";
 import {FormGroup} from "@angular/forms";
 import {DomSanitizer} from "@angular/platform-browser";
-import {Attachment} from "../../@core/definition/content/type";
+import {Attachment, TermTaxonomy} from "../../@core/definition/content/type";
+import { Observable, map, of, startWith } from "rxjs";
+import {HttpClient} from "@angular/common/http";
+import {debounceTime, distinctUntilChanged, filter, switchMap} from "rxjs/operators";
+import {Records} from "../../@core/definition/common";
+import {TAXONOMIES} from "../../@core/definition/content/api";
 
 @Component({
   selector: "control",
@@ -31,9 +31,11 @@ export class ControlComponent implements OnInit {
   protected onTouched: Function = () => {};
   id: string = "";
   attachments: string[] = [];
+  filteredControlOptions$: Observable<ControlOption[]> = of([]);
 
   constructor(
     private ckfinder: CKFinderService,
+    protected http: HttpClient,
     public dom: DomSanitizer,
     @Inject(LOCALE_ID) private locale: string,
   ) {
@@ -90,7 +92,29 @@ export class ControlComponent implements OnInit {
         this.buildAttachment(formControl.value)
       }
     }
+
+    if (this.control.type === 'autocomplete' || this.control.type === 'select_search') {
+      if (this.control.options) {
+        this.filteredControlOptions$ = of(this.control.options);
+      }
+    }
   }
+
+
+  filterOptions(text: string) {
+    let endpoint = this.control.settings ? this.control.settings['endpoint'] || '' : '';
+    of(text).pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+    ).subscribe(value => {
+      if (endpoint) {
+        this.filteredControlOptions$ = this.http.get<Records<any>>( endpoint+ '?text=' + value).pipe(map(result => result.records))
+      } else {
+        this.filteredControlOptions$ = of((this.control.options || []).filter(option => option.label.includes(value)));
+      }
+    });
+  }
+
 
   private buildAttachment(value: any) {
     if (!Array.isArray(value)) {
@@ -122,17 +146,13 @@ export class ControlComponent implements OnInit {
   }
 
   openMedia() {
-    if (this.control.type == 'image') {
-      this.ckfinder.popup({
-        resourceType: "Images",
-        multi: this.control.multiple!,
-        source: this.control.id,
-        cropped: this.control.settings && this.control.settings.cropped ? this.control.settings.cropped : undefined,
-      });
-    } else {
-      const resourceType = this.control.type.charAt(0).toUpperCase() + this.control.type.slice(1) + 's';
-      this.ckfinder.popup({resourceType: resourceType, multi: this.control.multiple!, source: this.control.id});
-    }
+    const resourceType = this.control.type.charAt(0).toUpperCase() + this.control.type.slice(1) + 's';
+    this.ckfinder.popup({
+      resourceType: resourceType,
+      multi: this.control.multiple!,
+      source: this.control.id,
+      cropped: this.control.settings && this.control.settings.cropped ? this.control.settings.cropped : undefined,
+    });
   }
 
   get status() {
@@ -176,4 +196,6 @@ export class ControlComponent implements OnInit {
   get formGroup() {
     return this.getControl();
   }
+
+  protected readonly HTMLInputElement = HTMLInputElement;
 }

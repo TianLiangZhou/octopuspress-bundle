@@ -54,8 +54,20 @@
          [multiple]="control.multiple"
          [selected]="control.value"
          [formControlName]="control.id">
-        <nb-option *ngFor="let option of control.options" [value]="option.value">{{option.label}}</nb-option>
+         <nb-option *ngFor="let option of control.options" [value]="option.value">{{option.label}}</nb-option>
       </nb-select>
+      <nb-select-with-autocomplete
+        status="primary" fullWidth
+       *ngSwitchCase="'select_search'"
+       [withOptionsAutocomplete]="true"
+       [placeholder]="control.placeholder!"
+       [multiple]="control.multiple"
+       [selected]="control.value"
+       [formControlName]="control.id"
+        (optionsAutocompleteInputChange)="filterOptions($event)"
+        >
+        <nb-option *ngFor="let option of filteredControlOptions$ | async" [value]="option.value">{{option.label}}</nb-option>
+      </nb-select-with-autocomplete>
 
 
       <nb-radio-group class="d-flex" *ngSwitchCase="'radio'" [formControlName]="control.id" [id]="control.id" status="primary">
@@ -99,8 +111,14 @@
          [placeholder]="control.placeholder"
          [formControlName]="control.id"
          [nbAutocomplete]="autocomplete"
+         #autoInput
+         (input)="filterOptions(autoInput.value)"
         />
-        <nb-autocomplete #autocomplete></nb-autocomplete>
+        <nb-autocomplete #autocomplete>
+          <nb-option *ngFor="let option of filteredControlOptions$ | async" [value]="option.value">
+            {{ option.label }}
+          </nb-option>
+        </nb-autocomplete>
       </div>
 
       <div class="d-flex justify-content-between align-items-center" *ngSwitchCase="'color'">

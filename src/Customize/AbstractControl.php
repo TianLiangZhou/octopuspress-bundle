@@ -17,6 +17,7 @@ abstract class AbstractControl implements \JsonSerializable
     const DATETIME = 'datetime';
     const RANGE_DATE = 'range_date';
     const SELECT = 'select';
+    const SELECT_SEARCH = 'select_search';
     const CHECKBOX = 'checkbox';
     const RADIO = 'radio';
     const SWITCH = 'switch';
@@ -153,6 +154,7 @@ abstract class AbstractControl implements \JsonSerializable
     /**
      * @param string $id
      * @param bool $exclusive
+     * @param string|int|bool|null $value
      * @return $this
      */
     public function addDepend(string $id, bool $exclusive = false, string|int|bool|null $value = null): static
