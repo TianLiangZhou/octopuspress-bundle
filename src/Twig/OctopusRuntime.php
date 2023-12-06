@@ -3,17 +3,12 @@
 namespace OctopusPress\Bundle\Twig;
 
 use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query;
-use Doctrine\ORM\Query\AST\Join;
-use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Post;
-use OctopusPress\Bundle\Entity\TermRelationship;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
 use OctopusPress\Bundle\Entity\User;
-use OctopusPress\Bundle\Model\PluginManager;
 use OctopusPress\Bundle\Plugin\PluginProviderInterface;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Repository\PostRepository;
@@ -26,8 +21,6 @@ use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Widget\AbstractWidget;
 use OctopusPress\Bundle\Widget\Navigation;
-use OctopusPress\Bundle\Widget\Pagination;
-use Symfony\Component\Filesystem\Path;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Error\LoaderError;
@@ -223,32 +216,20 @@ class OctopusRuntime implements RuntimeExtensionInterface
     {
         $request = $this->getRequest();
         $pathInfo = $request->getPathInfo();
-        if ($this->activatedRoute->isHome() && empty($link)) {
+        if ($this->activatedRoute->isHome() && (empty($link) || $link == '/')) {
             return true;
         }
-        $linkInfo = parse_url($link);
-        $idUriQueryExist = stripos($linkInfo['query'] ?? '', 'p=');
-        if ($this->activatedRoute->isHome() && isset($linkInfo['path']) && $linkInfo['path'] == '/' && $idUriQueryExist === false) {
-            return true;
+        if ($this->activatedRoute->isSingular() && $this->option->permalinkStructure() === 'post_permalink_normal') {
+            $p = $this->bridger->getRequestStack()
+                ->getMainRequest()
+                ->query
+                ->getInt('p');
+            return str_contains($link, 'p=' . $p);
         }
-        $uri = $request->getRequestUri();
-        if ($uri == $link || ($uri . '.html') == $link) {
-            return true;
+        if ($this->option->staticMode() && ($this->activatedRoute->isArchives() || $this->activatedRoute->isSingular())) {
+            $pathInfo .= '.html';
         }
-        if (isset($linkInfo['path']) && $pathInfo == $linkInfo['path']) {
-            $idQueryExist = $request->query->has('p');
-            if (($idQueryExist && $idUriQueryExist === false) || (!$idQueryExist && $idUriQueryExist !== false)) {
-                return false;
-            }
-            if (!$idQueryExist && $idUriQueryExist === false) {
-                return true;
-            }
-            if ($idQueryExist && $idUriQueryExist !== false) {
-                $p = $request->query->getInt('p');
-                return stripos($linkInfo['query'] ?? '', 'p=' . $p) !== false;
-            }
-        }
-        return false;
+        return $this->hook->filter('compare_url', explode('?', $link)[0] == $pathInfo, $link, $pathInfo);
     }
 
     /**
@@ -303,9 +284,10 @@ class OctopusRuntime implements RuntimeExtensionInterface
      * @param Post $post
      * @param string $class
      * @param string $size
+     * @param string|null $alt
      * @return string
      */
-    public function thumbnail(Post $post, string $class = '', string $size = 'thumbnail'): string
+    public function thumbnail(Post $post, string $class = '', string $size = 'thumbnail', string $alt = null): string
     {
         $type = $post->getType();
         if ($type !== Post::TYPE_ATTACHMENT) {
@@ -318,7 +300,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
         return sprintf(
             '<img src="%s" alt="%s" class="%s" />',
             $this->bridger->getPackages()->getUrl($attachment['url']),
-            $post->getTitle(),
+            $alt ?? $post->getTitle(),
             $class,
         );
     }

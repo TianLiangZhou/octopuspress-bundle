@@ -3,17 +3,12 @@
 namespace OctopusPress\Bundle\Controller;
 
 use OctopusPress\Bundle\Bridge\Bridger;
-use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Form\Model\InstallRequest;
 use OctopusPress\Bundle\Form\Type\InstallType;
-use OctopusPress\Bundle\OctopusPressKernel;
 use OctopusPress\Bundle\Model\MasterManager;
-use OctopusPress\Bundle\Model\MenuManager;
 use OctopusPress\Bundle\Model\ThemeManager;
-use OctopusPress\Bundle\Repository\PostRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -21,30 +16,26 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class WebController extends Controller
 {
-    private PostRepository $postRepository;
     private MasterManager $masterManager;
     private ThemeManager $themeManager;
 
     public function __construct(Bridger $bridger, MasterManager $masterManager, ThemeManager $themeManager)
     {
         parent::__construct($bridger);
-        $this->postRepository = $bridger->getPostRepository();
         $this->masterManager = $masterManager;
         $this->themeManager = $themeManager;
     }
 
     #[Route('/', name: 'home')]
-    public function index(Request $request): ?Post
+    public function index(Request $request): ?Response
     {
-        if ($request->query->has('p') && ($p = $request->query->getInt('p')) > 0) {
-            $article = $this->postRepository->find($p);
-            if ($article == null) {
-                throw new NotFoundHttpException();
+        if ($this->bridger->getOptionRepository()->permalinkStructure() == 'post_permalink_normal') {
+            if ($request->query->has('p') && ($p = $request->query->getInt('p')) > 0) {
+                return $this->forward(PostController::class . '::show', [
+                    'id' => $p,
+                    '_route' => 'post_permalink_normal',
+                ]);
             }
-            if ($article->getType() == 'page') {
-                $request->attributes->set('_route', 'page');
-            }
-            return $article;
         }
         return null;
     }

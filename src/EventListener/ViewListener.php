@@ -37,17 +37,9 @@ class ViewListener implements EventSubscriberInterface
      */
     public function onControllerRequest(ControllerEvent $controllerEvent): void
     {
-        $request = $controllerEvent->getRequest();
-        if ($controllerEvent->getRequestType() != HttpKernelInterface::MAIN_REQUEST) {
-            return;
+        if ($controllerEvent->isMainRequest()) {
+            $this->viewManager->boot();
         }
-        $routeName = $request->attributes->get('_route');
-        if (!$this->viewManager->getActivatedRoute()->isDashboard()) {
-            if ($this->viewManager->getActivatedRoute()->isHome() && $request->query->has('p') && $request->query->getInt('p') > 0) {
-                $request->attributes->set('_route', 'post_permalink_normal');
-            }
-        }
-        $this->viewManager->boot();
     }
 
     /**
@@ -61,9 +53,6 @@ class ViewListener implements EventSubscriberInterface
      */
     public function onKernelView(ViewEvent $event): void
     {
-        if ($event->getRequestType() != HttpKernelInterface::MAIN_REQUEST) {
-            return;
-        }
         $event->getRequest()->attributes->set('_controller_result', $event->getControllerResult());
         $event->setResponse($this->viewManager->render());
     }

@@ -54,6 +54,9 @@ class BootstrapListener implements EventSubscriberInterface
      */
     public function onRequestEvent(RequestEvent $event): void
     {
+        if (!$event->isMainRequest()) {
+            return ;
+        }
         /**
          * @var OptionRepository $option
          */

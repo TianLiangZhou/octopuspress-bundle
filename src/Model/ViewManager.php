@@ -12,7 +12,6 @@ use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Scalable\Hook;
 use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Support\ArchiveDataSet;
-use OctopusPress\Bundle\Support\DefaultViewFilter;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -246,6 +245,7 @@ class ViewManager
             $templates[] = 'page-' . $controllerResult->getId();
         }
         $templates[] = 'page';
+        $templates[] = 'single';
         return $this->getQueryTemplate('page', $templates);
     }
 

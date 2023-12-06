@@ -93,7 +93,7 @@ final class ActivatedRoute
      */
     public function isSingular(): bool
     {
-        return str_starts_with($this->getRouteName(), 'post_permalink_') || $this->getRouteName() == 'page';
+        return $this->isSingle() || $this->getRouteName() == 'page';
     }
 
     /**
@@ -178,6 +178,7 @@ final class ActivatedRoute
      */
     public function getRouteName(): string
     {
-        return $this->requestStack->getMainRequest()->attributes->get('_route') ?? '';
+        $request = $this->requestStack->getCurrentRequest();
+        return $request->attributes->get('_route') ?? '';
     }
 }

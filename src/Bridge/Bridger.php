@@ -191,7 +191,7 @@ final class Bridger
      */
     public function getRequest(): ?Request
     {
-        return $this->getRequestStack()->getMainRequest();
+        return $this->getRequestStack()->getCurrentRequest();
     }
 
     /**
