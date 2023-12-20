@@ -286,7 +286,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
      * @param string|null $alt
      * @return string
      */
-    public function thumbnail(Post $post, string $class = '', string $size = 'thumbnail', string $alt = null): string
+    public function thumbnail(Post $post, string $class = '', string $size = '', string $alt = null): string
     {
         $type = $post->getType();
         if ($type !== Post::TYPE_ATTACHMENT) {
@@ -296,10 +296,12 @@ class OctopusRuntime implements RuntimeExtensionInterface
             }
         }
         $attachment = $post->getAttachment();
-        $sizeArray = $attachment['meta']['sizes'][$size] ?? [];
         $url = $attachment['url'];
-        if (isset($sizeArray['file'])) {
-            $url = $sizeArray['file'];
+        if ($size) {
+            $sizeArray = $attachment['meta']['sizes'][$size] ?? [];
+            if (isset($sizeArray['file'])) {
+                $url = $sizeArray['file'];
+            }
         }
         return sprintf(
             '<img src="%s" alt="%s" class="%s" />',
