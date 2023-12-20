@@ -12,6 +12,13 @@ import {SITE_GENERAL_SAVE} from "../../../@core/definition/system/api";
 @Component({
   selector: 'app-plugin-feature',
   templateUrl: './feature.component.html',
+  styles: [
+    `
+      :host ::ng-deep nb-tab {
+        overflow: hidden !important;
+      }
+    `
+  ]
 })
 export class FeatureComponent implements OnInit {
 

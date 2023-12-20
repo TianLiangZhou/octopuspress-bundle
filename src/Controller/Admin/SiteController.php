@@ -38,10 +38,9 @@ class SiteController extends AdminController
     #[Route('/basic', name: 'site_basic')]
     public function basic(): JsonResponse
     {
-        $map = $this->query($this->repository::$defaultGeneralNames);
-        if (empty($map['timezone'])) {
-            $map['timezone'] = date_default_timezone_get();
-        }
+        $map = $this->query($this->repository::$defaultGeneralNames, [
+            'timezone' => date_default_timezone_get(),
+        ]);
         return $this->json([
             'timezone' => timezone_identifiers_list(),
             'option' => $map,
@@ -86,13 +85,60 @@ class SiteController extends AdminController
     /**
      * @return JsonResponse
      */
+    #[Route('/editor', name: 'site_editor')]
+    public function editor(): JsonResponse
+    {
+        return $this->json($this->getEditorQuery());
+    }
+
+    /**
+     * @return array{editor_markdown_support:bool,editor_html_support:bool,editor_html_embed_support:bool,editor_html_rules:array,editor_style_rules:array}
+     */
+    public function getEditorQuery(): array
+    {
+        return $this->query(
+            $this->repository::$defaultEditorNames,
+            [
+                'editor_markdown_support' => false,
+                'editor_html_support' => false,
+                'editor_html_embed_support' => false,
+                'editor_html_rules' => [
+                    'disallow' => [],
+                    'allow' => [],
+                    'allowEmpty' => [],
+                ],
+                'editor_style_rules' => [
+                    'definitions' => [],
+                ],
+            ],
+        );
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    #[Route('/editor/save', name: 'site_editor_save', options: ['name' => '保存编辑器配置', 'parent' => 'setting_option'], methods: Request::METHOD_POST)]
+    public function editorSave(Request $request): JsonResponse
+    {
+        return $this->save($request->toArray(), $this->repository::$defaultEditorNames);
+    }
+
+    /**
+     * @return JsonResponse
+     */
     #[Route('/content', name: 'content')]
     public function content(): JsonResponse
     {
-        $query = $this->query($this->repository::$defaultContentNames);
-        if (empty($query['permalink_structure'])) {
-            $query['permalink_structure'] = 'post_permalink_normal';
-        }
+        $query = $this->query($this->repository::$defaultContentNames, [
+            'permalink_structure' => 'post_permalink_normal',
+            'default_comment_status' => false,
+            'comment_moderation' => false,
+            'page_comments' => false,
+            'static_mode'   => false,
+        ]);
         return $this->json([
             'option' => $query,
         ]);
@@ -198,17 +244,15 @@ class SiteController extends AdminController
 
     /**
      * @param array $names
+     * @param array $values
      * @return array
      */
-    private function query(array $names): array
+    private function query(array $names, array $values = []): array
     {
-        $options = $this->repository->findBy(['name' => $names,]);
-        $map = [];
+        $options = $this->repository->findBy(['name' => $names]);
+        $map = $values;
         foreach ($options as $option) {
-            $map[$option->getName()] = $option->getValue();
-        }
-        foreach ($names as $name) {
-            $map[$name] = Formatter::reverseTransform($map[$name] ?? '');
+            $map[$option->getName()] = $option->getValue(false, $values[$option->getName()] ?? null);
         }
         return $map;
     }

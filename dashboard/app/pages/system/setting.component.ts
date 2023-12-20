@@ -29,7 +29,11 @@ export class SettingComponent implements OnInit {
       icon: "video-outline",
       route: "./media",
     },
-
+    {
+      title: "编辑器",
+      icon: "edit-2-outline",
+      route: "./editor",
+    },
   ];
 
   constructor(private config: ConfigurationService) {

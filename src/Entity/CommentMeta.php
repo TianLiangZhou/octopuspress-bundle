@@ -59,7 +59,7 @@ class CommentMeta
 
     public function getComment(): Comment
     {
-        return $this->commentId;
+        return $this->comment;
     }
 
     public function setComment(Comment $comment): self

@@ -27,6 +27,10 @@ import {PasteFromOffice} from '@ckeditor/ckeditor5-paste-from-office';
 import {Table, TableToolbar} from '@ckeditor/ckeditor5-table';
 import {TextTransformation} from '@ckeditor/ckeditor5-typing';
 import {SourceEditing} from "@ckeditor/ckeditor5-source-editing";
+import {GeneralHtmlSupport} from "@ckeditor/ckeditor5-html-support";
+import {HtmlEmbed} from "@ckeditor/ckeditor5-html-embed";
+import sanitize from "sanitize-html";
+import {Style} from "@ckeditor/ckeditor5-style";
 // import {Template} from "@ckeditor/ckeditor5-template";
 
 export default class Editor extends ClassicEditor {
@@ -69,6 +73,9 @@ export default class Editor extends ClassicEditor {
     TableToolbar,
     TextTransformation,
     SourceEditing,
+    GeneralHtmlSupport,
+    HtmlEmbed,
+    Style
     // Template,
   ];
   // Editor configuration.
@@ -102,6 +109,8 @@ export default class Editor extends ClassicEditor {
         'findAndReplace',
         'code',
         'codeBlock',
+        'htmlEmbed',
+        'style'
         // 'insertTemplate'
       ]
     },
@@ -120,6 +129,27 @@ export default class Editor extends ClassicEditor {
         'tableColumn',
         'tableRow',
         'mergeTableCells'
+      ]
+    },
+    htmlSupport: {
+      allow: [],
+      disallow: []
+    },
+    htmlEmbed: {
+      showPreviews: true,
+      sanitizeHtml: ( inputHtml: string ) => {
+        // Strip unsafe elements and attributes, e.g.:
+        // the `<script>` elements and `on*` attributes.
+        const outputHtml = sanitize(inputHtml, {});
+        return {
+          html: outputHtml,
+          // true or false depending on whether the sanitizer stripped anything.
+          hasChanged: true
+        };
+      }
+    },
+    style: {
+      definitions: [
       ]
     }
   }

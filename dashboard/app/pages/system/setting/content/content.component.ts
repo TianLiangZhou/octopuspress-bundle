@@ -52,20 +52,7 @@ export class ContentComponent implements OnInit, OnSpinner {
   onSpinner(spinner: boolean): void {
     this.submitted = spinner;
   }
-
-  editorSupportMarkdown($event: boolean): void {
-    this.option.editor_support_markdown = $event ? 'open' : '';
-  }
-
-  defaultCommentStatus($event: boolean) {
-    this.option.default_comment_status = $event ? 'open' : '';
-  }
-
-  commentModeration($event: boolean) {
-    this.option.comment_moderation = $event ? 'on' : 'off';
-  }
-
-  pageComment($event: boolean) {
-    this.option.page_comments = $event ? 'on' : 'off';
+  switchFeature($event: boolean, feature: string) {
+    this.option[feature] = $event ? 'on' : 'off';
   }
 }

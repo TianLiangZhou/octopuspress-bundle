@@ -26,13 +26,15 @@ class OpenController extends AdminController
     private MenuManager $menuManager;
     private OptionRepository $optionRepository;
     private string $tempDir;
+    private SiteController $siteController;
 
-    public function __construct(Bridger $bridger, MenuManager $menuManager)
+    public function __construct(Bridger $bridger, MenuManager $menuManager, SiteController $siteController)
     {
         parent::__construct($bridger);
         $this->menuManager = $menuManager;
         $this->optionRepository = $this->bridger->getOptionRepository();
         $this->tempDir = $this->bridger->getTempDir();
+        $this->siteController = $siteController;
     }
 
 
@@ -53,7 +55,7 @@ class OpenController extends AdminController
         foreach ($this->bridger->getPost()->getTypes() as $type => $postType) {
             $postTypes[$type] = $postType->jsonSerialize();
         }
-        ;
+        $editor = $this->siteController->getEditorQuery();
         return $this->json([
             'name' => $this->optionRepository->title(),
             'siteUrl' => $this->optionRepository->siteUrl(),
@@ -68,6 +70,13 @@ class OpenController extends AdminController
             'postMeta'  => $this->bridger->getMeta()->getPost(),
             'termMeta'  => $this->bridger->getMeta()->getTaxonomy(),
             'settingPages' => $this->bridger->getPlugin()->getSettingPages(),
+            'editorFeatures' => [
+                'isMarkdownSupport' => $editor['editor_markdown_support'],
+                'isHtmlSupport' => $editor['editor_html_support'],
+                'isHtmlEmbedSupport' => $editor['editor_html_embed_support'],
+                'htmlRules' => $editor['editor_html_rules'],
+                'styleRules' => $editor['editor_style_rules'],
+            ],
         ]);
     }
 

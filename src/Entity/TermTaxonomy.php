@@ -86,7 +86,7 @@ class TermTaxonomy implements JsonSerializable
     /**
      * @var Collection<int, TermRelationship>
      */
-    #[OneToMany(mappedBy: 'taxonomy', targetEntity: TermRelationship::class, orphanRemoval: true)]
+    #[OneToMany(mappedBy: 'taxonomy', targetEntity: TermRelationship::class, fetch: 'EXTRA_LAZY', orphanRemoval: true)]
     private Collection $relationships;
 
     public function __construct()

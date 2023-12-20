@@ -2,12 +2,14 @@
 
 namespace OctopusPress\Bundle\Repository;
 
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\QueryBuilder;
 use OctopusPress\Bundle\Entity\Comment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Util\RepositoryTrait;
 
 /**
@@ -49,6 +51,28 @@ class CommentRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @param Post $post
+     * @return Comment[]
+     */
+    public function findApprovedByPost(Post $post): array
+    {
+        /**
+         * @var $results Comment[]
+         */
+        $results = $this->createQueryBuilder('c')
+            ->where('c.post = :post AND c.approved = :approved')
+            ->setParameter('post', $post)
+            ->setParameter('approved', Comment::APPROVED)
+            ->addOrderBy('c.createdAt', 'ASC')
+            ->getQuery()
+            ->setFetchMode(Comment::class, "user", ClassMetadata::FETCH_EAGER)
+            ->setFetchMode(Comment::class, "parent", ClassMetadata::FETCH_EAGER)
+            ->setFetchMode(Comment::class, "children", ClassMetadata::FETCH_EAGER)
+            ->getResult();
+        return $results;
+    }
+
 
     private function addFilters(QueryBuilder $qb, array $filters): void
     {
@@ -63,10 +87,10 @@ class CommentRepository extends ServiceEntityRepository
                     $qb->andWhere("a.type = :type");
                     break;
                 case 'approved':
-                    is_array($value) ? $qb->andWhere("a.approved IN (:approved)") : $qb->andWhere("a.approved = :approved");
+                    is_array($value) ? $qb->andWhere('a.approved IN (:approved)') : $qb->andWhere('a.approved = :approved');
                     break;
                 case 'user':
-                    is_array($value) ? $qb->andWhere("a.user IN (:user)") : $qb->andWhere("a.user = :user");
+                    is_array($value) ? $qb->andWhere('a.user IN (:user)') : $qb->andWhere('a.user = :user');
                     break;
                 default:
                     continue 2;

@@ -16,6 +16,6 @@
             {% include (theme is defined ? theme ~ '/' : '') ~ 'footer.html.twig'|apply_filter('get_template_footer') ignore missing %}
         {% endblock %}
         {{ hook_action('footer') }}
+        {% block script %}{% endblock %}
     </body>
-    {% block script %}{% endblock %}
 </html>

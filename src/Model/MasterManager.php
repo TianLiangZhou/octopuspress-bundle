@@ -82,7 +82,7 @@ class MasterManager
             'default_category' => '',
             'default_post_format' => '',
             'permalink_structure' => 'post_permalink_normal',
-            'static_mode' => false,
+            'static_mode' => Formatter::OFF,
             'default_comment_status' => '',
             'comments_per_page' => 50,
             'comment_order' => 'desc',

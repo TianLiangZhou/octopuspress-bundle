@@ -3,6 +3,7 @@
 namespace OctopusPress\Bundle\Entity;
 
 use DateTimeInterface;
+use OctopusPress\Bundle\Repository\CommentRepository;
 use OctopusPress\Bundle\Repository\PostRepository;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -32,6 +33,10 @@ use Symfony\Component\Validator\Constraints\Valid;
 #[Index(columns: ['type', 'status', 'created_at', 'id'], name: 'type_status_date')]
 class Post implements JsonSerializable
 {
+    private ?PostRepository $repository = null;
+
+    private ?CommentRepository $commentRepository = null;
+
     const OPEN = 'open';
     const CLOSED = 'closed';
 
@@ -532,9 +537,20 @@ class Post implements JsonSerializable
     /**
      * @return Collection<int, Comment>
      */
-    public function getComments(): Collection
+    public function getAllComments(): Collection
     {
         return $this->comments;
+    }
+
+    /**
+     * @return array
+     */
+    public function getComments(): array
+    {
+        if ($this->commentRepository) {
+            return $this->commentRepository->findApprovedByPost($this);
+        }
+        return [];
     }
 
     /**
@@ -762,5 +778,25 @@ class Post implements JsonSerializable
             'commentStatus' => $this->getCommentStatus(),
             'pingStatus' => $this->getPingStatus(),
         ];
+    }
+
+    /**
+     * @param PostRepository $repository
+     * @return Post
+     */
+    public function setRepository(PostRepository $repository): self
+    {
+        $this->repository = $repository;
+        return $this;
+    }
+
+    /**
+     * @param CommentRepository|null $commentRepository
+     * @return $this
+     */
+    public function setCommentRepository(?CommentRepository $commentRepository): self
+    {
+        $this->commentRepository = $commentRepository;
+        return $this;
     }
 }

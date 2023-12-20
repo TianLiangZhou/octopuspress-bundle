@@ -2,7 +2,9 @@
 
 namespace OctopusPress\Bundle\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -107,7 +109,7 @@ class Comment implements \JsonSerializable
 
 
     #[Column(name: "approved", type: "string", length: 20, nullable: false, options: ['default' => 'unapproved'])]
-    private string $approved = '1';
+    private string $approved = 'unapproved';
 
     /**
      * @var string
@@ -123,29 +125,30 @@ class Comment implements \JsonSerializable
 
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     #[Column(name: "created_at", type: "datetime", nullable: false, options:["default"=>'1970-01-01 00:00:00'])]
     private \DateTimeInterface $createdAt;
 
     /**
-     * @var Collection<int, CommentMeta>&Selectable<int, CommentMeta>
+     * @var ArrayCollection<int, CommentMeta>
      */
-    #[OneToMany(mappedBy: "comment", targetEntity: CommentMeta::class, cascade: ["persist", "remove"])]
+    #[OneToMany(mappedBy: "comment", targetEntity: CommentMeta::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     private Collection $metas;
 
 
     /**
      * @var Collection<int, Comment>
      */
-    #[OneToMany(mappedBy: 'parent', targetEntity: Comment::class)]
+    #[OneToMany(mappedBy: 'parent', targetEntity: Comment::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     private Collection $children;
+
 
     public function __construct()
     {
         $this->metas = new ArrayCollection();
         $this->children = new ArrayCollection();
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new DateTime();
     }
 
     public function getId(): ?int
@@ -284,10 +287,12 @@ class Comment implements \JsonSerializable
 
     /**
      * @param Post $post
+     * @return Comment
      */
-    public function setPost(Post $post): void
+    public function setPost(Post $post): self
     {
         $this->post = $post;
+        return $this;
     }
 
     /**
@@ -300,11 +305,12 @@ class Comment implements \JsonSerializable
 
     /**
      * @param User|null $user
-     * @return void
+     * @return Comment
      */
-    public function setUser(?User $user): void
+    public function setUser(?User $user): self
     {
         $this->user = $user;
+        return $this;
     }
 
 
@@ -314,7 +320,90 @@ class Comment implements \JsonSerializable
         return [
             'id' => $this->getId(),
             'content' => $this->getContent(),
+            'status'  => $this->getApproved(),
             'createdAt' => $this->getCreatedAt(),
         ];
+    }
+
+    public function getParent(): ?Comment
+    {
+        return $this->parent;
+    }
+
+    /**
+     * @param Comment|null $parent
+     * @return $this
+     */
+    public function setParent(?Comment $parent): self
+    {
+        $this->parent = $parent;
+        return $this;
+    }
+
+
+    /**
+     * @param Comment $comment
+     * @return $this
+     */
+    public function addChildren(Comment $comment): self
+    {
+        if (!$this->children->contains($comment)) {
+            $comment->setParent($this);
+            $this->children->add($comment);
+        }
+        return $this;
+    }
+
+    /**
+     * @param Comment $comment
+     * @return $this
+     */
+    public function removeChildren(Comment $comment): static
+    {
+        if ($this->children->contains($comment)) {
+            $this->children->removeElement($comment);
+        }
+        return $this;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getChildren(): Collection
+    {
+        return $this->children;
+    }
+
+    /**
+     * @param CommentMeta $meta
+     * @return $this
+     */
+    public function addMeta(CommentMeta $meta): self
+    {
+        if (!$this->metas->contains($meta)) {
+            $meta->setComment($this);
+            $this->metas->add($meta);
+        }
+        return $this;
+    }
+
+    /**
+     * @param PostMeta $meta
+     * @return $this
+     */
+    public function removeMeta(PostMeta $meta): self
+    {
+        if ($this->metas->contains($meta)) {
+            $this->metas->removeElement($meta);
+        }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CommentMeta>
+     */
+    public function getMetas(): Collection
+    {
+        return $this->metas;
     }
 }

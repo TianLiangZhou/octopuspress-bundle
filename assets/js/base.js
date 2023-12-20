@@ -1,14 +1,22 @@
 import 'whatwg-fetch';
 (function (root) {
+  /**
+   * @returns {string}
+   */
   root.getTheme = () => {
-    let theme = window.cookie.getItem('_theme') || 'System';
+    let theme = root.cookie.getItem('_theme') || 'System';
     if (theme === 'System') {
-      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Dark' : 'Light';
+      theme = root.matchMedia('(prefers-color-scheme: dark)').matches ? 'Dark' : 'Light';
     }
     return theme;
   };
+  /**
+   * @param {string} theme
+   */
   root.switchTheme = (theme) => {
-
+    let element = document.getElementsByTagName('html')[0];
+    element.classList.add(theme.toLowerCase());
+    element.setAttribute('theme', theme.toLowerCase());
   };
   root.cookie = {
     getItem: function (sKey) {
@@ -53,6 +61,37 @@ import 'whatwg-fetch';
       return aKeys;
     }
   };
+
+  /**
+   * @param {HTMLFormElement} form
+   * @param {Function | string} callback
+   */
+  root.commentSubmitListener = (form, callback) => {
+    form.addEventListener('submit', (event) => {
+      if (event.preventDefault) {
+        event.preventDefault();
+      }
+      root.fetch('/comment', {
+          method: 'post',
+          body: new FormData(form),
+      }).then(response => {
+        response.json().then((body) => {
+          if (callback) {
+            typeof callback === 'string' ? root[callback](body): callback(body);
+          }
+        }, (error) => {
+          if (callback) {
+            typeof callback === 'string' ? root[callback](error): callback(error);
+          }
+        }).catch((error) => {
+          if (callback) {
+            typeof callback === 'string' ? root[callback](error): callback(error);
+          }
+        });
+      });
+      return false;
+    }, false);
+  };
   /**
    * @param {HTMLFormElement} form
    * @param {Function} callback
@@ -60,7 +99,9 @@ import 'whatwg-fetch';
    */
   root.formToFetchTransFormer = (form, callback, type = '') => {
     form.addEventListener('submit', (event) => {
-      event.preventDefault();
+      if (event.preventDefault) {
+        event.preventDefault();
+      }
       const data = new FormData(form);
       const headers = {};
       const json = {};
@@ -141,6 +182,10 @@ import 'whatwg-fetch';
           }
         }, 'application/json');
       }
+    }
+    let commentForm = document.getElementById('commentForm');
+    if (commentForm) {
+      root.commentSubmitListener(commentForm, 'commentCallback');
     }
   })();
 })(window);

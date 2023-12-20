@@ -1,6 +1,8 @@
 import {Capability} from "./open/type";
 import {Post, PostTypeSetting, TaxonomySetting} from "./content/type";
 import {Control} from "../../shared/control/type";
+import {StyleConfig} from "@ckeditor/ckeditor5-style/src/styleconfig";
+import {GeneralHtmlSupportConfig} from "@ckeditor/ckeditor5-html-support/src/generalhtmlsupportconfig";
 
 export interface Meta {
   key: string;
@@ -15,6 +17,13 @@ export interface AppConfiguration {
   name: string;
   logo: string;
   editor?: 'ckeditor';
+  editorFeatures?: {
+    isMarkdownSupport?: boolean;
+    isHtmlSupport?: boolean;
+    isHtmlEmbedSupport?: boolean;
+    htmlRules?: GeneralHtmlSupportConfig;
+    styleRules?: StyleConfig;
+  };
   markdown?: boolean;
   taxonomies: Record<string, TaxonomySetting>;
   postTypes: Record<string, PostTypeSetting>;

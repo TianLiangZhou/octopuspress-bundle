@@ -64,7 +64,7 @@ export class CommentComponent implements OnInit, OnSpinner {
       ];
     });
     this.source = new ServerDataSource(this.http, {
-      endPoint: '/comment?status='+httpParams.toString(),
+      endPoint: '/comment?'+httpParams.toString(),
       dataKey: 'records',
       totalKey: 'total',
       pagerPageKey: 'page',

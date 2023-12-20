@@ -1,11 +1,13 @@
-<div class="card-body py-4">
-  <form #ngForm="ngForm" (ngSubmit)="action($event)">
-    <div class="header"><div><h6>文章</h6></div></div>
+<form #ngForm="ngForm" (ngSubmit)="action($event)">
+  <nb-card-body>
+    <div class="header">
+      <div><h6>文章</h6></div>
+    </div>
     <div class="mb-3 row">
       <label class="label col-form-label col-12 col-md-2" for="default_category">默认文章分类</label>
       <div class="col-12 col-md-10">
         <nb-select id="default_category" name="default_category" [(ngModel)]="option.default_category">
-          <nb-option [value]="cate.id" *ngFor="let cate of categories">{{cate.name}}</nb-option>
+          <nb-option [value]="cate.id" *ngFor="let cate of categories">{{ cate.name }}</nb-option>
         </nb-select>
       </div>
     </div>
@@ -20,7 +22,8 @@
     <div class="mb-3 row">
       <label class="label col-form-label col-12 col-md-2" for="posts_per_page">默认文章每页显示</label>
       <div class="col-12 col-md-10">
-        <input id="posts_per_page" name="posts_per_page" min="1" max="200" status="primary" type="number" nbInput [(ngModel)]="option.posts_per_page" /> 条
+        <input id="posts_per_page" name="posts_per_page" min="1" max="200" status="primary" type="number" nbInput
+               [(ngModel)]="option.posts_per_page"/> 条
       </div>
     </div>
     <div class="mb-3 row">
@@ -28,50 +31,46 @@
       <div class="col-12 col-md-10">
         <nb-radio-group id="permalink" name="permalink" [(ngModel)]="option.permalink_structure">
           <nb-radio class="d-flex justify-content-between" [value]="permalink.alias" *ngFor="let permalink of permalinks">
-            {{permalink.name}}
-            <span class="ml-5">{{option.site_url + permalink.example}}</span>
+            {{ permalink.name }}
+            <span class="ml-5">{{ option.site_url + permalink.example }}</span>
           </nb-radio>
         </nb-radio-group>
       </div>
     </div>
     <div class="mb-3 row" *ngIf="option.permalink_structure != 'post_permalink_normal'">
-      <label class="label col-form-label col-12 col-md-2" for="permalink">静态模式</label>
+      <label class="label col-form-label col-12 col-md-2" for="staticMode">静态模式</label>
       <div class="col-12 col-md-10 d-flex flex-column">
-        <nb-checkbox id="staticMode" name="staticMode" [(ngModel)]="option.static_mode">是</nb-checkbox>
+        <nb-toggle id="staticMode" name="staticMode" status="primary" [(checked)]="option.static_mode"></nb-toggle>
         <label class="label">静态模式将会在URL后面添加后缀: ".html"</label>
       </div>
     </div>
 
-    <div class="mb-3 row" *ngIf="option.permalink_structure != 'post_permalink_normal'">
-      <label class="label col-form-label col-12 col-md-2" for="markdownSupport">开启Markdown</label>
-      <div class="col-12 col-md-10 d-flex flex-column">
-        <nb-toggle id="markdownSupport" name="editor_support_markdown" status="success" [checked]="option.editor_support_markdown === 'open'" (checkedChange)="editorSupportMarkdown($event)"></nb-toggle>
-      </div>
+    <div class="header">
+      <div><h6>评论</h6></div>
     </div>
-
-    <div class="header"><div><h6>评论</h6></div></div>
     <div class="mb-3 row">
       <label class="label col-form-label col-12 col-md-2" for="default_comment_status">开启评论</label>
       <div class="col-12 col-md-10">
-        <nb-toggle id="default_comment_status" name="default_comment_status" status="success" [checked]="option.default_comment_status === 'open'" (checkedChange)="defaultCommentStatus($event)"></nb-toggle>
+        <nb-toggle id="default_comment_status" name="default_comment_status" status="primary"
+                   [(checked)]="option.default_comment_status"></nb-toggle>
       </div>
     </div>
     <div class="mb-3 row">
       <label class="label col-form-label col-12 col-md-2" for="comment_moderation">评论审核</label>
       <div class="col-12 col-md-10">
-        <nb-toggle id="comment_moderation" name="comment_moderation" status="success" [checked]="option.comment_moderation === 'on'" (checkedChange)="commentModeration($event)"></nb-toggle>
+        <nb-toggle id="comment_moderation" name="comment_moderation" status="primary" [(checked)]="option.comment_moderation"></nb-toggle>
       </div>
     </div>
     <div class="mb-3 row">
       <label class="label col-form-label col-12 col-md-2" for="page_comments">分页显示</label>
       <div class="col-12 col-md-10">
-        <nb-toggle id="page_comments" name="page_comments" status="success" [checked]="option.page_comments === 'on'" (checkedChange)="pageComment($event)"></nb-toggle>
+        <nb-toggle id="page_comments" name="page_comments" status="primary" [(checked)]="option.page_comments"></nb-toggle>
       </div>
     </div>
     <div class="mb-3 row">
       <label class="label col-form-label col-12 col-md-2" for="comments_per_page">每页显示</label>
       <div class="col-12 col-md-10">
-        <input id="comments_per_page" name="comments_per_page" min="1" max="200"  type="number" status="primary" nbInput [(ngModel)]="option.comments_per_page" />条
+        <input id="comments_per_page" name="comments_per_page" min="1" max="200" type="number" status="primary" nbInput [(ngModel)]="option.comments_per_page"/>条
       </div>
     </div>
     <div class="mb-3 row">
@@ -83,12 +82,14 @@
         </nb-select>
       </div>
     </div>
-    <div class="mb-3 row">
+  </nb-card-body>
+  <nb-card-footer>
+    <div class="row">
       <label class="label col-form-label col-2"></label>
       <div class="col-10">
         <button status="primary" size="small" [disabled]="submitted || !ngForm.valid" type="submit" nbButton>保存</button>
       </div>
     </div>
-  </form>
-</div>
+  </nb-card-footer>
+</form>
 

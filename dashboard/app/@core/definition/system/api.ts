@@ -16,6 +16,8 @@ export const SITE_MEDIA_SAVE: string = '/site/media/save';
 
 export const SITE_CONTENT: string = '/site/content';
 export const SITE_CONTENT_SAVE: string = '/site/content/save';
+export const SITE_EDITOR: string = '/site/editor';
+export const SITE_EDITOR_SAVE: string = '/site/editor/save';
 
 export const SITE_GENERAL_SAVE: string = '/site/general/save';
 

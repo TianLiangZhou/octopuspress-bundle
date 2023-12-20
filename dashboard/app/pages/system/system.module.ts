@@ -15,6 +15,7 @@ import {RouterModule, Routes} from "@angular/router";
 import {SettingComponent} from "./setting.component";
 import {PageGeneralComponent} from "./setting/page-general.component";
 import {PluginModule} from "../plugin/plugin.module";
+import {EditorComponent} from "./setting/editor/editor.component";
 
 const routes: Routes = [
     {
@@ -41,6 +42,10 @@ const routes: Routes = [
         {
           path: 'general',
           component: PageGeneralComponent
+        },
+        {
+          path: 'editor',
+          component: EditorComponent
         }
       ]
     },
@@ -60,17 +65,18 @@ const routes: Routes = [
     MediaComponent,
     ContentComponent,
     PageGeneralComponent,
+    EditorComponent,
   ],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-    ThemeModule,
-    Angular2SmartTableModule,
-    NbToggleModule,
-    TreeViewModule,
-    ControlModule,
-    PluginModule,
-  ],
+    imports: [
+        CommonModule,
+        RouterModule.forChild(routes),
+        ThemeModule,
+        Angular2SmartTableModule,
+        NbToggleModule,
+        TreeViewModule,
+        ControlModule,
+        PluginModule,
+    ],
   providers: []
 })
 export class SystemModule {

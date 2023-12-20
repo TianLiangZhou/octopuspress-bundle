@@ -60,6 +60,14 @@ export class CkeditorComponent implements OnInit {
         { language: 'docker', label: 'Docker' },
       ]
     },
+    htmlSupport: {
+      allow: [],
+      disallow: [],
+      allowEmpty: [],
+    },
+    style: {
+      definitions: [],
+    }
   };
 
   constructor(
@@ -71,8 +79,22 @@ export class CkeditorComponent implements OnInit {
 
 
   ngOnInit(): void {
-    if (!this.config.config.markdown) {
+    if (!this.config.config.editorFeatures?.isMarkdownSupport) {
       this.editorOptions.removePlugins?.push('Markdown');
+    }
+    if (!this.config.config.editorFeatures?.isHtmlSupport) {
+      this.editorOptions.removePlugins?.push('GeneralHtmlSupport');
+    }
+    if (!this.config.config.editorFeatures?.isHtmlEmbedSupport) {
+      this.editorOptions.removePlugins?.push('HtmlEmbed');
+    }
+    if (this.config.config.editorFeatures?.htmlRules) {
+      this.editorOptions.htmlSupport = this.config.config.editorFeatures?.htmlRules;
+    }
+    if (this.config.config.editorFeatures?.styleRules && this.config.config.editorFeatures.styleRules.definitions && this.config.config.editorFeatures.styleRules.definitions.length > 0) {
+      this.editorOptions.style = this.config.config.editorFeatures.styleRules;
+    } else {
+      this.editorOptions.removePlugins?.push('Style');
     }
     this.themeService.onThemeChange().subscribe(theme => {
       this.onLoadCkeditorOptions(theme.name);
@@ -103,7 +125,6 @@ export class CkeditorComponent implements OnInit {
   }
 
   dataChange({editor}: ChangeEvent) {
-    // @ts-ignore
-    this.contentChange.emit(editor.getData());
+    this.contentChange.emit(editor.data.get());
   }
 }

@@ -2,6 +2,7 @@
 
 namespace OctopusPress\Bundle\Model;
 
+use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use InvalidArgumentException;
 use OctopusPress\Bundle\Entity\Option;
@@ -150,6 +151,8 @@ class ThemeManager extends PackageManager
     /**
      * @param string $name
      * @return void
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function uninstall(string $name): void
     {

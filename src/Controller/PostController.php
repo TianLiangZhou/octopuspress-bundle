@@ -3,19 +3,20 @@
 namespace OctopusPress\Bundle\Controller;
 
 use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\Tools\Pagination\Paginator;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use OctopusPress\Bundle\Bridge\Bridger;
+use OctopusPress\Bundle\Entity\Comment;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
+use OctopusPress\Bundle\Repository\CommentRepository;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Repository\PostRepository;
-use OctopusPress\Bundle\Repository\RelationRepository;
 use OctopusPress\Bundle\Repository\TaxonomyRepository;
 use OctopusPress\Bundle\Repository\UserRepository;
 use OctopusPress\Bundle\Support\ArchiveDataSet;
 use OctopusPress\Bundle\Twig\OctopusRuntime;
-use OctopusPress\Bundle\Widget\Pagination;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,6 +30,8 @@ class PostController extends Controller
     private PostRepository $post;
     private TaxonomyRepository $taxonomy;
     private UserRepository $user;
+    private CommentRepository $comment;
+    private OptionRepository $option;
 
     public function __construct(Bridger $bridger)
     {
@@ -36,6 +39,8 @@ class PostController extends Controller
         $this->taxonomy = $bridger->getTaxonomyRepository();
         $this->user     = $bridger->getUserRepository();
         $this->post     = $bridger->getPostRepository();
+        $this->comment  = $bridger->getCommentRepository();
+        $this->option   = $bridger->getOptionRepository();
     }
 
     /**
@@ -134,7 +139,81 @@ class PostController extends Controller
             $request->attributes->set('_route', 'page');
         }
         $this->post->thumbnails([$post]);
+        $post->setRepository($this->post)
+            ->setCommentRepository($this->comment);
         return $post;
+    }
+
+    /**
+     * 评论与回复
+     *
+     * @param Request $request
+     * @return JsonResponse
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    #[Route("/comment", name: 'post_comment', methods: [Request::METHOD_POST])]
+    public function comment(Request $request): JsonResponse
+    {
+        $name = $request->get('name');
+        $content = $request->get('content');
+        $parent = (int) $request->get('parent');
+        if (empty($name) || empty($content)) {
+            throw new NotFoundHttpException();
+        }
+        $parentComment = null;
+        if ($parent > 0) {
+            $parentComment = $this->comment->find($parent);
+            if ($parentComment === null) {
+                throw new NotFoundHttpException();
+            }
+        }
+        $post = $this->post->findOneBy(['name' => $name,]);
+        if ($post === null) {
+            throw new NotFoundHttpException();
+        }
+        if ($post->getCommentStatus() !== 'open') {
+            return $this->json([
+                'message' => '此内容不支持评论',
+            ]);
+        }
+        $authorIp = $request->getClientIp();
+        $agent = $request->headers->get('user-agent');
+        $user = $this->getUser();
+        $comment =  new Comment();
+        $comment->setUser($user)
+            ->setAuthorIp($authorIp)
+            ->setAgent($agent)
+            ->setContent($content)
+            ->setParent($parentComment)
+            ->setPost($post)
+            ->setAuthor('')
+            ->setAuthorEmail('');
+        $moderation = $this->option->commentModeration();
+        $comment->setApproved($moderation ? Comment::UNAPPROVED : Comment::APPROVED);
+        if ($user == null) {
+            $authorEmail = $request->get('authorEmail');
+            if (empty($authorEmail)) {
+                return $this->json([
+                    'message' => '评论的Email不能为空!',
+                ]);
+            }
+            if (filter_var($authorEmail, FILTER_VALIDATE_EMAIL) === false) {
+                return $this->json([
+                    'message' => '无效的评论邮箱!',
+                ]);
+            }
+            $author  = $request->get('author');
+            if (mb_strlen($author) > 128) {
+                return $this->json([
+                    'message' => '评论昵称太长的了!',
+                ]);
+            }
+            $comment->setAuthorEmail($authorEmail)
+                ->setAuthor($author);
+        }
+        $this->comment->add($comment);
+        return $this->json($comment);
     }
 
     /**

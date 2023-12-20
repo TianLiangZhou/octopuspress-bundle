@@ -44,16 +44,10 @@ class CommentController extends AdminController
     public function comments(Request $request, #[CurrentUser] User $user): JsonResponse
     {
         $statusFilter = $request->get('status');
-        switch ($statusFilter) {
-            case 'approved':
-            case 'unapproved':
-            case 'spam':
-            case 'trash':
-                $statusValue = $statusFilter;
-                break;
-            default:
-                $statusValue = ['approved', 'unapproved'];
-        }
+        $statusValue = match ($statusFilter) {
+            'approved', 'unapproved', 'spam', 'trash' => $statusFilter,
+            default => ['approved', 'unapproved'],
+        };
         if ($statusFilter == 'my') {
             $request->query->set('user', $user->getId());
         }

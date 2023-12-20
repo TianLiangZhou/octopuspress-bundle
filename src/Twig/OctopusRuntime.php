@@ -18,7 +18,6 @@ use OctopusPress\Bundle\Repository\UserRepository;
 use OctopusPress\Bundle\Scalable\Hook;
 use OctopusPress\Bundle\Support\ActivatedPlugin;
 use OctopusPress\Bundle\Support\ActivatedRoute;
-use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Widget\AbstractWidget;
 use OctopusPress\Bundle\Widget\Navigation;
 use Symfony\Component\HttpFoundation\Request;
@@ -241,7 +240,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
         $options = $this->option->findBy(['name' => $name,]);
         $items = [];
         foreach ($options as $option) {
-            $items[$option->getName()] = Formatter::reverseTransform($option->getValue() ?? '');
+            $items[$option->getName()] = $option->getValue();
         }
         foreach ($name as $k) {
             if (!isset($items[$k])) {
@@ -297,9 +296,14 @@ class OctopusRuntime implements RuntimeExtensionInterface
             }
         }
         $attachment = $post->getAttachment();
+        $sizeArray = $attachment['meta']['sizes'][$size] ?? [];
+        $url = $attachment['url'];
+        if (isset($sizeArray['file'])) {
+            $url = $sizeArray['file'];
+        }
         return sprintf(
             '<img src="%s" alt="%s" class="%s" />',
-            $this->bridger->getPackages()->getUrl($attachment['url']),
+            $this->bridger->getPackages()->getUrl($url),
             $alt ?? $post->getTitle(),
             $class,
         );

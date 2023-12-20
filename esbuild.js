@@ -1,5 +1,6 @@
 (async () => {
   const {sassPlugin} = require('esbuild-sass-plugin');
+  const {copy} = require("esbuild-plugin-copy");
   const tailwindcss = require('tailwindcss');
   const postcssImport = require('postcss-import');
   const postcssNest = require('postcss-nested');
@@ -52,7 +53,19 @@
           return css;
         },
       }),
-
+      copy({
+        resolveFrom: 'out',
+        assets:[
+          {
+            from: ['./assets/images/*'],
+            to: ['images'],
+          },
+          {
+            from: ['./assets/fonts/*'],
+            to: ['fonts'],
+          }
+        ],
+      })
     ],
   };
 

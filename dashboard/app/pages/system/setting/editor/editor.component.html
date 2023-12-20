@@ -1,0 +1,56 @@
+<form #ngForm="ngForm" (ngSubmit)="action($event)">
+  <nb-card-body>
+    <div class="mb-3 row">
+      <label class="label col-form-label col-12 col-md-2" for="markdownSupport">开启Markdown支持</label>
+      <div class="col-12 col-md-10 d-flex flex-column">
+        <nb-toggle id="markdownSupport" name="editor_markdown_support" status="primary" [(checked)]="option.editor_markdown_support"></nb-toggle>
+      </div>
+    </div>
+    <div class="mb-3 row">
+      <label class="label col-form-label col-12 col-md-2" for="htmlSupport">开启通用HTML支持</label>
+      <div class="col-12 col-md-10 d-flex flex-column">
+        <nb-toggle id="htmlSupport" name="editor_html_support" status="primary" [(checked)]="option.editor_html_support"></nb-toggle>
+        <p><a class="label"  target="_blank" href="https://ckeditor.com/docs/ckeditor5/latest/features/html/general-html-support.html">查看文档</a></p>
+      </div>
+    </div>
+    <div class="mb-3 row">
+      <label class="label col-form-label col-12 col-md-2" for="htmlEmbedSupport">开启HTML嵌入支持</label>
+      <div class="col-12 col-md-10 d-flex flex-column">
+        <nb-toggle id="htmlEmbedSupport" name="editor_html_embed_support" status="primary" [(checked)]="option.editor_html_embed_support"></nb-toggle>
+
+        <p><a class="label"  target="_blank" href="https://ckeditor.com/docs/ckeditor5/latest/features/html/html-embed.html">查看文档</a></p>
+      </div>
+    </div>
+  </nb-card-body>
+
+  <nb-card-body>
+    <div class="mb-3 row">
+      <label class="label col-form-label col-12 col-md-2" for="htmlEmbedSupport">通用HTML规则</label>
+      <div class="col-12 col-md-10 d-flex flex-column">
+        <angular2-smart-table [settings]="settings" [source]="htmlSource"></angular2-smart-table>
+        <p><a class="label" target="_blank" href="https://ckeditor.com/docs/ckeditor5/latest/features/html/general-html-support.html">查看文档</a></p>
+      </div>
+    </div>
+
+    <div class="mb-3 row">
+      <label class="label col-form-label col-12 col-md-2" for="htmlEmbedSupport">Style规则</label>
+      <div class="col-12 col-md-10 d-flex flex-column">
+        <angular2-smart-table [settings]="styleSettings" [source]="styleSource"></angular2-smart-table>
+        <p><a class="label" target="_blank" href="https://ckeditor.com/docs/ckeditor5/latest/features/style.html">查看文档</a></p>
+      </div>
+    </div>
+
+
+  </nb-card-body>
+
+
+  <nb-card-footer>
+    <div class="row">
+      <label class="label col-form-label col-2"></label>
+      <div class="col-10">
+        <button status="primary" size="small" [disabled]="submitted || !ngForm.valid" type="submit" nbButton>保存</button>
+      </div>
+    </div>
+  </nb-card-footer>
+</form>
+

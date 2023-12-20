@@ -1,6 +1,5 @@
-<div class="card-body py-4">
-
-  <form #ngForm="ngForm" (ngSubmit)="action($event)">
+<form #ngForm="ngForm" (ngSubmit)="action($event)">
+  <nb-card-body>
     <div class="mb-3 row">
       <label class="label col-form-label col-2" for="title">站点标题</label>
       <div class="col-8">
@@ -57,7 +56,7 @@
       <div class="col-8">
         <nb-radio-group id="search_engine" name="search_engine" [(ngModel)]="option.search_engine">
           <nb-radio class="d-flex justify-content-between" [value]="engine.alias" *ngFor="let engine of searchEngines">
-            {{engine.name}}
+            {{ engine.name }}
           </nb-radio>
         </nb-radio-group>
       </div>
@@ -84,13 +83,13 @@
         <label class="label col-form-label d-block">选择与您在同一时区的城市或一个UTC。</label>
       </div>
     </div>
-    <div class="mb-3 row">
+  </nb-card-body>
+  <nb-card-footer>
+    <div class="row">
       <label class="label col-form-label col-2"></label>
       <div class="col-10">
-        <button status="primary" size="small" [disabled]="submitted || !ngForm.valid" [nbSpinner]="submitted" nbButton>
-          保存
-        </button>
+        <button status="primary" size="small" [disabled]="submitted || !ngForm.valid" [nbSpinner]="submitted" nbButton>保存</button>
       </div>
     </div>
-  </form>
-</div>
+  </nb-card-footer>
+</form>

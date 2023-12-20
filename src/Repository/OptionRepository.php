@@ -2,6 +2,7 @@
 
 namespace OctopusPress\Bundle\Repository;
 
+use OctopusPress\Bundle\Customize\Layout\Form;
 use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Util\RepositoryTrait;
@@ -52,6 +53,17 @@ class OptionRepository extends ServiceEntityRepository
     /**
      * @var array|string[]
      */
+    public static array $defaultEditorNames = [
+        'editor_markdown_support',
+        'editor_html_support',
+        'editor_html_embed_support',
+        'editor_html_rules',
+        'editor_style_rules'
+    ];
+
+    /**
+     * @var array|string[]
+     */
     public static array $defaultContentNames = [
         'site_icon',
         'site_url',
@@ -60,7 +72,6 @@ class OptionRepository extends ServiceEntityRepository
         'default_category',
         'default_post_format',
         'posts_per_page',
-        'editor_support_markdown',
         'default_comment_status',
         'comment_moderation',
         'page_comments',
@@ -96,6 +107,9 @@ class OptionRepository extends ServiceEntityRepository
         if (!empty($this->defaultOptions)) {
             return $this->defaultOptions;
         }
+        /**
+         * @var $options Option[]
+         */
         $options = $this->createQueryBuilder('o')
             ->andWhere('o.autoload = :auto')
             ->setParameter('auto', 'yes')
@@ -103,7 +117,7 @@ class OptionRepository extends ServiceEntityRepository
             ->enableResultCache(mt_rand(300, 900), self::DEFAULT_CACHE_KEY)
             ->getResult();
         foreach ($options as $option) {
-            $this->defaultOptions[$option->getName()] = Formatter::reverseTransform($option->getValue(), true);
+            $this->defaultOptions[$option->getName()] = $option->getValue(true);
         }
         $this->caches = array_merge($this->caches, $this->defaultOptions);
         return $this->defaultOptions;
@@ -111,8 +125,9 @@ class OptionRepository extends ServiceEntityRepository
 
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @param Option $entity
+     * @param bool $flush
+     * @return void
      */
     public function add(Option $entity, bool $flush = true): void
     {
@@ -232,7 +247,7 @@ class OptionRepository extends ServiceEntityRepository
      */
     public function markdown(): bool
     {
-        return ($this->getDefaultOptions()['editor_support_markdown'] ?? '') === 'open';
+        return ($this->getDefaultOptions()['editor_markdown_support'] ?? false) === true;
     }
 
     /**
@@ -245,7 +260,7 @@ class OptionRepository extends ServiceEntityRepository
 
     public function maintenance(): bool
     {
-        return ($this->getDefaultOptions()['maintenance'] ?? 'off') === 'on';
+        return ($this->getDefaultOptions()['maintenance'] ?? false) === true;
     }
 
     /**
@@ -285,7 +300,7 @@ class OptionRepository extends ServiceEntityRepository
      */
     public function staticMode(): bool
     {
-        return $this->getDefaultOptions()['static_mode'] ?? false;
+        return ($this->getDefaultOptions()['static_mode'] ?? false) === true;
     }
 
     public function thumbnail(): array
@@ -348,6 +363,16 @@ class OptionRepository extends ServiceEntityRepository
         return $this->value('charset', 'UTF-8');
     }
 
+    /**
+     * 评论审核
+     *
+     * @return bool
+     */
+    public function commentModeration(): bool
+    {
+        return ($this->getDefaultOptions()['comment_moderation'] ?? false) === true;
+    }
+
 
     /**
      * @param string $name
@@ -376,7 +401,7 @@ class OptionRepository extends ServiceEntityRepository
     {
         $option = $this->findOneBy(['name' => $name]);
         if ($option != null) {
-            $this->caches[$name] = Formatter::reverseTransform($option->getValue(), true);
+            $this->caches[$name] = $option->getValue(true);
         }
         return $option;
     }
@@ -395,14 +420,15 @@ class OptionRepository extends ServiceEntityRepository
          */
         $options = parent::findBy($criteria, $orderBy, $limit, $offset);
         foreach ($options as $option) {
-            $this->caches[$option->getName()] = Formatter::reverseTransform($option->getValue(), true);
+            $this->caches[$option->getName()] = $option->getValue(true);
         }
         return $options;
     }
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @param Option $entity
+     * @param bool $flush
+     * @return void
      */
     public function remove(Option $entity, bool $flush = true): void
     {
@@ -423,7 +449,7 @@ class OptionRepository extends ServiceEntityRepository
         foreach ($records as &$record) {
             unset($record['autoload']);
             $value = Formatter::reverseTransform($record['value']);
-            if ($value === Formatter::ON || $value === Formatter::OFF) {
+            if (is_bool($value)) {
                 $type = 1;
             } elseif (is_object($value)) {
                 $type = 3;

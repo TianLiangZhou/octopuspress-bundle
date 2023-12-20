@@ -63,7 +63,7 @@ class BootstrapListener implements EventSubscriberInterface
         $option = $this->container->get(OptionRepository::class);
         $request = $event->getRequest();
         $requestUri = $request->server->get('REQUEST_URI');
-        if ($option->staticMode()) {
+        if ($option->staticMode() && $option->permalinkStructure() !== 'post_permalink_normal') {
             if (str_contains($requestUri, '.html')) {
                 $request->server->set('REQUEST_URI', str_replace('.html', '', $requestUri));
             }

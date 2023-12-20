@@ -7,6 +7,7 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\Repository\OptionRepository;
+use OctopusPress\Bundle\Util\Formatter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -310,16 +311,13 @@ class DashboardController extends AdminController
     private function defaultStatusSaveCallback(bool $value, string $id, string $type): void
     {
         $repository = $this->bridger->get(OptionRepository::class);
-        $switchValue  = $value ? 'on' : 'off';
+        $switchValue  = $value ? Formatter::ON : Formatter::OFF;
         switch ($type) {
             case 'option':
                 $option = $repository->findOneByName($id);
                 if ($option == null) {
                     $option = new Option();
                     $option->setName($id);
-                }
-                if ($id === 'default_comment_status') {
-                    $switchValue = $value ? 'open' : '';
                 }
                 $option->setValue($switchValue);
                 $repository->add($option);
@@ -355,13 +353,10 @@ class DashboardController extends AdminController
                 if ($option == null) {
                     return false;
                 }
-                if ($id == 'default_comment_status') {
-                    return $option->getValue() == 'open';
-                }
-                return $option->getValue() == 'on';
+                return $option->getValue() === true;
             case 'theme_mod':
                 $theme = $repository->theme();
-                return $repository->themeModuleFeature($id, $theme) == 'on';
+                return $repository->themeModuleFeature($id, $theme) === Formatter::ON;
             default:
                 return false;
         }

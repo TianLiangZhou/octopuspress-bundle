@@ -73,3 +73,4 @@ Thumbs.db
 .phpstan-dba.cache
 
 ckeditor5/build
+.yarn

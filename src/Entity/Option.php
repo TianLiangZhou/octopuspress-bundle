@@ -42,10 +42,10 @@ class Option
     private string $name = '';
 
     /**
-     * @var string
+     * @var string|null
      */
     #[Column(name: "option_value", type: "text", length: 0, nullable: false)]
-    private string $value = '';
+    private ?string $value = '';
 
     /**
      * @var string
@@ -70,7 +70,23 @@ class Option
         return $this;
     }
 
-    public function getValue(): ?string
+    /**
+     * @param bool $associative
+     * @param mixed|null $defaultValue
+     * @return bool|string|array|int|\stdClass|null
+     */
+    public function getValue(bool $associative = false, mixed $defaultValue = null): null|bool|string|array|int|\stdClass
+    {
+        if (is_null($this->value) || $this->value === '') {
+            return $defaultValue;
+        }
+        return Formatter::reverseTransform($this->value, $associative);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getOriginValue(): ?string
     {
         return $this->value;
     }

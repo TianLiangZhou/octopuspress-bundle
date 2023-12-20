@@ -8,8 +8,8 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 
 final class Formatter
 {
-    const ON = 'true';
-    const OFF = 'false';
+    const ON = 'on';
+    const OFF = 'off';
 
     /**
      * @param string $title
