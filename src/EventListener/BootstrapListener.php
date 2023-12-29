@@ -126,8 +126,8 @@ class BootstrapListener implements EventSubscriberInterface
         if ($kernel instanceof PluginInterface) {
             $kernel->launcher($bridger);
         }
-        $this->registerDynamicRoutes();
         $this->manager->launchers($this->container);
+        $this->registerDynamicRoutes();
     }
 
     /**
@@ -135,12 +135,14 @@ class BootstrapListener implements EventSubscriberInterface
      */
     private function registerDynamicRoutes(): void
     {
-        /**
-         * @var $router RouterInterface
-         */
-        $router = $this->container->get('router');
-        $routeCollection = $router->getRouteCollection();
+        $routeCollection = $this->container->get('router')->getRouteCollection();
         $bridger = $this->manager->getBridger();
+        foreach ($bridger->getPlugin()->getRoutes() as $route) {
+            $routeCollection->add($route[0], $route[1], $route[2]);
+        }
+        foreach ($bridger->getPlugin()->getRouteCollections() as $collection) {
+            $routeCollection->addCollection($collection);
+        }
         $taxonomies = $bridger->getTaxonomy()->getTaxonomies();
         foreach ($taxonomies as $name => $taxonomy) {
             if (!$taxonomy->isShowUi() || $name === TermTaxonomy::TAG || $name === TermTaxonomy::CATEGORY || $name === TermTaxonomy::NAV_MENU) {

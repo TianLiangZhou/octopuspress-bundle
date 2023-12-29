@@ -25,7 +25,19 @@ final class Plugin
     private array $customMenus = [];
 
     private LoaderInterface $loader;
+
     private Bridger $bridger;
+
+    /**
+     * @var array
+     */
+    private array $routes = [];
+
+    /**
+     * @var RouteCollection[]
+     */
+    private array $routeCollections = [];
+
 
     public function __construct(Bridger $bridger, LoaderInterface $loader)
     {
@@ -146,8 +158,7 @@ final class Plugin
             $pluginCollection->addNamePrefix("backend_");
             $pluginCollection->addPrefix("backend");
         }
-        $collection = $this->bridger->getRouter()->getRouteCollection();
-        $collection->addCollection($pluginCollection);
+        $this->routeCollections[] = $pluginCollection;
         return $this;
     }
 
@@ -155,14 +166,14 @@ final class Plugin
      * @param string $path
      * @param string $controllerAction
      * @param string $name
+     * @param int $priority
      * @return Route
      */
-    public function addRoute(string $path, string $controllerAction, string $name = ""): Route
+    public function addRoute(string $path, string $controllerAction, string $name = "",  int $priority = 0): Route
     {
-        $routeCollection = $this->bridger->getRouter()->getRouteCollection();
         $name = $name ?: u($path)->snake()->lower()->toString();
         $route = new Route($path, ['_controller' => $controllerAction]);
-        $routeCollection->add($name, $route);
+        $this->routes[] = [$name, $route, $priority];
         return $route;
     }
 
@@ -242,5 +253,21 @@ final class Plugin
     public function getCustomMenus(): array
     {
         return $this->customMenus;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRoutes(): array
+    {
+        return $this->routes;
+    }
+
+    /**
+     * @return RouteCollection[]
+     */
+    public function getRouteCollections(): array
+    {
+        return $this->routeCollections;
     }
 }

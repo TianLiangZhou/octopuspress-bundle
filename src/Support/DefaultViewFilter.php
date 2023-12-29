@@ -6,15 +6,13 @@ use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
 use OctopusPress\Bundle\Entity\User;
-use OctopusPress\Bundle\Model\ViewManager;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Scalable\Hook;
 use OctopusPress\Bundle\Twig\OctopusRuntime;
 use Symfony\Bridge\Twig\Extension\AssetExtension;
 use Twig\Error\RuntimeError;
-use str_ends_with;
 
-class DefaultViewFilter
+final class DefaultViewFilter
 {
     private Hook $hook;
     private Bridger $bridger;
@@ -81,7 +79,7 @@ class DefaultViewFilter
         $sep = $this->hook->filter('document_title_separator', '-');
         $args = $this->hook->filter('document_title_parts', $args);
         $title = implode(" $sep ", array_filter($args));
-        echo sprintf('<title>%s</title>', $this->hook->filter('document_title', $title) );
+        echo sprintf('<title>%s</title>', $this->hook->filter('document_title', $title, $sep) );
     }
     /**
      * @return void
@@ -127,6 +125,13 @@ class DefaultViewFilter
                 $extension->getAssetUrl('bundles/octopuspress/css/nebular/components.css')
             );
         }
+        if ($themeExtension->isThemeSupport('prismjs')) {
+            echo sprintf(
+                '<link href="%s" rel="stylesheet" id="%s" />',
+                $extension->getAssetUrl('bundles/octopuspress/css/prism.css'),
+                'prismjs'
+            );
+        }
         $this->importThemeStyle($this->option->theme());
         $this->backgroundImage();
     }
@@ -159,6 +164,18 @@ class DefaultViewFilter
             echo sprintf(
                 '<script src="%s" type="text/javascript"></script>',
                 $extension->getAssetUrl('bundles/octopuspress/js/bootstrap.js'),
+            );
+        }
+        if ($theme->isThemeSupport('prismjs')) {
+            echo sprintf(
+                '<script src="%s" type="text/javascript"></script>',
+                $extension->getAssetUrl('bundles/octopuspress/js/prismjs.js'),
+            );
+        }
+        if ($theme->isThemeSupport('alpine')) {
+            echo sprintf(
+                '<script src="%s" type="text/javascript"></script>',
+                $extension->getAssetUrl('bundles/octopuspress/js/alpinejs.js'),
             );
         }
         $this->importThemeScript($this->option->theme());

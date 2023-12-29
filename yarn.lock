@@ -4334,6 +4334,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/prismjs@npm:^1":
+  version: 1.26.3
+  resolution: "@types/prismjs@npm:1.26.3"
+  checksum: 3e8a64bcf0ab5f9a47ec2590938c5a8a20ac849b4949a95ed96e73e64cb890fc56e9c9b724286914717458267b28405f965709e1b9f80db5d68817a7ce5a18a9
+  languageName: node
+  linkType: hard
+
 "@types/qs@npm:*":
   version: 6.9.7
   resolution: "@types/qs@npm:6.9.7"
@@ -7191,6 +7198,15 @@ __metadata:
   peerDependencies:
     esbuild: ">= 0.14.0"
   checksum: ae0cb7cbac7328de54cbdfbfc9d47a600a16ee7fff20d8b77afaa8c2999921fff21506db3be2c20e05fd76448f098ae76d1aaae4ccfa73293247a07931c9c3e2
+  languageName: node
+  linkType: hard
+
+"esbuild-plugin-prismjs@npm:^1.0.8":
+  version: 1.0.8
+  resolution: "esbuild-plugin-prismjs@npm:1.0.8"
+  dependencies:
+    prismjs: "npm:^1.29.0"
+  checksum: daa025687afb99f587a3bd866c3ba9f05e2dc56081940c7659a326df82fab2fcc67e5278b088cd296ffff7bd6c6be6d90202244cbf866d40ca067ea110844d76
   languageName: node
   linkType: hard
 
@@ -10882,6 +10898,7 @@ __metadata:
     "@types/d3-shape": "npm:^3.1.5"
     "@types/jasmine": "npm:~4.6.2"
     "@types/node": "npm:^18.18.9"
+    "@types/prismjs": "npm:^1"
     "@types/sanitize-html": "npm:^2"
     alpinejs: "npm:^3.13.2"
     angular2-multiselect-dropdown: "npm:^5.0.4"
@@ -10894,6 +10911,7 @@ __metadata:
     date-fns: "npm:^2.30.0"
     esbuild: "npm:^0.19.5"
     esbuild-plugin-copy: "npm:^2.1.1"
+    esbuild-plugin-prismjs: "npm:^1.0.8"
     esbuild-sass-plugin: "npm:^2.16.0"
     esbuild-style-plugin: "npm:^1.6.3"
     eva-icons: "npm:^1.1.3"
@@ -10912,6 +10930,7 @@ __metadata:
     postcss-import: "npm:^15.1.0"
     postcss-loader: "npm:^4.3.0"
     postcss-nested: "npm:^6.0.1"
+    prismjs: "npm:^1.29.0"
     raw-loader: "npm:^4.0.2"
     rxjs: "npm:~7.8.1"
     sanitize-html: "npm:^2.11.0"
@@ -11983,6 +12002,13 @@ __metadata:
   version: 5.6.0
   resolution: "pretty-bytes@npm:5.6.0"
   checksum: f69f494dcc1adda98dbe0e4a36d301e8be8ff99bfde7a637b2ee2820e7cb583b0fc0f3a63b0e3752c01501185a5cf38602c7be60da41bdf84ef5b70e89c370f3
+  languageName: node
+  linkType: hard
+
+"prismjs@npm:^1.29.0":
+  version: 1.29.0
+  resolution: "prismjs@npm:1.29.0"
+  checksum: d906c4c4d01b446db549b4f57f72d5d7e6ccaca04ecc670fb85cea4d4b1acc1283e945a9cbc3d81819084a699b382f970e02f9d1378e14af9808d366d9ed7ec6
   languageName: node
   linkType: hard
 

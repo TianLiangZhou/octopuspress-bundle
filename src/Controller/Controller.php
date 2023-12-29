@@ -3,6 +3,7 @@
 namespace OctopusPress\Bundle\Controller;
 
 use OctopusPress\Bundle\Bridge\Bridger;
+use OctopusPress\Bundle\Plugin\Plugin;
 use OctopusPress\Bundle\Util\DoctrineTrait;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,6 +15,7 @@ abstract class Controller extends AbstractController
 
     protected ManagerRegistry $doctrine;
     protected Bridger $bridger;
+    protected Plugin  $plugin;
 
     public function __construct(Bridger $bridger)
     {
@@ -24,5 +26,13 @@ abstract class Controller extends AbstractController
     public function setDeps(ManagerRegistry $doctrine): void
     {
         $this->doctrine = $doctrine;
+    }
+
+    /**
+     * @param Plugin $plugin
+     */
+    public function setPlugin(Plugin $plugin): void
+    {
+        $this->plugin = $plugin;
     }
 }

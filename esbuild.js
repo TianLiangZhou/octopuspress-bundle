@@ -1,4 +1,5 @@
 (async () => {
+  const prismjsPlugin=require('esbuild-plugin-prismjs');
   const {sassPlugin} = require('esbuild-sass-plugin');
   const {copy} = require("esbuild-plugin-copy");
   const tailwindcss = require('tailwindcss');
@@ -19,6 +20,7 @@
       'assets/js/bootstrap.js',
       'assets/js/bootstrap-4.js',
       'assets/js/base.js',
+      'assets/js/prismjs.js',
       // 'assets/css/base.css',
       'assets/css/bootstrap.css',
       'assets/css/bootstrap-4.css',
@@ -52,6 +54,20 @@
           });
           return css;
         },
+      }),
+      prismjsPlugin.prismjsPlugin({
+        inline: false,
+        languages: ['typescript', 'javascript', 'css', 'markup', 'bash', 'php', 'go', 'java', 'sh', 'shell', 'html', 'sql', 'json', 'py', 'nginx', 'kt', 'rust', 'ini', 'py', 'jsx', 'json', 'json5', 'scss', 'less', 'c', 'cpp', 'cs', 'twig', 'toml', 'git'],
+        plugins: [
+          'autoloader',
+          'line-highlight',
+          'line-numbers',
+          'show-language',
+          'copy-to-clipboard',
+          'toolbar',
+        ],
+        theme: 'okaidia',
+        css: true,
       }),
       copy({
         resolveFrom: 'out',

@@ -4,6 +4,7 @@ namespace OctopusPress\Bundle\Model;
 
 use InvalidArgumentException;
 use OctopusPress\Bundle\Controller\Controller;
+use OctopusPress\Bundle\Controller\WebController;
 use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\OctopusPressKernel;
 use OctopusPress\Bundle\Bridge\Bridger;
@@ -263,6 +264,8 @@ class PluginManager extends PackageManager
         $doctrine = $this->bridger->getDoctrine();
         $hook = $this->bridger->getHook();
         $activatedPlugin = $this->bridger->get(ActivatedPlugin::class);
+        // fix getSubscribedServices alias not found
+        $previousContainer = $container->get(WebController::class)->setContainer($container);
         foreach ($activePlugins as $name) {
             if (!isset($installedPlugins[$name])) {
                 continue;
@@ -275,6 +278,7 @@ class PluginManager extends PackageManager
                 $dispatcher->addSubscriber($plugin);
             }
             $services = $plugin->getServices($this->bridger);
+            $pluginInternalInstance = new Plugin($plugin, $name, $installedPlugins[$name]['version']);
             foreach ($services as $service) {
                 $className = get_class($service);
                 if ($container->has($className)) {
@@ -284,22 +288,21 @@ class PluginManager extends PackageManager
                     $application->add($service);
                 } elseif ($application == null && $service instanceof Controller) {
                     $service->setDeps($doctrine);
-                    $service->setContainer($container);
+                    $service->setContainer($previousContainer);
+                    $service->setPlugin($pluginInternalInstance);
                     $container->set($className, $service);
                 }
                 if ($service instanceof EventSubscriberInterface) {
                     $dispatcher->addSubscriber($service);
                 }
             }
-            $activatedPlugin->add(new Plugin(
-                $plugin,
-                $name,
-                $installedPlugins[$name]['version']
-            ));
             $plugin->launcher($this->bridger);
             $hook->action('plugin_launcher', $name, $this);
             $hook->action('plugin_launcher_' . $name, $this);
+            $activatedPlugin->add($pluginInternalInstance);
         }
+        // reset
+        $container->get(WebController::class)->setContainer($previousContainer);
     }
 
     /**
