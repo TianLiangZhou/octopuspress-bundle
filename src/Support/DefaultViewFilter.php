@@ -172,13 +172,13 @@ final class DefaultViewFilter
                 $extension->getAssetUrl('bundles/octopuspress/js/prismjs.js'),
             );
         }
+        $this->importThemeScript($this->option->theme());
         if ($theme->isThemeSupport('alpine')) {
             echo sprintf(
                 '<script src="%s" type="text/javascript"></script>',
                 $extension->getAssetUrl('bundles/octopuspress/js/alpinejs.js'),
             );
         }
-        $this->importThemeScript($this->option->theme());
     }
 
     /**
