@@ -134,6 +134,7 @@ class DashboardController extends AdminController
             ['name' => 'Intl支持', 'value' => $boolMap[extension_loaded('intl')]],
             ['name' => 'Redis支持', 'value' => $boolMap[extension_loaded('redis')]],
             ['name' => 'FFI支持', 'value' => $boolMap[extension_loaded('FFI')]],
+            ['name' => 'GD支持', 'value' => $boolMap[extension_loaded('gd')]],
             ['name' => '主机名', 'value' => php_uname('n')],
             ['name' => '内核', 'value' => php_uname('r')],
             ['name' => 'OS', 'value' => PHP_OS],

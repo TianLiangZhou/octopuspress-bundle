@@ -6,7 +6,7 @@
       </div>
     </div>
   </div>
-  <div class="col-auto" *ngFor="let item of cards">
+  <div class="col-xxl-6 col-xl-6 col-md-6 col-12" *ngFor="let item of cards">
     <nb-card>
       <nb-card-header>{{item.title}}</nb-card-header>
       <nb-card-body>
@@ -24,26 +24,6 @@
                                    [scheme]="colorScheme"
                                    [results]="item.body">
           </ngx-charts-bar-vertical>
-          <ngx-charts-advanced-pie-chart *ngSwitchCase="'pie-chart'"
-                                         [animations]="item.settings.animations"
-                                         [scheme]="colorScheme"
-                                         [results]="item.body">
-          </ngx-charts-advanced-pie-chart>
-          <ngx-charts-pie-chart *ngSwitchCase="'pie'"
-                                [animations]="item.settings.animations"
-                                [legend]="item.settings.legend"
-                                [labels]="item.settings.labels"
-                                [scheme]="colorScheme"
-                                [results]="item.body">
-          </ngx-charts-pie-chart>
-          <ngx-charts-number-card *ngSwitchCase="'number'"
-                                  cardColor="#232837"
-                                  emptyColor="#1e222e"
-                                  [animations]="item.settings.animations"
-                                  [scheme]="colorScheme"
-                                  [view]="item.settings.view"
-                                  [results]="item.body">
-          </ngx-charts-number-card>
           <ngx-charts-bar-horizontal *ngSwitchCase="'bar-horizontal'"
                                      [animations]="item.settings.animations"
                                      [xAxis]="item.settings.xAxis"
@@ -51,6 +31,46 @@
                                      [scheme]="colorScheme"
                                      [results]="item.body">
           </ngx-charts-bar-horizontal>
+
+          <ngx-charts-bar-vertical-2d *ngSwitchCase="'group-bar-vertical'"
+                                   [animations]="item.settings.animations"
+                                   [xAxis]="item.settings.xAxis"
+                                   [yAxis]="item.settings.yAxis"
+                                   [scheme]="colorScheme"
+                                   [results]="item.body">
+          </ngx-charts-bar-vertical-2d>
+          <ngx-charts-bar-horizontal-2d *ngSwitchCase="'group-bar-horizontal'"
+                                     [animations]="item.settings.animations"
+                                     [xAxis]="item.settings.xAxis"
+                                     [yAxis]="item.settings.yAxis"
+                                     [scheme]="colorScheme"
+                                     [results]="item.body">
+          </ngx-charts-bar-horizontal-2d>
+
+          <ngx-charts-pie-chart *ngSwitchCase="'pie'"
+                                [animations]="item.settings.animations"
+                                [legend]="item.settings.legend"
+                                [labels]="item.settings.labels"
+                                [scheme]="colorScheme"
+                                [results]="item.body">
+          </ngx-charts-pie-chart>
+          <ngx-charts-advanced-pie-chart *ngSwitchCase="'pie-chart'"
+                                         [animations]="item.settings.animations"
+                                         [scheme]="colorScheme"
+                                         [results]="item.body">
+          </ngx-charts-advanced-pie-chart>
+          <ngx-charts-pie-grid *ngSwitchCase="'pie-grid'"
+                               [animations]="item.settings.animations"
+                               [scheme]="colorScheme"
+                               [results]="item.body">
+          </ngx-charts-pie-grid>
+          <ngx-charts-number-card *ngSwitchCase="'number'"
+                                  [cardColor]="item.settings.cardColor || '#232837'"
+                                  [animations]="item.settings.animations"
+                                  [scheme]="colorScheme"
+                                  [view]="item.settings.view"
+                                  [results]="item.body">
+          </ngx-charts-number-card>
 
           <ngx-charts-line-chart *ngSwitchCase="'line'"
                                  [animations]="item.settings.animations"
@@ -67,13 +87,6 @@
                                          [scheme]="colorScheme"
                                          [results]="item.body">
           </ngx-charts-area-chart-stacked>
-
-
-          <ngx-charts-pie-grid *ngSwitchCase="'pie-grid'"
-                               [animations]="item.settings.animations"
-                               [scheme]="colorScheme"
-                               [results]="item.body">
-          </ngx-charts-pie-grid>
         </ng-container>
       </nb-card-body>
     </nb-card>

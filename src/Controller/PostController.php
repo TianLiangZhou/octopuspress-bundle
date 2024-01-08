@@ -172,7 +172,7 @@ class PostController extends Controller
         if ($post === null) {
             throw new NotFoundHttpException();
         }
-        if ($post->getCommentStatus() !== 'open') {
+        if ($post->getCommentStatus() !== Post::OPEN) {
             return $this->json([
                 'message' => '此内容不支持评论',
             ]);
@@ -206,7 +206,7 @@ class PostController extends Controller
             $author  = $request->get('author');
             if (mb_strlen($author) > 128) {
                 return $this->json([
-                    'message' => '评论昵称太长的了!',
+                    'message' => '评论昵称太长啦!',
                 ]);
             }
             $comment->setAuthorEmail($authorEmail)

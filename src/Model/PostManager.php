@@ -19,6 +19,7 @@ use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Util\Image;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mime\MimeTypes;
 use function Symfony\Component\String\b;
 
@@ -48,9 +49,10 @@ class PostManager
     /**
      * @param Post $post
      * @param string $oldStatus
+     * @param Request|null $request
      * @return bool
      */
-    public function save(Post $post, string $oldStatus): bool
+    public function save(Post $post, string $oldStatus, Request $request = null): bool
     {
         try {
             if ($post->getId() != null) {
@@ -63,6 +65,7 @@ class PostManager
                 }
             }
             $postSaveBeforeEvent = new PostEvent($post, $oldStatus);
+            $postSaveBeforeEvent->setRequest($request);
             $this->dispatcher->dispatch($postSaveBeforeEvent, OctopusEvent::POST_SAVE_BEFORE);
             $name = $post->getName();
             if (empty($name)) {
@@ -88,6 +91,7 @@ class PostManager
                 ->getQuery()
                 ->execute();
             $postSaveAfterEvent = new PostEvent($post, $oldStatus);
+            $postSaveAfterEvent->setRequest($request);
             $this->dispatcher->dispatch($postSaveAfterEvent, OctopusEvent::POST_SAVE_AFTER);
             return true;
         } catch (\Exception $_) {
@@ -165,7 +169,7 @@ class PostManager
         $post->setStatus(Post::STATUS_INHERIT);
         $post->setGuid($filename);
         $post->setParent(null);
-        if ($this->save($post, '')) {
+        if ($this->save($post, '', null)) {
             $metadata = $this->generateAttachmentMetadata($post, $file);
             $meta = new PostMeta();
             $meta->setPost($post)

@@ -7,7 +7,7 @@
           <div class="d-flex justify-content-end">
             <button nbButton [nbSpinner]="submitted" [disabled]="submitted || formGroup.invalid" (click)="action('draft')" type="button" status="warning">保存草稿</button>
             <div class="mx-2"></div>
-            <button nbButton status="basic" *ngIf="entity.id > 0" (click)="preview()">预览</button>
+            <button type="button" nbButton status="basic" *ngIf="entity.id > 0" (click)="preview()">预览</button>
             <div class="mx-2"></div>
             <button nbButton status="success" [nbSpinner]="submitted" type="submit" [disabled]="submitted || formGroup.invalid">发布</button>
             <div class="mx-2"></div>

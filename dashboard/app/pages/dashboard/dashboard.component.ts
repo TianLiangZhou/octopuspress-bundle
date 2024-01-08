@@ -37,13 +37,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterContentInit {
           this.sidebar.compact('menu-sidebar');
         }
       });
-      const elementsByClassName = document.getElementsByTagName('rect');
-      for (const elementsByClassNameKey in elementsByClassName) {
-        const element = elementsByClassName[elementsByClassNameKey];
-        if (element.classList) {
-          element.classList.remove('card');
-        }
-      }
     });
   }
 

@@ -270,9 +270,8 @@ class PostController extends AdminController
     #[Route('/{id}/update', name: 'update', options: ['name' => '更新文章', 'sort'=>1, 'parent' => 'post_all'], methods: Request::METHOD_POST)]
     public function update(Post $post, Request $request, #[CurrentUser] User $user): JsonResponse
     {
-        $data = $request->toArray();
         try {
-            $this->save($data, $post, $user);
+            $this->save($request, $post, $user);
         } catch (\Throwable $exception) {
             return $this->json(
                 ['message' => $exception->getMessage()],
@@ -294,8 +293,9 @@ class PostController extends AdminController
      * @return void
      * @throws \Throwable
      */
-    public function save(array $data, Post $post, User $user): void
+    public function save(Request $request, Post $post, User $user): void
     {
+        $data = $request->toArray();
         $postExtension = $this->bridger->getPost();
         $types = $postExtension->getNames();
         $postType = $postExtension->getType($data['type']);
@@ -310,7 +310,7 @@ class PostController extends AdminController
         if ($post->getAuthor() == null) {
             $post->setAuthor($user);
         }
-        if (!$this->postManager->save($post, $oldStatus)) {
+        if (!$this->postManager->save($post, $oldStatus, $request)) {
             throw new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, '保存内容发生错误，请查看日志文件修复!');
         }
     }

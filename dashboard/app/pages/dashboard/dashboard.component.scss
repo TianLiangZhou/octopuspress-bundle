@@ -23,6 +23,11 @@
   $color-text-lighter: #fff;
 
   ::ng-deep {
+    ngx-charts-number-card {
+      svg {
+        min-height: 300px;
+      }
+    }
     .ngx-charts {
       text {
         fill: $color-text-med;
@@ -55,6 +60,9 @@
       .number-card {
         p {
           color: $color-text-light;
+        }
+        .card {
+          height: revert-layer;
         }
       }
 
@@ -149,4 +157,5 @@
       color: $color-text-med;
     }
   }
+
 }
