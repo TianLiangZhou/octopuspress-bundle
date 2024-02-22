@@ -9,7 +9,7 @@ import {AutoLink, Link} from '@ckeditor/ckeditor5-link';
 import {BlockQuote} from '@ckeditor/ckeditor5-block-quote';
 import {Bold, Code, Italic} from '@ckeditor/ckeditor5-basic-styles';
 import {CKFinder} from '@ckeditor/ckeditor5-ckfinder';
-import {UploadAdapter} from '@ckeditor/ckeditor5-adapter-ckfinder';
+import {CKFinderUploadAdapter} from '@ckeditor/ckeditor5-adapter-ckfinder';
 import {CodeBlock} from '@ckeditor/ckeditor5-code-block';
 import {Essentials} from '@ckeditor/ckeditor5-essentials';
 import {FindAndReplace} from '@ckeditor/ckeditor5-find-and-replace';
@@ -42,7 +42,7 @@ export default class Editor extends ClassicEditor {
     BlockQuote,
     Bold,
     CKFinder,
-    UploadAdapter,
+    CKFinderUploadAdapter,
     Code,
     CodeBlock,
     Essentials,
