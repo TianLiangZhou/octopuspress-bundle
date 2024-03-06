@@ -35,9 +35,9 @@ class OctopusEvent extends Event
     }
 
     /**
-     * @param Request $request
+     * @param Request|null $request
      */
-    public function setRequest(Request $request): void
+    public function setRequest(?Request $request): void
     {
         $this->request = $request;
     }
