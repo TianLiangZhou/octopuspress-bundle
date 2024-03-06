@@ -532,7 +532,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
 
     /**
      * @param int|array $taxonomyId
-     * @param array<string, bool|int|string> $options
+     * @param array<string, mixed> $options
      * @return iterable
      * @throws NonUniqueResultException
      */
@@ -543,7 +543,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
         }
         $queryBuilder = $this->relation->createQueryBuilder('r');
         $queryBuilder->select('COUNT(r.post) as cnt');
-        $taxonomies = is_array($taxonomyId) ? array_map('intval', $taxonomyId) : [(int) $taxonomyId];
+        $taxonomies = is_array($taxonomyId) ? array_map('intval', $taxonomyId) : [$taxonomyId];
         $queryBuilder->andWhere('r.taxonomy IN (:taxonomyId)')
             ->setParameter('taxonomyId', $taxonomies);
         if (empty($options['type'])) {
@@ -575,9 +575,14 @@ class OctopusRuntime implements RuntimeExtensionInterface
             ->setFirstResult($page * $limit - $limit)
             ->setMaxResults($limit)
             ->getArrayResult();
+        if (empty($records)) {
+            return [];
+        }
         $objectIds = array_map(function ($item) {return (int)$item['object_id'];}, $records);
         $records = $this->post->createThumbnailQuery(array_merge([
             'id' => $objectIds,
+            '_sort' => 'createdAt',
+            '_order'=> 'DESC',
         ], $options));
         $currentPageCount = count($records);
         if ($currentPageCount < $limit) {

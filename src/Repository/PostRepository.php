@@ -74,7 +74,7 @@ class PostRepository extends ServiceEntityRepository
     /**
      * @param array $filters
      * @param callable|null $closure
-     * @return array
+     * @return Post[]
      */
     public function createThumbnailQuery(array $filters = [], callable $closure = null): array
     {
