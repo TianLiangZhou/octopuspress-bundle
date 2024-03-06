@@ -7,22 +7,17 @@ use DoctrineExtensions\Query\Mysql\Day;
 use DoctrineExtensions\Query\Mysql\Month;
 use DoctrineExtensions\Query\Mysql\Year;
 use OctopusPress\Bundle\Asset\ThemePackage;
-use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\CKFinder\CKFinderAuthentication;
 use OctopusPress\Bundle\Entity\User;
-use OctopusPress\Bundle\EventListener\AuthenticateListener;
 use OctopusPress\Bundle\Security\AuthenticationEntryPoint;
 use OctopusPress\Bundle\Security\Handler\AccessDeniedHandler;
 use OctopusPress\Bundle\Security\Handler\LoginFailureHandler;
-use OctopusPress\Bundle\Service\Requester;
-use OctopusPress\Bundle\Service\ServiceCenter;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class OctopusPressExtension extends Extension implements PrependExtensionInterface
 {

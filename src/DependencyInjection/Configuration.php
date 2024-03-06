@@ -25,7 +25,11 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->getRootNode();
         $rootNode->children()
                 ->scalarNode('plugin_dir')->defaultValue("%kernel.project_dir%/plugins")->end()
-                ->scalarNode('assets_url')->end()
+                ->arrayNode('assets_url')
+                    ->requiresAtLeastOneElement()
+                    ->beforeNormalization()->castToArray()->end()
+                    ->prototype('scalar')->end()
+                ->end()
                 ->scalarNode('build_assets_dir')->end()
                 ->scalarNode('service_center_host')->defaultValue("http://127.0.0.1:8080")->end()
                 ->arrayNode('access_controls')

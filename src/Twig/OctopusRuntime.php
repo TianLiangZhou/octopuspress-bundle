@@ -438,12 +438,13 @@ class OctopusRuntime implements RuntimeExtensionInterface
 
     /**
      * @param string $name
+     * @param array $options
      * @return string|null
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function sidebar(string $name): ?string
+    public function sidebar(string $name, array $options = []): ?string
     {
         $widgetSupport = $this->bridger->getWidget();
         if (!$widgetSupport->existsBlock($name)) {
@@ -454,7 +455,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
             return null;
         }
         $widgets = $this->option->blockWidgets();
-        $container = '';
+        $container = sprintf('<div class="sidebar-block sidebar-%s %s">', $name, $options['class'] ?? '');
         foreach ($blocks[$name] as $blockId) {
             if (!isset($widgets[$blockId])) {
                 continue;
@@ -467,6 +468,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
             $widget->put($data['attributes'] ?? []);
             $container .= "<div id='{$data['id']}' class='widget widget-block widget-{$data['name']}'>" . $widget->render() . "</div>";
         }
+        $container .= '</div>';
         return $container;
     }
 
