@@ -123,6 +123,15 @@ final class PostType implements \JsonSerializable
     }
 
     /**
+     * @param string $name
+     * @return bool
+     */
+    public function isSupports(string $name): bool
+    {
+        return isset($this->features[$name]);
+    }
+
+    /**
      * @return array
      */
     public function jsonSerialize(): array
