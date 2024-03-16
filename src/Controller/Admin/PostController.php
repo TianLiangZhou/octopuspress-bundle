@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OctopusPress\Bundle\Controller\Admin;
 
 use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use OctopusPress\Bundle\Bridge\Bridger;
@@ -287,15 +288,16 @@ class PostController extends AdminController
     }
 
     /**
-     * @param array $data
+     * @param Request $request
      * @param Post $post
      * @param User $user
+     * @param array|null $rawData
      * @return void
-     * @throws \Throwable
+     * @throws ORMException
      */
-    public function save(Request $request, Post $post, User $user): void
+    public function save(Request $request, Post $post, User $user, array $rawData = null): void
     {
-        $data = $request->toArray();
+        $data = $rawData ?? $request->toArray();
         $postExtension = $this->bridger->getPost();
         $types = $postExtension->getNames();
         $postType = $postExtension->getType($data['type']);
