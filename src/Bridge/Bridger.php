@@ -248,7 +248,7 @@ final class Bridger
      */
     public function getActivatedPlugin(): ActivatedPlugin
     {
-        return $this->get('activated_plugin');
+        return $this->get(ActivatedPlugin::class);
     }
 
     /**
