@@ -23,6 +23,7 @@ use OctopusPress\Bundle\Scalable\Post;
 use OctopusPress\Bundle\Scalable\TermTaxonomy;
 use OctopusPress\Bundle\Scalable\Theme;
 use OctopusPress\Bundle\Scalable\Widget;
+use OctopusPress\Bundle\Support\ActivatedPlugin;
 use OctopusPress\Bundle\Support\ActivatedRoute;
 use OctopusPress\Bundle\Support\DefaultViewFilter;
 use Psr\Log\LoggerInterface;
@@ -240,6 +241,14 @@ final class Bridger
     public function getActivatedRoute(): ActivatedRoute
     {
         return $this->get('activated_route');
+    }
+
+    /**
+     * @return ActivatedPlugin
+     */
+    public function getActivatedPlugin(): ActivatedPlugin
+    {
+        return $this->get('activated_plugin');
     }
 
     /**
