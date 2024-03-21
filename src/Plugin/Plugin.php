@@ -6,19 +6,19 @@ use OctopusPress\Bundle\Bridge\Bridger;
 
 class Plugin
 {
-    private string $name;
-
-    private string $version;
+    private array $extra;
 
     private PluginInterface $plugin;
 
     private ?PluginProviderInterface $provider = null;
 
-    public function __construct(PluginInterface $plugin, $name, $version)
+    private string $pluginDir;
+
+    public function __construct(PluginInterface $plugin, array $extra, string $pluginDir)
     {
-        $this->name = $name;
-        $this->version = $version;
         $this->plugin = $plugin;
+        $this->extra = $extra;
+        $this->pluginDir = $pluginDir;
     }
 
     /**
@@ -26,7 +26,39 @@ class Plugin
      */
     public function getName(): string
     {
-        return $this->name;
+        return $this->extra['name'];
+    }
+
+    /**
+     * @return string
+     */
+    public function getDir(): string
+    {
+        return $this->pluginDir  . DIRECTORY_SEPARATOR . $this->getName();
+    }
+
+    /**
+     * @return string
+     */
+    public function miniOP(): string
+    {
+        return $this->extra['miniOP'];
+    }
+
+    /**
+     * @return string
+     */
+    public function miniPHP(): string
+    {
+        return $this->extra['miniPHP'];
+    }
+
+    /**
+     * @return array
+     */
+    public function getExtra(): array
+    {
+        return $this->extra;
     }
 
     /**
@@ -34,7 +66,7 @@ class Plugin
      */
     public function getVersion(): string
     {
-        return $this->version;
+        return $this->extra['version'];
     }
 
     /**

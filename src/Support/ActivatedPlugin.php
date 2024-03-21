@@ -12,7 +12,7 @@ final class ActivatedPlugin
      */
     private array $registered = [];
 
-    public function add(Plugin $plugin): static
+    public function add(Plugin $plugin): ActivatedPlugin
     {
         $this->registered[$plugin->getName()] = $plugin;
         return $this;

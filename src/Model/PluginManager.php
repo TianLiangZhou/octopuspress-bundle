@@ -272,13 +272,14 @@ class PluginManager extends PackageManager
             }
             $plugin = $this->getPlugin($name, $installedPlugins[$name]['entrypoint']);
             if ($plugin == null) {
+                $this->bridger->getLogger()->debug($name . ' plugin does not exist');
                 continue;
             }
             if ($plugin instanceof EventSubscriberInterface) {
                 $dispatcher->addSubscriber($plugin);
             }
             $services = $plugin->getServices($this->bridger);
-            $pluginInternalInstance = new Plugin($plugin, $name, $installedPlugins[$name]['version']);
+            $pluginInternalInstance = new Plugin($plugin, $installedPlugins[$name], $this->bridger->getPluginDir());
             foreach ($services as $service) {
                 $className = get_class($service);
                 if ($container->has($className)) {
@@ -289,7 +290,6 @@ class PluginManager extends PackageManager
                 } elseif ($application == null && $service instanceof Controller) {
                     $service->setDeps($doctrine);
                     $service->setContainer($previousContainer);
-                    $service->setPlugin($pluginInternalInstance);
                     $container->set($className, $service);
                 }
                 if ($service instanceof EventSubscriberInterface) {
@@ -339,7 +339,7 @@ class PluginManager extends PackageManager
      */
     private function getPlugin(string $name, string $entrypoint): ?PluginInterface
     {
-        $this->registerPlugin($name);
+        $this->registerPluginComposer($name);
         // 不直接判断存不存在，如果真得不存在，直接判断会被composer标记为不存在。
         if (!class_exists($entrypoint)) {
             return null;
@@ -366,7 +366,7 @@ class PluginManager extends PackageManager
      * @param string $name
      * @return void
      */
-    private function registerPlugin(string $name): void
+    private function registerPluginComposer(string $name): void
     {
         $loader = OctopusPressKernel::getLoader();
         if ($loader == null) {
