@@ -250,9 +250,27 @@ class OctopusRuntime implements RuntimeExtensionInterface
         return $items;
     }
 
-    public function customLogo()
+    /**
+     * @param array $options
+     * @return string
+     */
+    public function customLogo(array $options = []): string
     {
+        if (!$this->isThemeSupport('custom_logo')) {
+            return '';
+        }
+        $customLogoArgs = $this->bridger->getTheme()->getThemeSupport('custom_logo');
+        $customLogoArgs = array_merge($customLogoArgs, $options);
 
+        $imageId = (int) $this->getThemeMod('custom_logo', 0);
+        if ($imageId < 1) {
+            return '';
+        }
+        $post = $this->bridger->getPostRepository()->find($imageId);
+        if ($post == null) {
+            return '';
+        }
+        return $this->thumbnail($post, '', '', $customLogoArgs['alt'] ?? 'logo', $customLogoArgs);
     }
 
     /**
@@ -284,9 +302,10 @@ class OctopusRuntime implements RuntimeExtensionInterface
      * @param string $class
      * @param string $size
      * @param string|null $alt
+     * @param array $args
      * @return string
      */
-    public function thumbnail(Post $post, string $class = '', string $size = '', string $alt = null): string
+    public function thumbnail(Post $post, string $class = '', string $size = '', string $alt = null, array $args = []): string
     {
         $type = $post->getType();
         if ($type !== Post::TYPE_ATTACHMENT) {
@@ -297,17 +316,23 @@ class OctopusRuntime implements RuntimeExtensionInterface
         }
         $attachment = $post->getAttachment();
         $url = $attachment['url'];
+        $width = $args['width'] ?? $attachment['meta']['width'];
+        $height = $args['height'] ?? $attachment['meta']['height'];
         if ($size) {
             $sizeArray = $attachment['meta']['sizes'][$size] ?? [];
             if (isset($sizeArray['file'])) {
                 $url = $sizeArray['file'];
             }
+            $width = $args['width'] ?? $sizeArray['width'];
+            $height = $args['height'] ?? $sizeArray['height'];
         }
         return sprintf(
-            '<img src="%s" alt="%s" class="%s" />',
+            '<img src="%s" alt="%s" class="%s" width="%d" height="%d" />',
             $this->bridger->getPackages()->getUrl($url),
             $alt ?? $post->getTitle(),
             $class,
+            $width,
+            $height,
         );
     }
 

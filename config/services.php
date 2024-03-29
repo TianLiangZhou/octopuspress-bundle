@@ -30,6 +30,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\Cache\CacheInterface;
+use OctopusPress\Bundle\Security\CustomAuthenticator;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\abstract_arg;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
@@ -147,6 +148,10 @@ return static function (ContainerConfigurator $container, ContainerBuilder $buil
             service(ThemeManager::class)
         ])
         ->tag('console.command');
+
+    $services->set('security.custom.authenticator', CustomAuthenticator::class)
+        ->alias(CustomAuthenticator::class, 'security.custom.authenticator')
+        ->public();
 
     $services->set('config_cache_factory', ResourceCheckerConfigCacheFactory::class)
         ->args([

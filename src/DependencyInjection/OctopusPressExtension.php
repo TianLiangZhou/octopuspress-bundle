@@ -12,6 +12,7 @@ use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Security\AuthenticationEntryPoint;
 use OctopusPress\Bundle\Security\Handler\AccessDeniedHandler;
 use OctopusPress\Bundle\Security\Handler\LoginFailureHandler;
+use OctopusPress\Bundle\Security\CustomAuthenticator;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -61,6 +62,9 @@ class OctopusPressExtension extends Extension implements PrependExtensionInterfa
             $securityConfig['firewalls']['main'] = [
                 'provider' => 'users_in_doctrine',
                 'lazy' => true,
+                'custom_authenticators' => [
+                    CustomAuthenticator::class
+                ],
                 'entry_point' => AuthenticationEntryPoint::class,
                 'access_denied_handler' => AccessDeniedHandler::class,
                 'json_login' => [

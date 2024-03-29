@@ -33,9 +33,11 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\Service\Attribute\Required;
 use Twig\Environment;
 
 final class Bridger
@@ -49,6 +51,7 @@ final class Bridger
     private CacheInterface $cache;
     private HttpClientInterface $client;
     private Packages $packages;
+    private UserPasswordHasherInterface $passwordHasher;
 
 
     /**
@@ -479,5 +482,20 @@ final class Bridger
     public function getPackages(): Packages
     {
         return $this->packages;
+    }
+
+    public function getPasswordHasher(): UserPasswordHasherInterface
+    {
+        return $this->passwordHasher;
+    }
+
+    /**
+     * @param UserPasswordHasherInterface $passwordHasher
+     * @return void
+     */
+    #[Required]
+    public function setPasswordHasher(UserPasswordHasherInterface $passwordHasher): void
+    {
+        $this->passwordHasher = $passwordHasher;
     }
 }

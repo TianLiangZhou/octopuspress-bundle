@@ -13,6 +13,7 @@ use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Util\UserAgent;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
@@ -32,13 +33,15 @@ class AuthorizeController extends Controller
     private OptionRepository $option;
     private UserRepository $user;
     private UserPasswordHasherInterface $passwordHasher;
+    private Security $security;
 
-    public function __construct(Bridger $bridger, UserPasswordHasherInterface $passwordHasher)
+    public function __construct(Bridger $bridger, UserPasswordHasherInterface $passwordHasher, Security $security)
     {
         parent::__construct($bridger);
         $this->option = $bridger->getOptionRepository();
         $this->user = $bridger->getUserRepository();
         $this->passwordHasher = $passwordHasher;
+        $this->security = $security;
     }
 
 
@@ -51,13 +54,17 @@ class AuthorizeController extends Controller
     #[Route('/signup', name: 'sign_up', methods: 'GET')]
     #[Route('/forgot-pass', name: 'forgot', methods: 'GET')]
     #[Route('/reset-pass', name: 'reset', methods: 'GET')]
-    public function main(): void
+    public function main(): ?Response
     {
+        if ($this->security->getUser()) {
+            return $this->redirect('/');
+        }
         $csrf = false;
         if ($this->container->has('security.csrf.token_manager')) {
             $csrf = true;
         }
         $this->container->get('twig')->addGlobal('csrf', $csrf);
+        return null;
     }
 
     /**
