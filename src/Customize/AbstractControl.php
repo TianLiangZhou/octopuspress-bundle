@@ -94,6 +94,11 @@ abstract class AbstractControl implements \JsonSerializable
     private string $storage = 'theme_mod';
 
     /**
+     * @var bool
+     */
+    private bool $disabled = false;
+
+    /**
      * @var AbstractControl|null
      */
     private ?AbstractControl $parent = null;
@@ -209,6 +214,24 @@ abstract class AbstractControl implements \JsonSerializable
             };
         }
         return $this->default;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDisabled(): bool
+    {
+        return $this->disabled;
+    }
+
+    /**
+     * @param bool $disabled
+     * @return $this
+     */
+    public function setDisabled(bool $disabled): static
+    {
+        $this->disabled = $disabled;
+        return $this;
     }
 
     /**
@@ -696,6 +719,7 @@ abstract class AbstractControl implements \JsonSerializable
                 }
                 return $child->jsonSerialize();
             }, $this->getChildren()),
+            'disabled' => $this->isDisabled(),
             'settings' => (object) $this->getSettings(),
         ];
     }

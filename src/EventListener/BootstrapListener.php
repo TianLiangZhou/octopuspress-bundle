@@ -2,6 +2,7 @@
 
 namespace OctopusPress\Bundle\EventListener;
 
+use OctopusPress\Bundle\Command\PluginCommand;
 use OctopusPress\Bundle\Controller\PostController;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
@@ -10,6 +11,9 @@ use OctopusPress\Bundle\Model\PluginManager;
 use OctopusPress\Bundle\Plugin\PluginInterface;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Support\ActivatedTheme;
+use Symfony\Component\Console\Command\HelpCommand;
+use Symfony\Component\Console\ConsoleEvents;
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -19,7 +23,6 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Route;
-use Symfony\Component\Routing\RouterInterface;
 
 /**
  *
@@ -33,6 +36,8 @@ class BootstrapListener implements EventSubscriberInterface
     private PluginManager $manager;
     private ContainerInterface $container;
     private MasterManager $master;
+
+    private bool $started = false;
 
     /**
      * @param MasterManager $master
@@ -91,15 +96,58 @@ class BootstrapListener implements EventSubscriberInterface
             $event->stopPropagation();
             return;
         }
+        $this->onStart();
+    }
+
+    /**
+     * @return void
+     */
+    private function onStart(): void
+    {
+        if ($this->started) {
+            return ;
+        }
         $this->master->boot();
-        $this->updateActivatedTheme($option);
+        $this->updateActivatedTheme();
         $this->pluginLauncher();
+        $this->started = true;
+    }
+
+    /**
+     * @param ConsoleCommandEvent $event
+     * @return void
+     */
+    public function onBeforeCommand(ConsoleCommandEvent $event): void
+    {
+        $command = $event->getCommand();
+        if ($command instanceof PluginCommand) {
+            $this->onStart();
+        } elseif ($command instanceof HelpCommand) {
+            $input = $event->getInput();
+            $commandString = $input->getArgument('command');
+            if ($commandString !== PluginCommand::NAME) {
+                return ;
+            }
+            $commandName = $input->getArgument('command_name');
+            if ($commandName === 'help') {
+                return ;
+            }
+            if (!str_starts_with($commandName, 'plugin:')) {
+                $commandName = 'plugin:' . $commandName;
+            }
+            $this->onStart();
+            $subCommand = $command->getApplication()->get($commandName);
+            $command->setCommand($subCommand);
+        }
     }
 
 
-
-    private function updateActivatedTheme(OptionRepository $option): void
+    /**
+     * @return void
+     */
+    private function updateActivatedTheme(): void
     {
+        $option = $this->container->get(OptionRepository::class);
         /**
          * @var $activatedTheme ActivatedTheme
          */
@@ -186,6 +234,7 @@ class BootstrapListener implements EventSubscriberInterface
         // TODO: Implement getSubscribedEvents() method.
         return [
             KernelEvents::REQUEST => [['onRequestEvent', 256]],
+            ConsoleEvents::COMMAND => [['onBeforeCommand', 64]]
         ];
     }
 }

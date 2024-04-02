@@ -27,7 +27,7 @@ class CustomAuthenticator extends AbstractAuthenticator
     /**
      * @var AuthenticatorInterface[]
      */
-    protected array $customAuthenticators;
+    protected array $customAuthenticators = [];
 
     public function supports(Request $request): bool
     {

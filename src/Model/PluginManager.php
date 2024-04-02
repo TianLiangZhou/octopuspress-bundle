@@ -287,7 +287,7 @@ class PluginManager extends PackageManager
                 }
                 if ($service instanceof Command && $application) {
                     $application->add($service);
-                } elseif ($application == null && $service instanceof Controller) {
+                } elseif ($service instanceof Controller) {
                     $service->setDeps($doctrine);
                     $service->setContainer($previousContainer);
                     $container->set($className, $service);

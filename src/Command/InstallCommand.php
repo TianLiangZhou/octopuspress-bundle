@@ -8,6 +8,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Throwable;
 
@@ -45,9 +46,21 @@ class InstallCommand extends Command
         if (filter_var($uri, FILTER_VALIDATE_URL) === false && !is_file($uri)) {
             return Command::FAILURE;
         }
+        if (filter_var($uri, FILTER_VALIDATE_URL) === false) {
+            $filepath = $this->pluginManager->getBridger()->getTempDir() . DIRECTORY_SEPARATOR . $uri;
+        } else {
+            $filepath = $this->pluginManager->downloadGithubPackage($uri);
+        }
+        if (!file_exists($filepath)) {
+            return Command::FAILURE;
+        }
+        if (strtolower(pathinfo($filepath, PATHINFO_EXTENSION)) != 'zip') {
+            return Command::FAILURE;
+        }
         try {
-            $this->pluginManager->setup($uri);
+            $this->pluginManager->externalInstall($filepath);
         } catch (Throwable $exception) {
+            return Command::FAILURE;
         }
         return Command::SUCCESS;
     }

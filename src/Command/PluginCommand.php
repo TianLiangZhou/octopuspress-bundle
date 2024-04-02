@@ -2,33 +2,21 @@
 
 namespace OctopusPress\Bundle\Command;
 
-use OctopusPress\Bundle\Model\PluginManager;
-use OctopusPress\Bundle\Bridge\Bridger;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Command\HelpCommand;
-use Symfony\Component\Console\ConsoleEvents;
-use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Helper\DescriptorHelper;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class PluginCommand extends Command implements EventSubscriberInterface
+class PluginCommand extends Command
 {
-    private PluginManager $manager;
-    private Bridger $bridger;
+    public const NAME = 'octopus:plugin';
 
-    private const NAME = 'octopus:plugin';
-
-    public function __construct(PluginManager $pluginManager, Bridger $bridger)
+    public function __construct()
     {
         parent::__construct(self::NAME);
-        $this->manager = $pluginManager;
-        $this->bridger = $bridger;
     }
 
     protected function configure(): void
@@ -42,35 +30,6 @@ class PluginCommand extends Command implements EventSubscriberInterface
             ])
             ->ignoreValidationErrors();
 
-    }
-
-    /**
-     * @param ConsoleCommandEvent $event
-     * @return void
-     */
-    public function onBeforeCommand(ConsoleCommandEvent $event): void
-    {
-        $command = $event->getCommand();
-        if ($command instanceof $this) {
-            $this->registerCommands();
-        }
-        if ($command instanceof HelpCommand) {
-            $input = $event->getInput();
-            $commandString = $input->getArgument('command');
-            if ($commandString !== self::NAME) {
-                return ;
-            }
-            $this->registerCommands();
-            $commandName = $input->getArgument('command_name');
-            if ($commandName === 'help') {
-                return ;
-            }
-            if (!str_starts_with($commandName, 'plugin:')) {
-                $commandName = 'plugin:' . $commandName;
-            }
-            $subCommand = $this->getApplication()->get($commandName);
-            $command->setCommand($subCommand);
-        }
     }
 
     /**
@@ -115,28 +74,5 @@ class PluginCommand extends Command implements EventSubscriberInterface
         ]);
 
         return 0;
-    }
-
-    /**
-     * @return void
-     */
-    private function registerCommands(): void
-    {
-        /**
-         * @var $application Application
-         */
-        $application = $this->getApplication();
-        $this->manager->launchers($application->getKernel()->getContainer(), $application);
-    }
-
-    /**
-     * @return \array[][]
-     */
-    public static function getSubscribedEvents(): array
-    {
-        // TODO: Implement getSubscribedEvents() method.
-        return [
-            ConsoleEvents::COMMAND => [['onBeforeCommand', 64]]
-        ];
     }
 }
