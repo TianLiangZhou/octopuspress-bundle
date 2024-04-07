@@ -306,7 +306,8 @@ class PostController extends AdminController
         }
         $oldStatus = $post->getStatus();
         $form = $this->validation(PostType::class, $post, $data, [
-            'types' => array_combine($types, $types)
+            'types' => array_combine($types, $types),
+            'taxonomies' => array_map(function ($item) {return $item['id'];}, $data['relationships']),
         ]);
         $this->handle($form, $post);
         if ($post->getAuthor() == null) {

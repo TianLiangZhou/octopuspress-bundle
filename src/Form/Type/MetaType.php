@@ -13,7 +13,7 @@ use Symfony\Component\Form\FormEvents;
 
 class MetaType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('metaKey', TextType::class)
             ->add('metaValue', TextType::class, ['required' => false, 'empty_data' => '']);

@@ -86,6 +86,9 @@ class PostType extends AbstractType
                 'by_reference' => false,
                 'mapped' => false,
                 'property_path' => 'termRelationships',
+                'entry_options' => [
+                    'taxonomies' => $options['taxonomies']
+                ],
             ])
             ->addEventListener(FormEvents::PRE_SUBMIT, function (PreSubmitEvent $event) {
                 $data = $event->getData();
@@ -125,6 +128,7 @@ class PostType extends AbstractType
             'data_class' => Post::class,
             'allow_extra_fields' => true,
             'types' => [],
+            'taxonomies' => [0],
         ]);
     }
 }
