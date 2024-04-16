@@ -1,5 +1,6 @@
 import {ResponseBody} from "../common";
 import {Control} from "../../../shared/control/type";
+import {IColumns} from "angular2-smart-table/lib/lib/settings";
 
 
 export type PluginDrawResponse = ResponseBody & {
@@ -33,7 +34,7 @@ export type DrawForm = {
 }
 
 export type DrawTable = {
-  columns: Record<string, Record<string, any>>;
-  source: string;
-  actions: {create: boolean, edit: boolean, delete: boolean},
+  columns: IColumns;
+  source: {default: string, add: string, delete: string, edit: string};
+  actions: {add: boolean, edit: boolean, delete: boolean},
 }

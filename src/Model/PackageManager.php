@@ -48,29 +48,37 @@ abstract class PackageManager
      */
     public function install(string $packageName): void
     {
-        $host = rtrim($_SERVER['SERVER_CENTER_HOST'] ?? $this->bridger->getParameter('service_center_host'), '/');
-        $officialInfo = $this->bridger->getClient()->request('GET', $host. '/package/' . $packageName . '.json', [
-            'timeout' => 15,
-            'no_proxy' => '127.0.0.1,localhost',
-            'headers' => [
-                'Content-Type' => 'application/json',
-            ]
-        ])->toArray();
-        $zipFile = $this->downloadCenterPackage($packageName);
-        if (!file_exists($zipFile)) {
-            throw new \RuntimeException("安装失败");
-        }
-        if (!empty($officialInfo['content'])) {
-            unset($officialInfo['content']);
+        $localPackagePath = $this->getPackageDir() . DIRECTORY_SEPARATOR . $packageName;
+        if (!file_exists($localPackagePath)) {
+            $host = rtrim($_SERVER['SERVER_CENTER_HOST'] ?? $this->bridger->getParameter('service_center_host'), '/');
+            $officialInfo = $this->bridger->getClient()->request('GET', $host . '/package/' . $packageName . '.json', [
+                'timeout' => 15,
+                'no_proxy' => '127.0.0.1,localhost',
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ]
+            ])->toArray();
+            $zipFile = $this->downloadCenterPackage($packageName);
+            if (!file_exists($zipFile)) {
+                throw new \RuntimeException("安装失败");
+            }
+            if (!empty($officialInfo['content'])) {
+                unset($officialInfo['content']);
+            }
+            $localPackagePath = $this->extractPackage($zipFile);
         }
         try {
-            $packageInfo = $this->getPackageInfo($zipFile);
+            $packageInfo = $this->getPackageInfo($localPackagePath);
         } catch (\Exception $e) {
-            unlink($zipFile);
+            if (isset($zipFile)) {
+                unlink($zipFile);
+            }
             throw $e;
         }
-        $this->setup(array_merge($packageInfo, $officialInfo));
-        unlink($zipFile);
+        $this->setup(array_merge($packageInfo, $officialInfo ?? []));
+        if (isset($zipFile)) {
+            unlink($zipFile);
+        }
     }
 
 
@@ -82,29 +90,27 @@ abstract class PackageManager
     public function externalInstall(string $zipFile): void
     {
         try {
-            $packageInfo = $this->getPackageInfo($zipFile);
+            $tempPath = $this->extractPackage($zipFile);
+            $packageInfo = $this->getPackageInfo($tempPath);
         } catch (\Exception $e) {
             unlink($zipFile);
             throw $e;
         }
-        $packageInfo['packageName'] = str_replace('/', '_', $packageInfo['packageName']);
         $this->setup($packageInfo);
         unlink($zipFile);
     }
 
     /**
-     * @param string $zipFile
+     * @param string $packagePath
      * @return array
-     * @throws \Exception
      */
-    public function getPackageInfo(string $zipFile): array
+    public function getPackageInfo(string $packagePath): array
     {
-        $tempPath = $this->extractPackage($zipFile);
         $finder = Finder::create()
             ->files()
             ->depth('< 2')
             ->name(['composer.json', 'package.json'])
-            ->in($tempPath);
+            ->in($packagePath);
         $composerFile = null; $packageFile = null;
         foreach ($finder as $item) {
             if ($item->getFilename() === 'composer.json') {
@@ -126,7 +132,7 @@ abstract class PackageManager
             $opVersion = empty($jsonInfo['extra']['mini-op']) ? OctopusPressKernel::OCTOPUS_PRESS_VERSION : (string) $jsonInfo['extra']['mini-op'];
             $phpVersion = empty($jsonInfo['extra']['mini-php']) ? PHP_VERSION : (string) $jsonInfo['extra']['mini-php'];
             $name = empty($jsonInfo['extra']['name'])
-                ? str_replace('/', '_', $packageName)
+                ? str_replace(['/', '\\'], '_', $packageName)
                 : (string) $jsonInfo['extra']['name'];
             $entrypoint = (string) ($jsonInfo['extra']['entrypoint'] ?? '');
             $autoload = $jsonInfo['autoload'] ?? [];
@@ -147,7 +153,7 @@ abstract class PackageManager
             $version = empty($jsonInfo['version']) ? '1.0.0' : (string) $jsonInfo['version'];
             $opVersion = empty($jsonInfo['config']['mini-op']) ? OctopusPressKernel::OCTOPUS_PRESS_VERSION : (string) $jsonInfo['config']['mini-op'];
             $phpVersion = empty($jsonInfo['config']['mini-php']) ? PHP_VERSION : (string) $jsonInfo['config']['mini-php'];
-            $name = empty($jsonInfo['config']['name']) ? $packageName : $jsonInfo['extra']['name'];
+            $name = empty($jsonInfo['config']['name']) ? $packageName : $jsonInfo['config']['name'];
             $entrypoint = (string) ($jsonInfo['config']['entrypoint'] ?? 'functions.php');
             $authors = isset($jsonInfo['author']) ? [$jsonInfo['author']] : [];
         } else {
@@ -185,7 +191,7 @@ abstract class PackageManager
             $screenshot = (string) ($jsonInfo['extra']['screenshot'] || $jsonInfo['config']['screenshot']);
         }
         $packageInfo = [
-            'packageName'  => $packageName,
+            'packageName'  => str_replace(['/', '\\'], '_', $packageName),
             'name'         => $name,
             'description'  => $description,
             'keywords'     => $keywords,
@@ -197,7 +203,7 @@ abstract class PackageManager
             'miniPHP'      => $phpVersion,
             'logo'         => $logo,
             'screenshot'   => $screenshot,
-            'tempDir'      => $tempPath,
+            'tempDir'      => $packagePath,
         ];
         if ($composerFile) {
             $packageInfo['composerFile'] = $composerFile;
@@ -205,6 +211,58 @@ abstract class PackageManager
             $packageInfo['packageFile'] = $packageFile;
         }
         return $packageInfo;
+    }
+
+    /**
+     * @param string $packageType
+     * @param array $condition
+     * @return array
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function getPackages(string $packageType, array $condition = []): array
+    {
+        $response = $this->market($packageType, $condition);
+        if ($packageType === 'plugin') {
+            $installedPackages = $this->bridger->getOptionRepository()->installedPlugins();
+        } else {
+            $installedPackages = $this->bridger->getOptionRepository()->installedThemes();
+        }
+        $packages = $response['packages'] ?? [];
+        $names = [];
+        foreach ($packages as &$package) {
+            $package['installed'] = false;
+            $names[] = $package['name'];
+            if (isset($installedPackages[$package['name']])) {
+                $package['installed'] = true;
+                $newVersion = $package['version'];
+                $installedVersion = $installedPackages[$package['name']]['version'];
+                $package['upgradeable'] = false;
+                if (version_compare($newVersion, $installedVersion, '>')) {
+                    $package['upgradeable'] = true;
+                }
+            }
+        }
+        unset($package);
+        $finder = Finder::create();
+        $finder->in([$this->getPackageDir()])
+            ->depth(1)
+            ->name(['composer.json']);
+        foreach ($finder as $item) {
+            $name = $item->getRelativePath();
+            if (in_array($name, $names)) {
+                continue;
+            }
+            $package = $this->getPackageInfo($item->getPath());
+            $package['installed'] = isset($installedPackages[$name]);
+            $package['upgradeable'] = false;
+            unset($package['composerFile'], $package['packageFile'], $package['tempDir']);
+            $packages[] = $package;
+        }
+        return [$response['total'] ?? 0, $packages];
     }
 
     /**

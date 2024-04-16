@@ -34,7 +34,7 @@ class AutoloadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $kernel = $this->getApplication()->getKernel();
-        $pluginDir = $this->pluginManager->getPluginDir();
+        $pluginDir = $this->pluginManager->getPackageDir();
 
         $finder = Finder::create()
             ->in([$pluginDir])

@@ -9,6 +9,7 @@ use OctopusPress\Bundle\Customize\Layout\Form;
 use OctopusPress\Bundle\Model\CustomizeManager;
 use OctopusPress\Bundle\Model\PluginManager;
 use OctopusPress\Bundle\Repository\OptionRepository;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,23 +53,10 @@ class PluginController extends AdminController
     #[Route('/market')]
     public function market(Request $request): Response
     {
-        $response = $this->pluginManager->market('plugin', $request->query->all());
-        $installedPlugins = $this->bridger->getOptionRepository()->installedPlugins();
-        $packages = $response['packages'] ?? [];
-        foreach ($packages as &$package) {
-            $package['installed'] = false;
-            if (isset($installedPlugins[$package['name']])) {
-                $package['installed'] = true;
-                $newVersion = $package['version'];
-                $installedVersion = $installedPlugins[$package['name']]['version'];
-                $package['upgradeable'] = false;
-                if (version_compare($newVersion, $installedVersion, '>')) {
-                    $package['upgradeable'] = true;
-                }
-            }
-        }
+        [$total, $packages] = $this->pluginManager->getPackages('plugin', $request->query->all());
+
         return $this->json([
-            'total'  => $response['total'],
+            'total'  => $total,
             'records'=> $packages,
         ]);
     }

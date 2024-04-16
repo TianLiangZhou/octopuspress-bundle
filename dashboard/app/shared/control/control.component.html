@@ -1,9 +1,16 @@
 <div class="mb-3" [class]="direction !== 'column' ? 'row' : ''" [formGroup]="form!">
-  <label [class.fs-4]="control.type=='group'" class="label col-form-label" *ngIf="control.label" [class]="direction !== 'column' ? 'col-12 col-md-2' : ''" [for]="control.id">
+  <label [class.fs-4]="control.type=='group'" class="label col-form-label" *ngIf="control.label && control.type !== 'hidden'" [class]="direction !== 'column' ? 'col-12 col-md-2' : ''" [for]="control.id">
     {{ control.label}}
   </label>
   <div [class]="direction !== 'column' ? 'col-12 col-md-10' : ''" class="d-flex flex-column">
     <ng-container [ngSwitch]="control.type">
+      <input *ngSwitchCase="'hidden'"
+             [id]="control.id"
+             status="primary"
+             type="hidden"
+             nbInput fullWidth
+             [formControlName]="control.id"/>
+
       <input *ngSwitchCase="'input'"
          [id]="control.id"
          status="primary"

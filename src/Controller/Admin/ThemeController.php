@@ -10,6 +10,7 @@ use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Model\CustomizeManager;
 use OctopusPress\Bundle\Model\ThemeManager;
 use OctopusPress\Bundle\Repository\OptionRepository;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -88,23 +89,10 @@ class ThemeController extends AdminController
     #[Route('/market')]
     public function market(Request $request): JsonResponse
     {
-        $response = $this->themeManager->market('theme', $request->query->all());
-        $installedThemes = $this->bridger->getOptionRepository()->installedThemes();
-        $packages = $response['packages'] ?? [];
-        foreach ($packages as &$package) {
-            $package['installed'] = false;
-            if (isset($installedThemes[$package['name']])) {
-                $package['installed'] = true;
-                $newVersion = $package['version'];
-                $installedVersion = $installedThemes[$package['name']]['version'];
-                $package['upgradeable'] = false;
-                if (version_compare($newVersion, $installedVersion, '>')) {
-                    $package['upgradeable'] = true;
-                }
-            }
-        }
+        [$total, $packages] = $this->themeManager->getPackages('theme', $request->query->all());
+
         return $this->json([
-            'total' => $response['total'],
+            'total' => $total,
             'records' => $packages,
         ]);
     }

@@ -1,7 +1,7 @@
 import {AbstractControl, FormArray, FormControl, FormGroup, Validators} from "@angular/forms";
 import {Attachment} from "../../@core/definition/content/type";
 
-export type ControlType = 'date' | 'input' | 'textarea' | 'file' | 'image' | 'video' | 'audio' | 'select' | 'select_search' |'checkbox' | 'radio' | 'datetime' | 'range_date' | 'autocomplete' | 'editor' | 'color' | 'switch' | 'custom' | 'group';
+export type ControlType = 'date' | 'input' | 'textarea' | 'file' | 'image' | 'video' | 'audio' | 'select' | 'select_search' |'checkbox' | 'radio' | 'datetime' | 'range_date' | 'autocomplete' | 'editor' | 'color' | 'switch' | 'custom' | 'group' | 'hidden';
 
 export type InputType = 'text' | 'number' | 'email' | 'color' | 'password' | 'file' | 'url';
 

@@ -9,29 +9,77 @@ class Table implements \JsonSerializable
      * @var array<string, mixed>
      */
     private array $canvas = [
-        'source' => '',
+        'source' => [
+            'default' => '',
+            'edit'    => '',
+            'delete'  => '',
+            'add'  => '',
+        ],
         'columns'=> [],
         'actions'=> [
-            'create' => false,
+            'customTitle' => '',
+            'add' => false,
             'edit' => false,
             'delete' => false,
-        ]
+            'position' => 'right',
+        ],
+
     ];
 
     public function source(string $endpoint): static
     {
-        $this->canvas['source'] = $endpoint;
+        $this->canvas['source']['default'] = $endpoint;
         return $this;
     }
 
+    public function sourceCreate($endpoint): static
+    {
+        $this->canvas['source']['add'] = $endpoint;
+        return $this;
+    }
+
+    public function sourceEdit($endpoint): static
+    {
+        $this->canvas['source']['edit'] = $endpoint;
+        return $this;
+    }
+
+    public function sourceDelete($endpoint): static
+    {
+        $this->canvas['source']['delete'] = $endpoint;
+        return $this;
+    }
+
+    /**
+     * @param string $key
+     * @param string $name
+     * @param bool $isFilter
+     * @param bool $isOrder
+     * @param string $type
+     * @return $this
+     */
     public function column(string $key, string $name, bool $isFilter = false, bool $isOrder = false, string $type = 'string'): static
     {
         $this->canvas['columns'][$key] = [
             'title' => $name,
             'type'  => $type,
-            'sort'  => $isOrder,
-            'filter'=> $isFilter,
+            'isSortable' => $isOrder,
+            'isEditable' => false,
+            'isAddable' => false,
+            'isFilterable' => $isFilter,
         ];
+        return $this;
+    }
+
+    /**
+     * @param string $key
+     * @param string $columnKey
+     * @param mixed $value
+     * @return $this
+     */
+    public function columnAppend(string $key, string $columnKey, mixed $value): static
+    {
+        $this->canvas['columns'][$key][$columnKey] = $value;
         return $this;
     }
 
@@ -41,7 +89,7 @@ class Table implements \JsonSerializable
      */
     public function isCreate(bool $isCreate): static
     {
-        $this->canvas['action']['create'] = $isCreate;
+        $this->canvas['actions']['add'] = $isCreate;
         return $this;
     }
 
@@ -51,7 +99,7 @@ class Table implements \JsonSerializable
      */
     public function isEditor(bool $isEditor): static
     {
-        $this->canvas['action']['edit'] = $isEditor;
+        $this->canvas['actions']['edit'] = $isEditor;
         return $this;
     }
 
@@ -61,7 +109,7 @@ class Table implements \JsonSerializable
      */
     public function isDelete(bool $isDelete): static
     {
-        $this->canvas['action']['delete'] = $isDelete;
+        $this->canvas['actions']['delete'] = $isDelete;
         return $this;
     }
 

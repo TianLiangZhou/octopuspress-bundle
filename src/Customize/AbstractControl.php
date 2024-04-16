@@ -24,6 +24,7 @@ abstract class AbstractControl implements \JsonSerializable
     const COLOR = 'color';
     const GROUP = 'group';
     const CUSTOM = 'custom';
+    const HIDDEN = 'hidden';
 
     private ?CustomizeManager $manager = null;
 

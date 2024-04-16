@@ -20,6 +20,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class PluginManager extends PackageManager
 {
@@ -134,6 +139,11 @@ class PluginManager extends PackageManager
 
     /**
      * @return array<int, array<string, mixed>>
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     public function plugins(): array
     {
@@ -185,9 +195,9 @@ class PluginManager extends PackageManager
     protected function setup(array $packageInfo): string
     {
         $name = $packageInfo['packageName'];
-        $pluginPath = $this->getPluginDir(). DIRECTORY_SEPARATOR . $name;
+        $pluginPath = $this->getPackageDir(). DIRECTORY_SEPARATOR . $name;
         if (!file_exists($pluginPath)) {
-            if (!is_writable($this->getPluginDir())) {
+            if (!is_writable($this->getPackageDir())) {
                 throw new InvalidArgumentException('The plugin directory is not writable');
             }
             mkdir($pluginPath, 0755);
@@ -239,10 +249,10 @@ class PluginManager extends PackageManager
         }
         $plugin->uninstall($this->bridger);
         $this->bridger->getHook()->action('plugin.activation', $name);
-        if (file_exists($this->getPluginDir() . DIRECTORY_SEPARATOR . $name)) {
+        if (file_exists($this->getPackageDir() . DIRECTORY_SEPARATOR . $name)) {
             $fileSystem = new Filesystem();
             $fileSystem->remove([
-                $this->getPluginDir() . DIRECTORY_SEPARATOR . $name
+                $this->getPackageDir() . DIRECTORY_SEPARATOR . $name
             ]);
         }
         unset($installedPlugins[$name]);
@@ -357,7 +367,7 @@ class PluginManager extends PackageManager
     /**
      * @return string
      */
-    public function getPluginDir(): string
+    public function getPackageDir(): string
     {
         return $this->bridger->getPluginDir();
     }
@@ -372,7 +382,7 @@ class PluginManager extends PackageManager
         if ($loader == null) {
             return ;
         }
-        $composerFile = $this->getPluginDir() . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR . 'composer.json';
+        $composerFile = $this->getPackageDir() . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR . 'composer.json';
         if (!file_exists($composerFile)) {
             return ;
         }

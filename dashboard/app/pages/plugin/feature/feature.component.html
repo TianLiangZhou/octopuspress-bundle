@@ -4,15 +4,15 @@
       <nb-card-header>{{title}}</nb-card-header>
       <nb-card-body>
         <ng-container [ngSwitch]="this.container">
-          <nb-tabset *ngSwitchCase="'tabs'">
+          <nb-tabset (changeTab)="changeTab($event)" #nbTabsetComponent *ngSwitchCase="'tabs'">
             <nb-tab *ngFor="let tab of tabs; let i = index" [active]="i==0" [tabTitle]="tab.title" [tabIndex]="i" [tabId]="''+i">
               <ng-container [ngSwitch]="tab.container">
                 <angular2-smart-table *ngSwitchCase="'table'"
                                  [settings]="this.settings[i]"
                                  [source]="this.source[i]"
-                                 (create)="create()"
-                                 (edit)="edit($event)"
-                                 (delete)="delete($event)">
+                                 (create)="create($event, i)"
+                                 (edit)="edit($event, i)"
+                                 (delete)="delete($event, i)">
                 </angular2-smart-table>
                 <form [ngClass]="tab.form!.class" *ngSwitchCase="'form'" [formGroup]="formGroup[i]" (submit)="submit(i, tab.form!.submit.link)">
                   <control-container [direction]="tab.form!.direction" [form]="formGroup[i]" [controls]="tab.form!.controls"></control-container>
@@ -30,9 +30,9 @@
           <angular2-smart-table *ngSwitchCase="'table'"
              [settings]="this.settings[0]"
              [source]="this.source[0]"
-             (create)="create()"
-             (edit)="edit($event)"
-             (delete)="delete($event)">
+             (create)="create($event, 0)"
+             (edit)="edit($event, 0)"
+             (delete)="delete($event, 0)">
           </angular2-smart-table>
           <form [ngClass]="this.form!.class" *ngSwitchCase="'form'" [formGroup]="formGroup[0]" (submit)="submit(0, this.form!.submit.link)">
             <control-container [direction]="this.form!.direction" [form]="formGroup[0]" [controls]="this.form!.controls"></control-container>

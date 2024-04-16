@@ -88,8 +88,8 @@ export class Authorization implements HttpInterceptor {
               menu ? menu.name : "未知主题",
             );
           },
-          next: (body) => {
-            if (body instanceof HttpResponse) {
+          next: (response) => {
+            if (response instanceof HttpResponse) {
               if (!['POST', 'PUT', 'DELETE'].includes(req.method)) {
                 return;
               }
@@ -97,7 +97,7 @@ export class Authorization implements HttpInterceptor {
               if (!menu) {
                 return;
               }
-              this.toastService.success("操作成功", menu.name);
+              this.toastService.success((response.body && response.body.message) ? response.body.message  : "操作成功", menu.name);
             }
           }
         })

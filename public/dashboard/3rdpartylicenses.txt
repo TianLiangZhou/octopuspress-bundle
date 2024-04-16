@@ -5,7 +5,7 @@ MIT
 MIT
 The MIT License
 
-Copyright (c) 2023 Google LLC.
+Copyright (c) 2024 Google LLC.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -94,7 +94,7 @@ Software License Agreement
 ==========================
 
 **CKEditor&nbsp;5 watchdog feature** – https://github.com/ckeditor/ckeditor5-watchdog <br>
-Copyright (c) 2003–2023, [CKSource Holding sp. z o.o.](https://cksource.com) All rights reserved.
+Copyright (c) 2003–2024, [CKSource Holding sp. z o.o.](https://cksource.com) All rights reserved.
 
 Licensed under the terms of [GNU General Public License Version 2 or later](http://www.gnu.org/licenses/gpl.html).
 

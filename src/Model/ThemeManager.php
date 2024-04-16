@@ -80,7 +80,7 @@ class ThemeManager extends PackageManager
     {
         $name = $packageInfo['packageName'];
         $themeRootPath = dirname($packageInfo['packageFile']);
-        $templateDir = $this->getTemplateDir();
+        $templateDir = $this->getPackageDir();
         $themePath = $templateDir . DIRECTORY_SEPARATOR . $name;
         if (!file_exists($themePath)) {
             if (!is_writable($templateDir)) {
@@ -203,7 +203,7 @@ class ThemeManager extends PackageManager
     /**
      * @return string
      */
-    private function getTemplateDir(): string
+    public function getPackageDir(): string
     {
         return $this->bridger->getTemplateDir();
     }
@@ -214,7 +214,7 @@ class ThemeManager extends PackageManager
      */
     public function getThemePath(string $theme): string
     {
-        return $this->getTemplateDir() . DIRECTORY_SEPARATOR . $theme . DIRECTORY_SEPARATOR;
+        return $this->getPackageDir() . DIRECTORY_SEPARATOR . $theme . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -253,7 +253,7 @@ class ThemeManager extends PackageManager
      */
     private function load(string $theme): void
     {
-        $entryFile = $this->getTemplateDir() . DIRECTORY_SEPARATOR . $theme . '/functions.php';
+        $entryFile = $this->getPackageDir() . DIRECTORY_SEPARATOR . $theme . '/functions.php';
         if (!file_exists($entryFile)) {
             return;
         }

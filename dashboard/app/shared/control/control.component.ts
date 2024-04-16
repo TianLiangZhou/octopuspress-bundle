@@ -3,12 +3,11 @@ import {CKFinderService} from "../../@core/services/ckfinder.service";
 import {buildFormGroup, Control, ControlOption} from "./type";
 import {FormGroup} from "@angular/forms";
 import {DomSanitizer} from "@angular/platform-browser";
-import {Attachment, TermTaxonomy} from "../../@core/definition/content/type";
-import { Observable, map, of, startWith } from "rxjs";
+import {Attachment} from "../../@core/definition/content/type";
+import { Observable, map, of} from "rxjs";
 import {HttpClient} from "@angular/common/http";
-import {debounceTime, distinctUntilChanged, filter, switchMap} from "rxjs/operators";
+import {debounceTime, distinctUntilChanged} from "rxjs/operators";
 import {Records} from "../../@core/definition/common";
-import {TAXONOMIES} from "../../@core/definition/content/api";
 
 @Component({
   selector: "control",
