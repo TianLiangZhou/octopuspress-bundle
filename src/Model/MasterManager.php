@@ -4,11 +4,11 @@ namespace OctopusPress\Bundle\Model;
 
 use Doctrine\Persistence\ManagerRegistry;
 use OctopusPress\Bundle\Entity\Option;
+use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Form\Model\InstallRequest;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Repository\OptionRepository;
-use OctopusPress\Bundle\Support\DefaultViewFilter;
 use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Widget\AbstractWidget;
 use OctopusPress\Bundle\Widget\Archives;
@@ -163,7 +163,7 @@ class MasterManager
     private function createInitialPostTypes(): void
     {
         $post = $this->bridger->getPost();
-        $post->registerType('post', [
+        $post->registerType(Post::TYPE_POST, [
                 'label' => '文章',
                 'labels'=> [
                     'addItem' => '撰写新文章',
@@ -173,7 +173,7 @@ class MasterManager
                     'title', 'editor', 'author', 'thumbnail', 'excerpt', 'trackbacks', 'comments'
                 ],
             ])
-            ->registerType('page', [
+            ->registerType(Post::TYPE_PAGE, [
                 'label' => '页面',
                 'labels'=> [
                     'addItem' => '创建页面',
@@ -183,12 +183,12 @@ class MasterManager
                     'title', 'editor', 'author', 'thumbnail', 'comments', 'parent'
                 ]
             ])
-            ->registerType('attachment', [
+            ->registerType(Post::TYPE_ATTACHMENT, [
                 'label' => '附件',
                 'showUi' => false,
                 'showNavigation' => false,
             ])
-            ->registerType('nav_menu_item', [
+            ->registerType(Post::TYPE_NAVIGATION, [
                 'label' => '导航条目',
                 'showUi' => false,
                 'showNavigation' => false,

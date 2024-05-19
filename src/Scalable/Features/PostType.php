@@ -105,6 +105,28 @@ final class PostType implements \JsonSerializable
         return $this;
     }
 
+
+    /**
+     * @param string $name
+     * @param mixed|null $args
+     * @return $this
+     */
+    public function addSupport(string $name, array $args = []): static
+    {
+        $this->supports[$name] = $args;
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     * @return $this
+     */
+    public function removeSupport(string $name): static
+    {
+        unset($this->supports[$name], $this->features[$name]);
+        return $this;
+    }
+
     /**
      * Of list ['author', 'title', 'name', 'editor', 'parent', 'excerpt', 'thumbnail', 'comments', 'trackbacks']
      * @return $this

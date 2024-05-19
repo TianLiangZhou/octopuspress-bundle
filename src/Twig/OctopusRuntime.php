@@ -158,7 +158,11 @@ class OctopusRuntime implements RuntimeExtensionInterface
                     $args['name'] = $obj->getName();
                     break;
                 case 'post_permalink_type':
-                    $permalinkType = 'post_permalink_type_' . $obj->getType();
+                    if ($obj->getType() === Post::TYPE_PAGE) {
+                        $permalinkType = 'post_permalink_name';
+                    } else {
+                        $permalinkType = 'post_permalink_type_' . $obj->getType();
+                    }
                     $args['name'] = $obj->getName();
                     break;
                 case 'post_permalink_normal':
