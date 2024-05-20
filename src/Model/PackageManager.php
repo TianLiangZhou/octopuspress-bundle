@@ -39,6 +39,7 @@ abstract class PackageManager
 
     /**
      * @param string $packageName
+     * @param bool $upgrade
      * @return void
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
@@ -46,10 +47,10 @@ abstract class PackageManager
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function install(string $packageName): void
+    public function install(string $packageName, bool $upgrade = false): void
     {
         $localPackagePath = $this->getPackageDir() . DIRECTORY_SEPARATOR . $packageName;
-        if (!file_exists($localPackagePath)) {
+        if (!file_exists($localPackagePath) || (file_exists($localPackagePath) && $upgrade)) {
             $host = rtrim($_SERVER['SERVER_CENTER_HOST'] ?? $this->bridger->getParameter('service_center_host'), '/');
             $officialInfo = $this->bridger->getClient()->request('GET', $host . '/package/' . $packageName . '.json', [
                 'timeout' => 15,

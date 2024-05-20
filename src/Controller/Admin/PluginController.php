@@ -160,7 +160,7 @@ class PluginController extends AdminController
     #[Route('/{name}/upgrade', name:'plugin_upgrade', requirements: [], options: ['name' => '更新插件', 'parent' => 'plugin_installed'], methods: Request::METHOD_POST)]
     public function upgrade(string $name): JsonResponse
     {
-        $this->pluginManager->install($name);
+        $this->pluginManager->install($name, true);
         $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         return $this->json(null);
     }

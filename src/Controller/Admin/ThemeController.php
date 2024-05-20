@@ -167,7 +167,7 @@ class ThemeController extends AdminController
     #[Route('/{name}/upgrade', name:'theme_upgrade', requirements: ['name' => '[a-z-A-Z0-9\-_]{2,}'], options: ['name' => '更新主题', 'parent' => 'appearance_theme'])]
     public function upgrade(string $name): JsonResponse
     {
-        $this->themeManager->install($name);
+        $this->themeManager->install($name, true);
         $this->bridger->getCache()->delete(OptionRepository::DEFAULT_CACHE_KEY);
         return $this->json(null);
     }
