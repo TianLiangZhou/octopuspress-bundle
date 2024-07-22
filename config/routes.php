@@ -5,9 +5,9 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 return static function(RoutingConfigurator $configurator) {
     $configurator->import(
         __DIR__ . '/../src/Controller/*.php',
-        'annotation'
+        'attribute'
     );
-    $dashboard = $configurator->import(__DIR__ . '/../src/Controller/Admin/', 'annotation')
+    $dashboard = $configurator->import(__DIR__ . '/../src/Controller/Admin/', 'attribute')
         ->prefix("backend")
         ->namePrefix('backend_');
     if (!empty($_SERVER['DASHBOARD_URL'])) {

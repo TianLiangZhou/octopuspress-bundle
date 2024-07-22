@@ -123,7 +123,7 @@ return static function (ContainerConfigurator $container, ContainerBuilder $buil
         ->public()
         ->args([
             service(Bridger::class),
-            service('routing.loader.annotation')
+            service('routing.loader.attribute')
         ]);
     $services->set(CustomizeManager::class, CustomizeManager::class)->public();
 

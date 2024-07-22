@@ -46,7 +46,7 @@ class AuthorizeController extends Controller
 
 
     /**
-     * @return void
+     * @return Response|null
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
