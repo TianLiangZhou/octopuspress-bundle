@@ -10,7 +10,7 @@
         "ext-mysqli": "*",
         "ext-pdo": "*",
         "ext-zip": "*",
-        "ckfinder/ckfinder-symfony-bundle": "*",
+        "ckfinder/ckfinder-symfony-bundle": "dev-main",
         "doctrine/doctrine-bundle": "^2.7",
         "doctrine/orm": "^2.14.1",
         "mobiledetect/mobiledetectlib": "^3.74",
