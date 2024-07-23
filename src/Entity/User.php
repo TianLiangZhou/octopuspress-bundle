@@ -31,9 +31,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  */
 #[Table(name: "users", )]
 #[Entity(repositoryClass: UserRepository::class)]
-#[Index(columns: ['account'], name: 'user_login_key')]
-#[Index(columns: ['email'], name: 'user_email')]
-#[Index(columns: ['nickname'], name: 'nickname')]
+#[Index(name: 'user_login_key', columns: ['account'])]
+#[Index(name: 'user_email', columns: ['email'])]
+#[Index(name: 'nickname', columns: ['nickname'])]
 #[Callback('isEmailUnique', groups: ['Create', 'Update'])]
 #[Callback('isAccountUnique', groups: ['Create'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSerializable, Serializable
@@ -113,7 +113,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     /**
      * @var Collection<int, UserMeta>&Selectable<int, UserMeta>
      */
-    #[OneToMany(mappedBy: "user", targetEntity: UserMeta::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
+    #[OneToMany(targetEntity: UserMeta::class, mappedBy: "user", cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     private Collection $metas;
 
     private UserRepository $userRepository;

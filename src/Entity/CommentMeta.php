@@ -21,8 +21,8 @@ use OctopusPress\Bundle\Util\Formatter;
 #[Table(name: "comment_metas",)]
 #[Entity(repositoryClass: CommentMetaRepository::class)]
 #[UniqueConstraint(columns: ['comment_id', 'meta_key'])]
-#[Index(columns: ['comment_id'], name: 'comment_id')]
-#[Index(columns: ['meta_key'], name: 'meta_key')]
+#[Index(name: 'comment_id', columns: ['comment_id'])]
+#[Index(name: 'meta_key', columns: ['meta_key'])]
 class CommentMeta
 {
     /**

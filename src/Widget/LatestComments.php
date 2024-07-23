@@ -2,13 +2,6 @@
 
 namespace OctopusPress\Bundle\Widget;
 
-use OctopusPress\Bundle\Customize\AbstractControl;
-use OctopusPress\Bundle\Customize\Control;
-use OctopusPress\Bundle\Customize\Section;
-use OctopusPress\Bundle\Entity\Post;
-use OctopusPress\Bundle\Twig\OctopusRuntime;
-use Twig\Error\RuntimeError;
-
 class LatestComments extends AbstractWidget
 {
 

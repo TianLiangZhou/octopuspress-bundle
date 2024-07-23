@@ -26,7 +26,7 @@ use Symfony\Component\Validator\Constraints\Valid;
  */
 #[Table(name: "term_taxonomy", )]
 #[Entity(repositoryClass: TaxonomyRepository::class)]
-#[Index(columns: ['taxonomy'], name: 'taxonomy')]
+#[Index(name: 'taxonomy', columns: ['taxonomy'])]
 #[UniqueConstraint(name: 'term_id_taxonomy', columns: ['term_id', 'taxonomy'])]
 class TermTaxonomy implements JsonSerializable
 {
@@ -74,7 +74,7 @@ class TermTaxonomy implements JsonSerializable
     /**
      * @var Collection<int, TermTaxonomy>
      */
-    #[OneToMany(mappedBy: 'parent', targetEntity: TermTaxonomy::class, orphanRemoval: true)]
+    #[OneToMany(targetEntity: TermTaxonomy::class, mappedBy: 'parent', orphanRemoval: true)]
     private Collection $children;
 
     /**
@@ -86,7 +86,7 @@ class TermTaxonomy implements JsonSerializable
     /**
      * @var Collection<int, TermRelationship>
      */
-    #[OneToMany(mappedBy: 'taxonomy', targetEntity: TermRelationship::class, fetch: 'EXTRA_LAZY', orphanRemoval: true)]
+    #[OneToMany(targetEntity: TermRelationship::class, mappedBy: 'taxonomy', fetch: 'EXTRA_LAZY', orphanRemoval: true)]
     private Collection $relationships;
 
     public function __construct()

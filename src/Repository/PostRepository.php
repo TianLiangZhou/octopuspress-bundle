@@ -2,19 +2,13 @@
 
 namespace OctopusPress\Bundle\Repository;
 
-use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use OctopusPress\Bundle\Entity\Post;
-use OctopusPress\Bundle\Entity\PostMeta;
-use OctopusPress\Bundle\Entity\TermRelationship;
-use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Util\RepositoryTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Doctrine\ORM\Query;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 

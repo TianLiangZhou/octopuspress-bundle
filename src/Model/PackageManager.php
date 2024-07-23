@@ -2,8 +2,6 @@
 
 namespace OctopusPress\Bundle\Model;
 
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use InvalidArgumentException;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\OctopusPressKernel;

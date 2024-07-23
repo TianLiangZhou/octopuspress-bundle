@@ -24,8 +24,8 @@ use Symfony\Component\Validator\Constraints\Valid;
  */
 #[Table(name: "terms")]
 #[Entity(repositoryClass: TermRepository::class)]
-#[Index(columns: ['slug'], name: 'slug')]
-#[Index(columns: ['name'], name: 'name')]
+#[Index(name: 'slug', columns: ['slug'])]
+#[Index(name: 'name', columns: ['name'])]
 #[Callback(callback: "isUnique")]
 class Term implements JsonSerializable
 {
@@ -62,13 +62,13 @@ class Term implements JsonSerializable
     /**
      * @var Collection<int, TermTaxonomy>
      */
-    #[OneToMany(mappedBy: "term", targetEntity: TermTaxonomy::class, cascade: ["persist", "remove"])]
+    #[OneToMany(targetEntity: TermTaxonomy::class, mappedBy: "term", cascade: ["persist", "remove"])]
     private Collection $taxonomies;
 
     /**
      * @var Collection<int, TermMeta>
      */
-    #[OneToMany(mappedBy: "term", targetEntity: TermMeta::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
+    #[OneToMany(targetEntity: TermMeta::class, mappedBy: "term", cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     #[JoinColumn(name: "term_id", referencedColumnName: "term_id")]
     #[Valid]
     private Collection $metas;

@@ -2,13 +2,10 @@
 
 namespace OctopusPress\Bundle\Repository;
 
-use OctopusPress\Bundle\Customize\Layout\Form;
 use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\Util\Formatter;
 use OctopusPress\Bundle\Util\RepositoryTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 

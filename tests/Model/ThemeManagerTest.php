@@ -1,8 +1,8 @@
 <?php
 
-namespace Octopus\PressBundle\Tests\Model;
+namespace OctopusPress\Bundle\Tests\Model;
 
-use Octopus\PressBundle\Model\ThemeManager;
+use OctopusPress\Bundle\Model\ThemeManager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class ThemeManagerTest extends KernelTestCase
@@ -28,9 +28,9 @@ class ThemeManagerTest extends KernelTestCase
          */
         $manager = $container->get(ThemeManager::class);
 
-        $manager->activate(ThemeManager::DEFAULT_THEME);
+        $manager->activate('default');
 
-        $this->assertDirectoryExists($manager->targetDir(ThemeManager::DEFAULT_THEME));
+        $this->assertDirectoryExists($manager->targetDir('default'));
     }
 
     public function testInactivation()
@@ -42,8 +42,8 @@ class ThemeManagerTest extends KernelTestCase
          */
         $manager = $container->get(ThemeManager::class);
 
-        $manager->deactivate(ThemeManager::DEFAULT_THEME);
+        $manager->deactivate('default');
 
-        $this->assertDirectoryDoesNotExist($manager->targetDir(ThemeManager::DEFAULT_THEME));
+        $this->assertDirectoryDoesNotExist($manager->targetDir('default'));
     }
 }

@@ -2,10 +2,12 @@
 
 namespace OctopusPress\Bundle\Repository;
 
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use OctopusPress\Bundle\Entity\TermRelationship;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -35,10 +37,8 @@ class RelationRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param int $taxonomyId
+     * @param array|int $taxonomyId
      * @return int
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getTaxonomyObjectCount(array|int $taxonomyId): int
     {

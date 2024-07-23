@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 #[Table(name: "options", )]
 #[Entity(repositoryClass: OptionRepository::class)]
 #[UniqueConstraint(name: 'option_name', columns: ['option_name'])]
-#[Index(columns: ['autoload'], name: 'autoload')]
+#[Index(name: 'autoload', columns: ['autoload'])]
 class Option
 {
     const TRUE = 'true';

@@ -3,15 +3,15 @@
 namespace OctopusPress\Bundle\Repository;
 
 use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\NonUniqueResultException;
-use OctopusPress\Bundle\Entity\Post;
+use Doctrine\ORM\NoResultException;
 use OctopusPress\Bundle\Entity\Term;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
 use OctopusPress\Bundle\Util\RepositoryTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
@@ -36,8 +36,8 @@ class TaxonomyRepository extends ServiceEntityRepository
      * @param string $slug
      * @param string $taxonomy
      * @return TermTaxonomy|null
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
     public function slug(string $slug, string $taxonomy): ?TermTaxonomy
     {
@@ -83,7 +83,7 @@ class TaxonomyRepository extends ServiceEntityRepository
     /**
      * @param string $name
      * @return ?TermTaxonomy
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function getNavigationTaxonomy(string $name): ?TermTaxonomy
     {
@@ -115,11 +115,11 @@ class TaxonomyRepository extends ServiceEntityRepository
     /**
      * @param string $taxonomy
      * @param array $otherCondition
-     * @param int|null $limit
-     * @param int|null $offset
+     * @param int $limit
+     * @param int $offset
      * @return array
      */
-    public function taxonomies(string $taxonomy, array $otherCondition = [], ?int $limit = null, ?int $offset = null): array
+    public function taxonomies(string $taxonomy, array $otherCondition = [], int $limit = 50, int $offset = 1): array
     {
         $otherCondition['taxonomy'] = $taxonomy;
         $queryBuilder = $this->createQueryBuilder('a');

@@ -7,7 +7,6 @@ use OctopusPress\Bundle\Entity\TermTaxonomy;
 use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Support\ArchiveDataSet;
 use Traversable;
-use function Symfony\Component\String\b;
 
 class Breadcrumb extends AbstractWidget implements \IteratorAggregate
 {

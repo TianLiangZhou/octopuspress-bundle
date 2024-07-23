@@ -2,12 +2,12 @@
 
 namespace OctopusPress\Bundle\Repository;
 
+use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\QueryBuilder;
 use OctopusPress\Bundle\Entity\Comment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Util\RepositoryTrait;

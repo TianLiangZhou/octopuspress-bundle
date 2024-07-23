@@ -23,11 +23,11 @@ use Symfony\Component\Validator\Constraints\Url;
  */
 #[Table(name: "comments", )]
 #[Entity(repositoryClass: CommentRepository::class)]
-#[Index(columns: ['parent'], name: 'comment_parent')]
-#[Index(columns: ['post_id'], name: 'comment_post_id')]
-#[Index(columns: ['created_at'], name: 'comment_date')]
-#[Index(columns: ['author_email'], name: 'comment_author_email')]
-#[Index(columns: ['approved', 'created_at'], name: 'comment_approved_date')]
+#[Index(name: 'comment_parent', columns: ['parent'])]
+#[Index(name: 'comment_post_id', columns: ['post_id'])]
+#[Index(name: 'comment_date', columns: ['created_at'])]
+#[Index(name: 'comment_author_email', columns: ['author_email'])]
+#[Index(name: 'comment_approved_date', columns: ['approved', 'created_at'])]
 class Comment implements \JsonSerializable
 {
 
@@ -133,14 +133,14 @@ class Comment implements \JsonSerializable
     /**
      * @var ArrayCollection<int, CommentMeta>
      */
-    #[OneToMany(mappedBy: "comment", targetEntity: CommentMeta::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
+    #[OneToMany(targetEntity: CommentMeta::class, mappedBy: "comment", cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     private Collection $metas;
 
 
     /**
      * @var Collection<int, Comment>
      */
-    #[OneToMany(mappedBy: 'parent', targetEntity: Comment::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
+    #[OneToMany(targetEntity: Comment::class, mappedBy: 'parent', cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     private Collection $children;
 
 

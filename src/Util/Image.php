@@ -7,8 +7,8 @@ use CKSource\CKFinder\Exception\CKFinderException;
 class Image extends \CKSource\CKFinder\Image
 {
     /**
-     * @param $data
-     * @param $bmpSupport
+     * @param string $data
+     * @param bool $bmpSupport
      * @return static
      * @throws CKFinderException
      */

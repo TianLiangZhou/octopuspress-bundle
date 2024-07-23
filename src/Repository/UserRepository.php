@@ -2,14 +2,12 @@
 
 namespace OctopusPress\Bundle\Repository;
 
-use OctopusPress\Bundle\Entity\Role;
+use Doctrine\ORM\Exception\ORMException;
 use OctopusPress\Bundle\Entity\User;
 use OctopusPress\Bundle\Entity\UserMeta;
 use OctopusPress\Bundle\Util\RepositoryTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -81,17 +79,11 @@ class UserRepository extends ServiceEntityRepository
             if ($meta == null || empty($roleArray = $meta->getMetaValue())) {
                 continue;
             }
-            $roleQueryBuilder = $this->_em->createQueryBuilder();
-            $roles = $roleQueryBuilder->select('r')
-                ->from(Role::class, 'r')
-                ->add('where', $queryBuilder->expr()->in('r.id', $roleArray))
-                ->getQuery()
-                ->getResult();
             $collection[] = array_merge(
                 $manager->jsonSerialize(),
                 [
-                    'roles' => array_map(function (Role $item) {return $item->getId();}, $roles),
-                    'roleName' => implode(',', array_map(function (Role $item) {return $item->getName();}, $roles))
+                    'roles' => [],
+                    'roleName' => '',
                 ]
             );
         }

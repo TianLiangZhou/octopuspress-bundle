@@ -28,16 +28,14 @@ EOF;
     protected function context(array $attributes = []): array
     {
         // TODO: Implement context() method.
-        $results = [
-            'tags' => [],
+        return [
+            'tags' =>  $this->getBridger()->getTaxonomyRepository()->taxonomies(
+                TermTaxonomy::TAG,
+                [],
+                (int) ($attributes['count'] ?? 50)
+            ),
             'displayCount' => (bool) ($attributes['display_count'] ?? false),
         ];
-        $results['tags'] = $this->getBridger()->getTaxonomyRepository()->taxonomies(
-            TermTaxonomy::TAG,
-            [],
-            (int) ($attributes['count'] ?? 50)
-        );
-        return $results;
     }
 
     public function delayRegister(): void

@@ -2,7 +2,6 @@
 
 namespace OctopusPress\Bundle\Widget;
 
-use Doctrine\ORM\QueryBuilder;
 use OctopusPress\Bundle\Customize\AbstractControl;
 use OctopusPress\Bundle\Customize\Control;
 use OctopusPress\Bundle\Customize\Section;

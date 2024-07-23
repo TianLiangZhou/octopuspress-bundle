@@ -2,8 +2,10 @@
 
 namespace OctopusPress\Bundle\Widget;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\Query\Parameter;
 use OctopusPress\Bundle\Entity\Post;
 use Twig\TemplateWrapper;
 
@@ -34,11 +36,11 @@ class PreviousNext extends AbstractWidget
         $queryBuilder = $post->createQueryBuilder('p')
             ->andWhere('p.id < :id AND p.type = :type AND p.status = :status')
             ->addOrderBy('p.id', 'DESC')
-            ->setParameters([
-                'id' => $entity->getId(),
-                'type' => $entity->getType(),
-                'status' => $entity->getStatus(),
-            ]);
+            ->setParameters(new ArrayCollection([
+                new Parameter('id', $entity->getId()),
+                new Parameter('type', $entity->getType()),
+                new Parameter('status', $entity->getStatus()),
+            ]));
         $previous = $queryBuilder
             ->getQuery()
             ->setMaxResults(1)

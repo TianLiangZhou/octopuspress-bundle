@@ -1,0 +1,29 @@
+# run with: bin/phpstan analyse
+
+includes:
+    - vendor/phpstan/phpstan-doctrine/extension.neon
+    - vendor/phpstan/phpstan-doctrine/rules.neon
+    - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/phpstan/phpstan-symfony/rules.neon
+    - vendor/staabm/phpstan-dba/config/dba.neon
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+
+parameters:
+    level: 8
+    checkExplicitMixedMissingReturn: true
+
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: true
+
+    paths:
+        - src/
+
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+
+    doctrine:
+
+    ignoreErrors:
+        # https://github.com/phpstan/phpstan-doctrine/issues/176
+
+    typeAliases:

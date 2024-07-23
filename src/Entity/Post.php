@@ -27,10 +27,10 @@ use Symfony\Component\Validator\Constraints\Valid;
  */
 #[Table(name: "posts", )]
 #[Entity(repositoryClass: PostRepository::class)]
-#[Index(columns: ['author'], name: 'post_author')]
-#[Index(columns: ['parent'], name: 'post_parent')]
-#[Index(columns: ['name'], name: 'post_name')]
-#[Index(columns: ['type', 'status', 'created_at', 'id'], name: 'type_status_date')]
+#[Index(name: 'post_author', columns: ['author'])]
+#[Index(name: 'post_parent', columns: ['parent'])]
+#[Index(name: 'post_name', columns: ['name'])]
+#[Index(name: 'type_status_date', columns: ['type', 'status', 'created_at', 'id'])]
 class Post implements JsonSerializable
 {
     private ?PostRepository $repository = null;
@@ -210,27 +210,27 @@ class Post implements JsonSerializable
     /**
      * @var Collection<int, PostMeta>
      */
-    #[OneToMany(mappedBy: "post", targetEntity: PostMeta::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
+    #[OneToMany(targetEntity: PostMeta::class, mappedBy: "post", cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     #[Valid]
     private Collection $metas;
 
     /**
      * @var Collection<int, Comment>
      */
-    #[OneToMany(mappedBy: "post", targetEntity: Comment::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
+    #[OneToMany(targetEntity: Comment::class, mappedBy: "post", cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     private Collection $comments;
 
     /**
      * @var Collection<int, TermRelationship>
      */
-    #[OneToMany(mappedBy: "post", targetEntity: TermRelationship::class, cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
+    #[OneToMany(targetEntity: TermRelationship::class, mappedBy: "post", cascade: ["persist", "remove"], fetch: 'EXTRA_LAZY')]
     #[Valid]
     private Collection $termRelationships;
 
     /**
      * @var Collection<int, Post>
      */
-    #[OneToMany(mappedBy: 'parent', targetEntity: Post::class, fetch: 'EXTRA_LAZY')]
+    #[OneToMany(targetEntity: Post::class, mappedBy: 'parent', fetch: 'EXTRA_LAZY')]
     private Collection $children;
 
     /**

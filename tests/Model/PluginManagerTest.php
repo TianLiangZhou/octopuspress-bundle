@@ -1,8 +1,8 @@
 <?php
 
-namespace Octopus\PressBundle\Tests\Model;
+namespace OctopusPress\Bundle\Tests\Model;
 
-use Octopus\PressBundle\Model\PluginManager;
+use OctopusPress\Bundle\Model\PluginManager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class PluginManagerTest extends KernelTestCase
