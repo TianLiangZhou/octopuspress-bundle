@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace OctopusPress\Bundle\Controller\Admin;
 
 use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\Repository\OptionRepository;
 use OctopusPress\Bundle\Util\Formatter;
@@ -13,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * Class DashboardController
@@ -306,8 +305,6 @@ class DashboardController extends AdminController
      * @param string $id
      * @param string $type
      * @return void
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     private function defaultStatusSaveCallback(bool $value, string $id, string $type): void
     {

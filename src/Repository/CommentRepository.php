@@ -2,12 +2,10 @@
 
 namespace OctopusPress\Bundle\Repository;
 
-use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\QueryBuilder;
 use OctopusPress\Bundle\Entity\Comment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
 use Doctrine\Persistence\ManagerRegistry;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Util\RepositoryTrait;
@@ -28,26 +26,26 @@ class CommentRepository extends ServiceEntityRepository
     }
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @param Comment $entity
+     * @param bool $flush
      */
     public function add(Comment $entity, bool $flush = true): void
     {
-        $this->_em->persist($entity);
+        $this->getEntityManager()->persist($entity);
         if ($flush) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @param Comment $entity
+     * @param bool $flush
      */
     public function remove(Comment $entity, bool $flush = true): void
     {
-        $this->_em->remove($entity);
+        $this->getEntityManager()->remove($entity);
         if ($flush) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
 

@@ -5,16 +5,15 @@ namespace OctopusPress\Bundle\Controller\Admin;
 
 
 use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Model\CustomizeManager;
 use OctopusPress\Bundle\Model\ThemeManager;
 use OctopusPress\Bundle\Repository\OptionRepository;
-use Symfony\Component\Finder\Finder;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -130,8 +129,8 @@ class ThemeController extends AdminController
     /**
      * @param string $name
      * @return JsonResponse
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
+     * @throws InvalidArgumentException
      */
     #[Route('/{name}/activate', name: 'theme_activate', requirements: ['name' => '[a-z-A-Z0-9\-_]{2,}'], options: ['name' => '启用主题', 'parent' => 'appearance_theme', 'sort' => 0])]
     public function activate(string $name): JsonResponse
@@ -147,11 +146,10 @@ class ThemeController extends AdminController
      * @return JsonResponse
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
+     * @throws InvalidArgumentException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     #[Route('/{name}/setup', name:'theme_setup', requirements: [], options: ['name' => '安装主题', 'parent' => 'appearance_theme'])]
     public function setup(Request $request, string $name): JsonResponse

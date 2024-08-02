@@ -20,11 +20,13 @@ class Navigation extends AbstractWidget implements IteratorAggregate
 {
 
     /**
-     * @throws SyntaxError
-     * @throws RuntimeError
+     * @param array $context
+     * @return TemplateWrapper
      * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
-    protected function template(): TemplateWrapper
+    protected function template(array $context = []): TemplateWrapper
     {
         // TODO: Implement template() method.
         return $this->getTwig()->load('@OctopusPressBundle/default/bootstrap.navigation.twig');

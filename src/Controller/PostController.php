@@ -3,8 +3,7 @@
 namespace OctopusPress\Bundle\Controller;
 
 use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\NoResultException;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Comment;
 use OctopusPress\Bundle\Entity\Post;
@@ -19,7 +18,7 @@ use OctopusPress\Bundle\Twig\OctopusRuntime;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Twig\Error\RuntimeError;
 
 /**
@@ -44,8 +43,8 @@ class PostController extends Controller
     }
 
     /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Doctrine\ORM\NoResultException
+     * @throws NonUniqueResultException
+     * @throws NoResultException
      * @throws RuntimeError
      */
     #[Route('/tag/{slug}', name: 'tag', requirements: [
@@ -57,8 +56,8 @@ class PostController extends Controller
     }
 
     /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Doctrine\ORM\NoResultException
+     * @throws NonUniqueResultException
+     * @throws NoResultException
      * @throws RuntimeError
      */
     #[Route('/category/{slug}', name: 'category', requirements: [
@@ -149,8 +148,6 @@ class PostController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     #[Route("/comment", name: 'post_comment', methods: [Request::METHOD_POST])]
     public function comment(Request $request): JsonResponse
@@ -217,8 +214,8 @@ class PostController extends Controller
     }
 
     /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Doctrine\ORM\NoResultException
+     * @throws NonUniqueResultException
+     * @throws NoResultException
      * @throws RuntimeError
      */
     public function taxonomy(string $taxonomy, string $slug): ArchiveDataSet

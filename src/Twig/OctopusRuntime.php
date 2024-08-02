@@ -495,6 +495,9 @@ class OctopusRuntime implements RuntimeExtensionInterface
             }
             $widget = $widgetSupport->get($data['name']);
             $widget->put($data['attributes'] ?? []);
+            if (!empty($data['children'])) {
+                $widget->setChildren($data['children']);
+            }
             $container .= "<div id='{$data['id']}' class='widget widget-block widget-{$data['name']}'>" . $widget->render() . "</div>";
         }
         $container .= '</div>';

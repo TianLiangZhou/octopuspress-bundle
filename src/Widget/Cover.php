@@ -9,7 +9,7 @@ use Twig\TemplateWrapper;
 class Cover extends AbstractWidget
 {
 
-    protected function template(): string|TemplateWrapper
+    protected function template(array $context = []): string|TemplateWrapper
     {
         // TODO: Implement template() method.
         return "";
@@ -26,7 +26,7 @@ class Cover extends AbstractWidget
         // TODO: Implement delayRegister() method.
         $this->setCategory('media');
         $this->setLabel('封面');
-        $this->setIcon('camera-outline');
+        $this->setIcon('op-cover');
         $section = new Section('media', [
             'label' => '封面'
         ]);

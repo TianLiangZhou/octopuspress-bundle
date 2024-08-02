@@ -9,6 +9,14 @@ use function Symfony\Component\String\b;
 
 final class Widget
 {
+    const TEXT = 'text';
+    const MEDIA = 'media';
+    const DESIGN = 'design';
+    const WIDGETS = 'widgets';
+    const THEME = 'theme';
+    const EMBED = 'embed';
+    const REUSABLE = 'reusable';
+
     /**
      * @return array<string, AbstractWidget>
      */
@@ -44,37 +52,37 @@ final class Widget
     {
         $defaults = [
             [
-                'slug'  => 'text',
+                'slug'  => self::TEXT,
                 'label' => 'Text',
                 'icon'  => 'text-outline',
             ],
             [
-                'slug'  => 'media',
+                'slug'  => self::MEDIA,
                 'label' => 'Media',
                 'icon'  => 'film-outline',
             ],
             [
-                'slug'  => 'design',
+                'slug'  => self::DESIGN,
                 'label' => 'Design',
                 'icon'  => 'brush-outline',
             ],
             [
-                'slug'  => 'widgets',
+                'slug'  => self::WIDGETS,
                 'label' => 'Widgets',
                 'icon'  => 'list-outline',
             ],
             [
-                'slug'  => 'theme',
+                'slug'  => self::THEME,
                 'label' => 'Theme',
                 'icon'  => 'layout-outline',
             ],
             [
-                'slug'  => 'embed',
+                'slug'  => self::EMBED,
                 'label' => 'Embeds',
                 'icon'  => 'link-outline',
             ],
             [
-                'slug'  => 'reusable',
+                'slug'  => self::REUSABLE,
                 'label' => 'Reusable Blocks',
                 'icon'  => 'repeat-outline',
             ],

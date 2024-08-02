@@ -7,7 +7,7 @@ use Twig\TemplateWrapper;
 class RSS extends AbstractWidget
 {
 
-    protected function template(): string|TemplateWrapper
+    protected function template(array $context = []): string|TemplateWrapper
     {
         // TODO: Implement template() method.
         return '';
@@ -23,6 +23,6 @@ class RSS extends AbstractWidget
     {
         // TODO: Implement delayRegister() method.
         $this->setLabel('RSS');
-        $this->setIcon('fa-rss');
+        $this->setIcon('op-rss');
     }
 }

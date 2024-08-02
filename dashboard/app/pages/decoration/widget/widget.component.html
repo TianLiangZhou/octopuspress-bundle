@@ -32,12 +32,12 @@
                 <nb-card-body class="d-flex flex-column flex-grow-1">
                   <ng-container *ngFor="let category of filterWidgetCategories | async">
                     <div *ngIf="category.widgets && category.widgets.length > 0" class="sidebar-category">
-                      <label class="label col-form-label py-4" *ngIf="category.slug">{{category.label}}</label>
+                      <label class="label col-form-label py-4" *ngIf="category.slug">{{ category.label }}</label>
                       <div class="d-flex flex-row flex-wrap">
                         <div class="sidebar-widget-item" (click)="insertWidget(widget.name)"
                              *ngFor="let widget of category.widgets">
-                          <nb-icon [pack]="widget.icon.startsWith('fa-') ? 'fa': ''" [icon]="widget.icon"></nb-icon>
-                          <span class="py-4">{{widget.label}}</span>
+                          <nb-icon [pack]="pack(widget)" [icon]="widget.icon"></nb-icon>
+                          <span class="py-4">{{ widget.label }}</span>
                         </div>
                       </div>
                     </div>
@@ -55,19 +55,24 @@
               <nb-card-body>
                 <div class="row">
                   <div class="col-12 col-lg-10 col-xl-8 mx-auto">
-                    <nb-accordion tabindex="0" class="mt-5" (focus)="selectorBlock($event, i)"
+                    <nb-accordion tabindex="0" class="mt-5" (focus)="selectorBlock(i)"
                                   *ngFor="let block of blocks; index as i;">
                       <nb-accordion-item>
-                        <nb-accordion-item-header tabindex="0" (focus)="selectorBlock($event, i)">
-                          {{block.label}}
+                        <nb-accordion-item-header tabindex="0" (focus)="selectorBlock(i)">
+                          {{ block.label }}
                         </nb-accordion-item-header>
                         <nb-accordion-item-body>
-                          <widget-item [class.selected]="product.selected" [id]="product.id" #widgetItemComponent
-                                       tabindex="0"
-                                       [product]="product"
-                                       (focus)="selectorWidget($event)"
-                                       (blur)="unselectWidget($event)"
-                                       *ngFor="let product of getBlockWidgets(block.name)">
+                          <widget-item
+                            #widgetItemComponent
+                            tabindex="0"
+                            [class.selected]="product.selected"
+                            [id]="product.id"
+                            [product]="product"
+                            [blockIndex]="i"
+                            [index]="ii"
+                            (focus)="selectorWidget(widgetItemComponent)"
+                            (blur)="unselectWidget($event)"
+                            *ngFor="let product of getBlockWidgets(block.name); index as ii">
                           </widget-item>
                           <button nbButton fullWidth status="basic"
                                   (nbPopoverShowStateChange)="quickToggle($event, i)"
@@ -95,35 +100,23 @@
                   <nb-tabset class="h-100">
                     <nb-tab class="p-0 h-100" *ngIf="blocks.length > 0"
                             [tabTitle]="blocks[selectBlockIndex].label || ''">
-                      <nb-list class="p-0 sidebar-setting-widgets-list">
-                        <nb-list-item class="d-flex justify-content-between" [class.selected]="product.selected" tabindex="0" *ngFor="let product of getBlockWidgets(blocks[selectBlockIndex].name)">
-                          <a routerLink="./" [fragment]="product.id" (click)="selected(product)" class="d-flex justify-content-between text-decoration-none flex-grow-1">
-                            <div class="d-flex align-items-center">
-                              <span><nb-icon [pack]="product.widget.icon.startsWith('fa-') ? 'fa': ''" [icon]="product.widget.icon"></nb-icon></span>
-                              <span class="ms-2">{{product.widget.label}}</span>
-                            </div>
-                            <button class="more" nbButton outline [nbPopover]="itemMore" [nbPopoverContext]="{item:product, name: blocks[selectBlockIndex].name}" nbPopoverPlacement="bottom">
-                              <nb-icon icon="more-vertical-outline"></nb-icon>
-                            </button>
-                          </a>
-                        </nb-list-item>
-                      </nb-list>
+                      <ng-container [ngTemplateOutlet]="rightSidebarWidgets" [ngTemplateOutletContext]="{'products': getBlockWidgetsForIndex()}"></ng-container>
                     </nb-tab>
                     <nb-tab class="p-0 h-100 overflow-hidden" tabTitle="挂件">
                       <nb-card class="p-0 h-100 d-flex border-0 flex-column">
-                        <nb-card-header class="d-flex" *ngIf="selectedWidget">
-                          <nb-icon [pack]="selectedWidget.product.widget.icon.startsWith('fa-') ? 'fa': ''" [icon]="selectedWidget.product.widget.icon"></nb-icon>
+                        <nb-card-header class="d-flex" *ngIf="lastedWidget && lastedWidget.product.selected">
+                          <nb-icon [pack]="pack(lastedWidget.product.widget)" [icon]="lastedWidget.product.widget.icon"></nb-icon>
                           <div class="d-flex flex-column ps-3">
-                            <span>{{selectedWidget.product.widget.label}}</span>
-                            <label class="label">{{selectedWidget.product.widget.description}}</label>
+                            <span>{{ lastedWidget.product.widget.label }}</span>
+                            <label class="label">{{ lastedWidget.product.widget.description }}</label>
                           </div>
                         </nb-card-header>
                         <nb-card-body class="d-flex p-0 flex-column h-100 flex-grow-1">
-                          <nb-accordion multi *ngIf="selectedWidget">
-                            <nb-accordion-item *ngFor="let section of selectedWidget.product.widget.sections">
-                              <nb-accordion-item-header>{{section.label}}</nb-accordion-item-header>
+                          <nb-accordion multi *ngIf="lastedWidget && lastedWidget.product.selected">
+                            <nb-accordion-item *ngFor="let section of lastedWidget.product.widget.sections">
+                              <nb-accordion-item-header>{{ section.label }}</nb-accordion-item-header>
                               <nb-accordion-item-body>
-                                <control-container class="control-container" tabindex="0" [form]="selectedWidget.product.form"
+                                <control-container class="control-container" tabindex="0" [form]="lastedWidget.product.form"
                                                    [controls]="section.controls"></control-container>
                               </nb-accordion-item-body>
                             </nb-accordion-item>
@@ -141,6 +134,29 @@
     </div>
   </div>
 </div>
+
+<ng-template #rightSidebarWidgets let-products="products">
+  <nb-list class="p-0 sidebar-setting-widgets-list w-100">
+    <nb-list-item class="d-flex flex-column align-items-start"
+                  tabindex="0"
+                  [class.selected]="product.selected"
+                  *ngFor="let product of products; index as i;">
+      <a routerLink="./" [fragment]="product.id" (click)="selected(product)"
+         class="d-flex w-100 justify-content-between text-decoration-none flex-grow-1">
+        <div class="d-flex align-items-center">
+          <span><nb-icon [pack]="pack(product.widget)" [icon]="product.widget.icon"></nb-icon></span>
+          <span class="ms-2">{{ product.widget.label }}</span>
+        </div>
+        <button class="more" nbButton outline [nbPopover]="itemMore"
+                [nbPopoverContext]="{item:product, name: blocks[selectBlockIndex].name}" nbPopoverPlacement="bottom">
+          <nb-icon icon="more-vertical-outline"></nb-icon>
+        </button>
+      </a>
+      <ng-container *ngIf="product.children.length > 0" [ngTemplateOutlet]="rightSidebarWidgets" [ngTemplateOutletContext]="{'products': product.children}"></ng-container>
+    </nb-list-item>
+  </nb-list>
+</ng-template>
+
 <ng-template #quickInsertWidgetDialog>
   <nb-card class="border-0 mb-0" style="width: 22rem;">
     <nb-card-header class="border-0">
@@ -151,15 +167,17 @@
     </nb-card-header>
     <nb-card-body class="p-0">
       <div class="d-flex flex-row flex-wrap">
-          <div *ngFor="let widget of historyWidgets; index as i;" class="sidebar-widget-item"
-               (click)="insertWidget(widget.name, true)">
-              <nb-icon [pack]="widget.icon.startsWith('fa-') ? 'fa': ''" [icon]="widget.icon"></nb-icon>
-              <span class="py-4">{{widget.label}}</span>
-          </div>
+        <div *ngFor="let widget of historyWidgets; index as i;" class="sidebar-widget-item"
+             (click)="insertWidget(widget.name, true)">
+          <nb-icon [pack]="pack(widget)" [icon]="widget.icon"></nb-icon>
+          <span class="py-4">{{ widget.label }}</span>
+        </div>
       </div>
     </nb-card-body>
     <nb-card-footer class="border-0">
-      <button class="rounded-0" status="primary" outline fullWidth nbButton
+      <button class="rounded-0"
+              status="primary"
+              outline fullWidth nbButton
               (click)="widgetSidebarBtnRef.nativeElement.click()">浏览全部
       </button>
     </nb-card-footer>
@@ -171,13 +189,13 @@
     <nb-card-body class="p-0">
       <nb-list class="p-0">
         <nb-list-item>
-          <a class="d-block text-basic text-decoration-none w-100" (click)="onPrevious(data.name, data.item)" role="button">向上移动</a>
+          <a class="d-block text-basic text-decoration-none w-100" (click)="onPrevious(data.item)" role="button">向上移动</a>
         </nb-list-item>
         <nb-list-item>
-          <a class="d-block  text-basic text-decoration-none w-100" (click)="onNext(data.name, data.item)"  role="button">向下移动</a>
+          <a class="d-block  text-basic text-decoration-none w-100" (click)="onNext(data.item)" role="button">向下移动</a>
         </nb-list-item>
         <nb-list-item>
-          <a class="d-block  text-basic text-decoration-none w-100" (click)="onRemove(data.name, data.item)"  role="button">删除</a>
+          <a class="d-block  text-basic text-decoration-none w-100" (click)="onRemove(data.item)" role="button">删除</a>
         </nb-list-item>
       </nb-list>
     </nb-card-body>

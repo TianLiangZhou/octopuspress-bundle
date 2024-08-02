@@ -2,14 +2,14 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 
 import {NavigationComponent} from './navigation/navigation.component';
-import {WidgetComponent, WidgetItemComponent} from './widget/widget.component';
+import {WidgetComponent, WidgetItemComponent, WidgetGroupComponent} from './widget/widget.component';
 import {ThemeComponent} from './theme/theme.component';
 import {ThemeModule} from "../../@theme/theme.module";
 import {DragDropModule} from "@angular/cdk/drag-drop";
 import {UploadModule} from "../../shared/upload/upload.module";
 import {CustomComponent} from "./custom/custom.component";
 import {ControlModule} from "../../shared/control/control.module";
-import {RouterModule, Routes} from "@angular/router";
+import {RouterLink, RouterModule, Routes} from "@angular/router";
 import {MarketComponent} from "./theme/market.component";
 import { NbContextMenuModule } from '@nebular/theme';
 
@@ -50,6 +50,7 @@ const routes: Routes = [
     ThemeComponent,
     CustomComponent,
     WidgetItemComponent,
+    WidgetGroupComponent,
     MarketComponent,
   ],
   imports: [
@@ -60,6 +61,7 @@ const routes: Routes = [
     UploadModule,
     ControlModule,
     NbContextMenuModule,
+    RouterLink,
   ]
 })
 export class DecorationModule {

@@ -5,7 +5,7 @@ namespace OctopusPress\Bundle\Widget;
 class LatestComments extends AbstractWidget
 {
 
-    protected function template(): string
+    protected function template(array $context = []): string
     {
         // TODO: Implement template() method.
         return <<<EOF

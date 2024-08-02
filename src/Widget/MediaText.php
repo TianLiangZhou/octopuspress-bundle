@@ -9,7 +9,7 @@ use Twig\TemplateWrapper;
 class MediaText extends AbstractWidget
 {
 
-    protected function template(): string|TemplateWrapper
+    protected function template(array $context = []): string|TemplateWrapper
     {
         // TODO: Implement template() method.
         return '';
@@ -26,7 +26,7 @@ class MediaText extends AbstractWidget
         // TODO: Implement delayRegister() method.
         $this->setCategory('media');
         $this->setLabel('媒体和文本');
-        $this->setIcon('file-text-outline');
+        $this->setIcon('op-media-text');
         $section = new Section('media');
         $section->addControl(
             new ImageControl('image', [

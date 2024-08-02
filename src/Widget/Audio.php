@@ -12,12 +12,12 @@ use Twig\TemplateWrapper;
 class Audio extends AbstractWidget
 {
 
-    protected function template(): string|TemplateWrapper
+    protected function template(array $context = []): string|TemplateWrapper
     {
         // TODO: Implement template() method.
         return <<<EOF
 {% if audio %}
-<figure>
+<figure class="op-widget-audio">
     <div>
         <audio src="{{audio.url}}" {% if loop %} loop {% endif %} {% if auto %} autoplay {% endif %} controls></audio>
     </div>

@@ -3,9 +3,8 @@ import {RouterModule, Routes} from "@angular/router";
 import { LoginComponent } from './login/login.component';
 import { AuthComponent } from "./auth.component";
 import { LogoutComponent } from './logout/logout.component';
-import {ForgotComponent} from "./forgot/forgot.component";
-import {NbResetPasswordComponent} from "@nebular/auth";
-import {ResetComponent} from "./reset/reset.component";
+import { ForgotComponent } from "./forgot/forgot.component";
+import { ResetComponent } from "./reset/reset.component";
 
 const routes: Routes = [
   {

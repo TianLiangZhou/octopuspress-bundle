@@ -89,7 +89,7 @@ class Pagination extends AbstractWidget implements IteratorAggregate
         return $viewData;
     }
 
-    protected function template(): string|TemplateWrapper
+    protected function template(array $context = []): string|TemplateWrapper
     {
         // TODO: Implement template() method.
         return '';

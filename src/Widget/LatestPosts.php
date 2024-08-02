@@ -11,17 +11,17 @@ use Traversable;
 class LatestPosts extends AbstractWidget implements \IteratorAggregate
 {
 
-    protected function template(): string
+    protected function template(array $context = []): string
     {
         // TODO: Implement template() method.
         return <<<EOF
-    <ul class="latest-posts-list">
+    <ul class="op-widget-latest-posts">
         {% for item in posts %}
             <li class="latest-posts-list-item">
                 {% set thumbnail = item.getThumbnail() %}
                 {% if displayFeaturedImage and thumbnail %}
                 <div class="latest-post-list-item-thumbnail">
-                    <img src="{{thumbnail.attachment.url}}" alt="{{item.getTitle()}}" />
+                    <img src="{{ thumbnail.attachment.url }}" alt="{{item.getTitle()}}" />
                 </div>
                 {% endif %}
                 <a href="{{ permalink(item) }}">{{ item.title }}</a>
@@ -106,7 +106,7 @@ EOF;
         foreach ($users as $user) {
             $userOptions[] = ['label' => $user->getNickname(), 'value' => $user->getId()];
         }
-        $this->setIcon('fa-newspaper');
+        $this->setIcon('op-articles');
         $this->setLabel("近期文章");
         $section = new Section('content', [
             'label' => '文章内容设置'

@@ -2,10 +2,8 @@
 
 namespace OctopusPress\Bundle\Repository;
 
-use Doctrine\ORM\Exception\ORMException;
 use OctopusPress\Bundle\Entity\CommentMeta;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -22,26 +20,26 @@ class CommentMetaRepository extends ServiceEntityRepository
     }
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @param CommentMeta $entity
+     * @param bool $flush
      */
     public function add(CommentMeta $entity, bool $flush = true): void
     {
-        $this->_em->persist($entity);
+        $this->getEntityManager()->persist($entity);
         if ($flush) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @param CommentMeta $entity
+     * @param bool $flush
      */
     public function remove(CommentMeta $entity, bool $flush = true): void
     {
-        $this->_em->remove($entity);
+        $this->getEntityManager()->remove($entity);
         if ($flush) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
 

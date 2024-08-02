@@ -30,6 +30,7 @@ use OctopusPress\Bundle\Widget\PreviousNext;
 use OctopusPress\Bundle\Widget\RSS;
 use OctopusPress\Bundle\Widget\SiteLogo;
 use OctopusPress\Bundle\Widget\Tags;
+use OctopusPress\Bundle\Widget\Heading;
 use OctopusPress\Bundle\Widget\Video;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -362,6 +363,8 @@ class MasterManager
                 Cover::class,
                 Pagination::class,
                 PreviousNext::class,
+                Heading::class,
+                Group::class,
             ];
             if ($this->bridger->getTheme()->getThemeSupport('custom_logo')) {
                 $defaults[] = SiteLogo::class;

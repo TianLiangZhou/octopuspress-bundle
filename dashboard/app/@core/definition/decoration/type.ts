@@ -23,10 +23,17 @@ export type Section = {
   controls: Control[];
 }
 
+export interface WidgetData {
+  id: string;
+  name: string;
+  attributes:Record<string, any>;
+  children: WidgetData[];
+}
+
 export interface Block {
   name: string;
   label: string;
-  widgets: {id: string,name: string,attributes:Record<string, any>}[]
+  widgets: WidgetData[]
 }
 
 export interface Widget {

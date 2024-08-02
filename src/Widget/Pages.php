@@ -7,11 +7,11 @@ use OctopusPress\Bundle\Entity\Post;
 class Pages extends AbstractWidget
 {
 
-    protected function template(): string
+    protected function template(array $context = []): string
     {
         // TODO: Implement template() method.
         return <<<EOF
-<ul class="pages-list">
+<ul class="op-widget-pages">
     {% for item in pages %}
     <li class="pages-list-item">
         <a href="{{ permalink(item) }}">{{item.title}}</a>
@@ -41,6 +41,6 @@ EOF;
     {
         // TODO: Implement registerForm() method.
         $this->setLabel("页面列表");
-        $this->setIcon('fa-newspaper');
+        $this->setIcon('op-pages');
     }
 }

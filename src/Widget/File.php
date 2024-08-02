@@ -12,11 +12,12 @@ use Twig\TemplateWrapper;
 class File extends AbstractWidget
 {
 
-    protected function template(): string|TemplateWrapper
+    protected function template(array $context = []): string|TemplateWrapper
     {
         // TODO: Implement template() method.
         return <<<EOF
 {% if file %}
+    <div class="op-widget-file">
     <a
     class=""
     href="{% if link %}{{permalink(file)}}{%else%}{{attachment.url}}{% endif %}"
@@ -25,6 +26,7 @@ class File extends AbstractWidget
     {% if download %}
         <a class="" href="{{attachment.url}}">下载</a>
     {%endif %}
+    </div>
 {% endif %}
 EOF;
 

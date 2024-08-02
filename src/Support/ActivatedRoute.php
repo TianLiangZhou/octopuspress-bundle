@@ -80,6 +80,11 @@ final class ActivatedRoute
         return $this->getRouteName() == 'search';
     }
 
+    public function isProfile(): bool
+    {
+        return $this->getRouteName() == 'user_profile';
+    }
+
     /**
      * @return bool
      */

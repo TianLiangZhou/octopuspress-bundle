@@ -6,7 +6,6 @@ use OctopusPress\Bundle\Command\PluginCommand;
 use OctopusPress\Bundle\Controller\PostController;
 use OctopusPress\Bundle\Entity\Post;
 use OctopusPress\Bundle\Entity\TermTaxonomy;
-use OctopusPress\Bundle\Form\Type\PostType;
 use OctopusPress\Bundle\Model\MasterManager;
 use OctopusPress\Bundle\Model\PluginManager;
 use OctopusPress\Bundle\Plugin\PluginInterface;

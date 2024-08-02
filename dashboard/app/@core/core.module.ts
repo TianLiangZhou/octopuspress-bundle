@@ -27,7 +27,7 @@ export const NB_CORE_PROVIDERS: any[] = [
           endpoint: AUTHORIZE_LOGIN,
           method: 'post',
           redirect: {
-            success: '/app/dashboard',
+            success: null,
             failure: null,
           },
           defaultMessages: ['登录成功'],

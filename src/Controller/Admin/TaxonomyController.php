@@ -6,7 +6,6 @@ namespace OctopusPress\Bundle\Controller\Admin;
 
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Term;
@@ -23,9 +22,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\String\Slugger\AsciiSlugger;
-use function Symfony\Component\String\u;
+use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * Class CategoryController

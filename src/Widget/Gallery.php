@@ -9,7 +9,7 @@ use Twig\TemplateWrapper;
 class Gallery extends AbstractWidget
 {
 
-    protected function template(): string|TemplateWrapper
+    protected function template(array $context = []): string|TemplateWrapper
     {
         // TODO: Implement template() method.
         return '';
@@ -26,7 +26,7 @@ class Gallery extends AbstractWidget
         // TODO: Implement delayRegister() method.
         $this->setCategory('media');
         $this->setLabel('图库');
-        $this->setIcon('fa-images');
+        $this->setIcon('op-gallery');
         $section = new Section('media', [
             'label' => '图库'
         ]);

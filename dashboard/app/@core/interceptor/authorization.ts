@@ -25,7 +25,7 @@ export class Authorization implements HttpInterceptor {
   public constructor(
     private router: Router,
     private authService: NbAuthService,
-    private loadingService: SharedService,
+    private sharedService: SharedService,
     private toastService: NbToastrService,
     private menuService: UserService,
     protected tokenService: NbTokenService
@@ -64,13 +64,13 @@ export class Authorization implements HttpInterceptor {
     if (spinner !== undefined) {
       spinner.onSpinner(true)
     } else {
-      this.loadingService.loading(true);
+      this.sharedService.loading(true);
     }
     return next
       .handle(req)
       .pipe(
         finalize(() => {
-          spinner ? spinner.onSpinner(false) : this.loadingService.loading(false);
+          spinner ? spinner.onSpinner(false) : this.sharedService.loading(false);
         }),
         tap({
           error: (error) => {
@@ -79,6 +79,7 @@ export class Authorization implements HttpInterceptor {
             }
             if (error.status === HttpStatusCode.Unauthorized) {
               this.tokenService.clear();
+              this.sharedService.lastPage = this.router.url;
               this.router.navigate(['/auth/login']).then(_ => {});
               return;
             }

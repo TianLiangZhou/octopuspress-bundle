@@ -146,6 +146,8 @@ class ViewManager
             $template = $this->getResetTemplate();
         } elseif ($this->activatedRoute->isSearch()) {
             $template = $this->getSearchTemplate();
+        } elseif ($this->activatedRoute->isProfile()) {
+            $template = $this->getProfileTemplate();
         }
         if (empty($template)) {
             $template = $this->getIndexTemplate();
@@ -265,6 +267,15 @@ class ViewManager
     {
         $templates = ['search'];
         return $this->getQueryTemplate('search', $templates);
+    }
+
+    /**
+     * @return string
+     */
+    private function getProfileTemplate(): string
+    {
+        $templates = ['profile'];
+        return $this->getQueryTemplate('profile', $templates);
     }
 
     /**

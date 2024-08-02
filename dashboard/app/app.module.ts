@@ -12,6 +12,7 @@ import {APP_BASE_HREF, PlatformLocation} from "@angular/common";
 import {Authorization} from "./@core/interceptor/authorization";
 import {NotFoundComponent} from "./not-found.component";
 import {NbIconLibraries} from "@nebular/theme";
+import {createCoreIcons} from "./@theme/core-svg";
 
 @NgModule({
   bootstrap: [
@@ -49,5 +50,6 @@ export class AppModule {
     nbIconService.registerFontPack('fa', {
       packClass: "fa-regular",
     });
+    nbIconService.registerSvgPack('op', createCoreIcons())
   }
 }

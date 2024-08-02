@@ -3,11 +3,10 @@ declare(strict_types=1);
 
 namespace OctopusPress\Bundle\Controller\Admin;
 
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use OctopusPress\Bundle\Bridge\Bridger;
 use OctopusPress\Bundle\Entity\Option;
 use OctopusPress\Bundle\Repository\OptionRepository;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,8 +29,7 @@ class WidgetController extends AdminController
     /**
      * @param Request $request
      * @return JsonResponse
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @throws InvalidArgumentException
      */
     #[Route('/saved', name: 'saved', options: ['name' => '保存区块挂件', 'parent' => 'appearance_widget'], methods: ['POST'])]
     public function update(Request $request): JsonResponse
@@ -133,6 +131,7 @@ class WidgetController extends AdminController
         $widget = $widgetHelper->get($name);
         $widget->delayRegister();
         $attributes = $request->toArray();
+        $attributes['is_backend'] = true;
         unset($attributes['name']);
         $widget->put($attributes);
         return $this->json([

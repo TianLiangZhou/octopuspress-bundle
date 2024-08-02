@@ -24,6 +24,10 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
     private array $attributes = [];
     private Bridger $bridger;
     private string $name;
+    /**
+     * @var array<int, {name: string,attributes: array, children: array<int,mixed>}>
+     */
+    private array $children = [];
 
     protected array $options = [
         'label'           => '',
@@ -88,7 +92,7 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
         }
     }
 
-    abstract protected function template(): string|TemplateWrapper;
+    abstract protected function template(array $context = []): string|TemplateWrapper;
     abstract protected function context(array $attributes = []): array;
     abstract public function delayRegister(): void;
 
@@ -110,7 +114,7 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
             }
         }
         if ($templateWrapper == null) {
-            $templateWrapper = $this->template();
+            $templateWrapper = $this->template($context);
         }
         if (!$templateWrapper instanceof TemplateWrapper) {
             $templateWrapper = $twig->createTemplate($templateWrapper, $this->name);
@@ -294,6 +298,20 @@ abstract class AbstractWidget implements WidgetInterface, JsonSerializable
         return $this->bridger;
     }
 
+    /**
+     * @param array $children
+     * @return $this
+     */
+    public function setChildren(array $children): static
+    {
+        $this->children = $children;
+        return $this;
+    }
+
+    public function getChildren(): array
+    {
+        return $this->children;
+    }
     /**
      * @return void
      */

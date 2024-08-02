@@ -20,7 +20,7 @@ class Breadcrumb extends AbstractWidget implements \IteratorAggregate
         return new \ArrayIterator($this->getContext()['crumbs'] ?? []);
     }
 
-    protected function template(): string
+    protected function template(array $context = []): string
     {
         // TODO: Implement template() method.
         return  '';

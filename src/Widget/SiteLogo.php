@@ -5,13 +5,13 @@ namespace OctopusPress\Bundle\Widget;
 class SiteLogo extends AbstractWidget
 {
 
-    protected function template(): string
+    protected function template(array $context = []): string
     {
         $option = $this->getBridger()->getOptionRepository();
         $title  = $option->title();
         $siteUrl= $option->siteUrl();
         return <<<EOF
-<div class="site-logo">
+<div class="op-widget-site-logo">
     <a href="$siteUrl">$title</a>
 </div>
 EOF;

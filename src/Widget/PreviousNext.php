@@ -12,7 +12,7 @@ use Twig\TemplateWrapper;
 class PreviousNext extends AbstractWidget
 {
 
-    protected function template(): string|TemplateWrapper
+    protected function template(array $context = []): string|TemplateWrapper
     {
         // TODO: Implement template() method.
         return "";

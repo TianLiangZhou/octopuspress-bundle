@@ -12,12 +12,12 @@ use Twig\TemplateWrapper;
 class Image extends AbstractWidget
 {
 
-    protected function template(): string|TemplateWrapper
+    protected function template(array $context = []): string|TemplateWrapper
     {
         // TODO: Implement template() method.
         return <<<EOF
 {% if image %}
-<figure>
+<figure class="op-widget-image">
     <div>
         <img
             {% if rounded %} class="rounded-4" {% endif %}
@@ -30,7 +30,7 @@ class Image extends AbstractWidget
     {% if description %}
     <figcaption>{{description}}</figcaption>
     {% endif %}
-</figure>
+</figure.>
 {% endif %}
 EOF;
 

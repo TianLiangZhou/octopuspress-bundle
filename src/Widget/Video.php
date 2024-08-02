@@ -13,12 +13,12 @@ use Twig\TemplateWrapper;
 class Video extends AbstractWidget
 {
 
-    protected function template(): string|TemplateWrapper
+    protected function template(array $context = []): string|TemplateWrapper
     {
         // TODO: Implement template() method.
         return <<<EOF
 {% if video %}
-<figure>
+<figure class="op-widget-video">
     <div>
         <video src="{{video.url}}"
             {% if loop %} loop {% endif %}

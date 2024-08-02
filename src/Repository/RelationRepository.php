@@ -3,8 +3,6 @@
 namespace OctopusPress\Bundle\Repository;
 
 use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use OctopusPress\Bundle\Entity\TermRelationship;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
@@ -30,9 +28,9 @@ class RelationRepository extends ServiceEntityRepository
      */
     public function add(TermRelationship $entity, bool $flush = true): void
     {
-        $this->_em->persist($entity);
+        $this->getEntityManager()->persist($entity);
         if ($flush) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
 
@@ -78,9 +76,9 @@ class RelationRepository extends ServiceEntityRepository
      */
     public function remove(TermRelationship $entity, bool $flush = true): void
     {
-        $this->_em->remove($entity);
+        $this->getEntityManager()->remove($entity);
         if ($flush) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
 }

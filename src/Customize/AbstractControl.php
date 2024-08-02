@@ -159,13 +159,13 @@ abstract class AbstractControl implements \JsonSerializable
 
     /**
      * @param string $id
-     * @param bool $exclusive
+     * @param bool $exclusive  e 互斥 d 显隐
      * @param string|int|bool|null $value
      * @return $this
      */
-    public function addDepend(string $id, bool $exclusive = false, string|int|bool|null $value = null): static
+    public function addDepend(string $id, bool $exclusive = false, string|int|bool|null|array $value = null): static
     {
-        $this->depends[] = $id . ':' . ($exclusive ? 'e' : 'd') . ($value !== null ? ':' . $value : '');
+        $this->depends[] = [$id, $exclusive ? 'e' : 'd', ($value !== null ? $value : '')];
         return $this;
     }
 

@@ -10,11 +10,11 @@ use OctopusPress\Bundle\Entity\TermTaxonomy;
 class Tags extends AbstractWidget
 {
 
-    protected function template(): string
+    protected function template(array $context = []): string
     {
         // TODO: Implement template() method.
         return <<<EOF
-<ul class="tags-list">
+<ul class="op-widget-tags">
 {% for item in tags %}
     <li class="tags-list-item">
         <a href="{{permalink(item)}}">{{item.getName()}}{% if displayCount and c > 0 %}<span>({{c}})</span>{% endif %}</a>

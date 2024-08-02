@@ -10,11 +10,11 @@ use OctopusPress\Bundle\Entity\TermTaxonomy;
 class Categories extends AbstractWidget
 {
 
-    protected function template(): string
+    protected function template(array $context = []): string
     {
         // TODO: Implement template() method.
         return <<<EOF
-<ul class="categories">
+<ul  class="op-widget-categories">
 {% for item in categories %}
     {% set c = item.getCount() %}
     {% if c > 0 or displayEmpty %}
@@ -51,7 +51,9 @@ EOF;
     public function delayRegister(): void
     {
         // TODO: Implement registerForm() method.
-        $this->setLabel('分类列表');
+        $this->setLabel('分类列表')
+            ->setIcon('grid-outline')
+        ;
         $section = new Section('setting', [
             'label' => '设置',
         ]);

@@ -15,10 +15,10 @@ class LogoutListener implements EventSubscriberInterface
      * @param LogoutEvent $event
      * @return void
      */
-    public function onLogout(LogoutEvent $event)
+    public function onLogout(LogoutEvent $event): void
     {
         $request = $event->getRequest();
-        if (str_starts_with($request->getPathInfo(), '/backend')) {
+        if ($request->isXmlHttpRequest()) {
             $event->setResponse(new JsonResponse([
                 'status' => 'ok',
             ]));

@@ -1,22 +1,20 @@
 import {
   AfterViewInit,
   Component,
-  ElementRef, HostBinding,
+  ElementRef,
+  HostBinding,
   Inject,
   Input,
   OnDestroy,
-  OnInit, QueryList,
-  ViewChild, ViewChildren
+  OnInit,
+  QueryList,
+  TemplateRef,
+  ViewChild,
+  ViewChildren
 } from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {BLOCKS, SAVE_BLOCK_WIDGET, WIDGET_RENDERED, WIDGETS} from "../../../@core/definition/decoration/api";
-import {
-  Block,
-  RegisteredResponse,
-  RenderedResponse,
-  Widget,
-  WidgetCategory
-} from "../../../@core/definition/decoration/type";
+import {Block, RegisteredResponse, RenderedResponse, Widget, WidgetCategory, WidgetData} from "../../../@core/definition/decoration/type";
 import {NbSidebarService} from "@nebular/theme";
 import {combineLatest, Observable, of, Subscription, timer} from "rxjs";
 import {DOCUMENT} from "@angular/common";
@@ -28,7 +26,19 @@ type ProductWidget = {
   id: string;
   widget: Widget;
   form: FormGroup;
+  name: string;
   selected: boolean;
+  children: ProductWidget[];
+}
+
+const iconPack = (widget: Widget) => {
+  if (widget.icon.startsWith('fa-')) {
+    return 'fa';
+  }
+  if (widget.icon.startsWith('op-')) {
+    return 'op';
+  }
+  return '';
 }
 
 
@@ -44,6 +54,7 @@ export class WidgetComponent implements OnInit, AfterViewInit {
 
   @ViewChild('widgetSidebarBtn', {read: ElementRef<HTMLButtonElement>}) widgetSidebarBtnRef!: ElementRef<HTMLButtonElement>;
   @ViewChildren('widgetItemComponent') widgetItems!: QueryList<WidgetItemComponent>;
+  @ViewChild('quickInsertWidgetDialog',  {read: TemplateRef}) quickInsertWidgetDialog!: TemplateRef<any>;
 
   blocks: Block[] = [];
   hasHiddenWidgetSidebar = true;
@@ -58,7 +69,7 @@ export class WidgetComponent implements OnInit, AfterViewInit {
 
   selectBlockIndex = -1;
 
-  selectedWidget: WidgetItemComponent | undefined;
+  lastedWidget: WidgetItemComponent | undefined;
   leftSidebarCollapse: boolean = false;
 
 
@@ -89,32 +100,49 @@ export class WidgetComponent implements OnInit, AfterViewInit {
       if (blocks.length > 0) {
         this.selectBlockIndex = 0;
       }
+      let children = (widgetData: WidgetData): ProductWidget | undefined => {
+        const widget = this.widgets.find(item => {
+          if (item.name == widgetData.name) {
+            return item;
+          }
+          return undefined;
+        });
+        if (!widget) {
+          return undefined;
+        }
+        let controls = widget.sections.map(section => section.controls);
+        let product: ProductWidget = {
+          id: widgetData.id,
+          widget: Object.assign({}, widget),
+          form: new FormGroup(buildFormGroup(controls.flat(1))),
+          name: widget.name,
+          selected: false,
+          children: [],
+        };
+        for (const key in widgetData.attributes) {
+          if (product.form.contains(key)) {
+            product.form.controls[key].setValue(widgetData.attributes[key], {emitEvent: false});
+          }
+        }
+        if (widgetData.children.length > 0) {
+          widgetData.children.forEach( item => {
+            let p = children(item);
+            if (p) {
+              product.children.push(p)
+            }
+          });
+        }
+        return product;
+      };
+
       blocks.forEach((block) => {
         this.blockWidgets[block.name] = [];
         if (block.widgets.length > 0) {
           block.widgets.forEach(widgetData => {
-            const widget = this.widgets.find(item => {
-              if (item.name == widgetData.name) {
-                return item;
-              }
-              return undefined;
-            });
-            if (!widget) {
-              return ;
+            let product = children(widgetData);
+            if (product) {
+              this.blockWidgets[block.name].push(product);
             }
-            let controls = widget.sections.map(section => section.controls);
-            let product: ProductWidget = {
-              id: widgetData.id,
-              widget: Object.assign({}, widget),
-              form: new FormGroup(buildFormGroup(controls.flat(1))),
-              selected: false,
-            };
-            for (const key in widgetData.attributes) {
-              if (product.form.contains(key)) {
-                product.form.controls[key].setValue(widgetData.attributes[key], {emitEvent: false});
-              }
-            }
-            this.blockWidgets[block.name].push(product);
           });
         }
       });
@@ -134,6 +162,9 @@ export class WidgetComponent implements OnInit, AfterViewInit {
           this.sidebar.compact('menu-sidebar');
         }
       });
+    });
+    this.widgetItems.changes.subscribe((res:QueryList<WidgetItemComponent>) => {
+      this.selectorWidget(res.last);
     });
   }
 
@@ -180,64 +211,85 @@ export class WidgetComponent implements OnInit, AfterViewInit {
 
 
 
-  selectorBlock($event: Event, index: number) {
+  selectorBlock(index: number) {
     this.selectBlockIndex = index;
+    if (this.lastedWidget !== undefined) {
+      this.lastedWidget.product.selected = false;
+    }
+    this.lastedWidget = undefined;
   }
 
-  selectorWidget($event: Event) {
-    let id = ($event.target as HTMLElement).id
-    this.selectedWidgetComponent(id);
+  selectorWidget(widget: WidgetItemComponent) {
+    if (this.lastedWidget && this.lastedWidget.Id == widget.Id) {
+      return ;
+    }
+    if (this.lastedWidget !== undefined) {
+      this.lastedWidget.product.selected = false;
+    }
+    widget.product.selected = true;
+    this.lastedWidget = widget;
   }
 
-  private selectedWidgetComponent(id: string) {
+  private selectedWidgetComponent(id: string, widgets: QueryList<WidgetItemComponent>) {
+    for (let widget of widgets) {
+      if (this.lastedWidget != undefined && this.lastedWidget.Id == id) {
+        break;
+      }
+      if (widget.Id == id) {
+        if (this.lastedWidget != undefined) {
+          this.lastedWidget.product.selected = false;
+        }
+        widget.product.selected = true;
+        this.lastedWidget = widget;
+        break;
+      }
+      if (widget.groupComponent != undefined) {
+        this.selectedWidgetComponent(id, widget.groupComponent.widgetItems)
+      }
+    }
+
+
     for (let item of this.widgetItems) {
       if (id != item.Id) {
         continue;
       }
-      if (this.selectedWidget && this.selectedWidget.Id == id) {
-        continue;
+      if (this.lastedWidget && this.lastedWidget.Id == id) {
+        break;
       }
-      if (this.selectedWidget !== undefined) {
-        this.selectedWidget.product.selected = false;
+      if (this.lastedWidget !== undefined) {
+        this.lastedWidget.product.selected = false;
       }
       item.product.selected = true;
-      this.selectedWidget = item;
+      this.lastedWidget = item;
       break;
     }
   }
   unselectWidget($event: FocusEvent) {
-    if ($event.relatedTarget) {
-      let id = ($event.relatedTarget as HTMLElement).id;
-      if (id == "settingSidebarBtn") {
-        return ;
-      }
-      let className = ($event.relatedTarget as HTMLElement).className;
-      console.log(className);
-      if (className.includes("sidebar-setting") ||
-        className.includes("tab-link") ||
-        className.includes("accordion") ||
-        className.includes("control-container")
-      ) {
-        return ;
-      }
-    }
-    if (this.selectedWidget !== undefined) {
-      this.selectedWidget.product.selected = false;
-    }
-    this.selectedWidget = undefined;
   }
 
 
-  insertWidget(name: string, isQuick: boolean = false) {
+  insertWidget(name: string, isQuick: boolean = false, index: number = 0) {
     let widget = this.widgets.filter(item => item.name === name).pop();
     if (this.selectBlockIndex > -1 && widget) {
       let controls = widget.sections.map(section => section.controls);
-      this.blockWidgets[this.blocks[this.selectBlockIndex].name].push({
+      const blockName = this.blocks[this.selectBlockIndex].name;
+      const product = {
         id: this.generateUUID(),
         widget: Object.assign({}, widget),
         form: new FormGroup<any>(buildFormGroup(controls.flat(1))),
-        selected: false,
-      });
+        selected: true,
+        name: widget.name,
+        children: [],
+      };
+      if (this.lastedWidget) {
+        if (this.lastedWidget.isGroup()) {
+          this.lastedWidget.addChildren(product);
+        } else if (this.lastedWidget.pre && this.lastedWidget.pre.isGroup()) {
+          this.lastedWidget.pre.addChildren(product);
+        }
+      } else {
+        this.blockWidgets[blockName].push(product);
+      }
       if (!isQuick) {
         this.historyWidgets.unshift(widget);
         if (this.historyWidgets.length > 6) {
@@ -247,7 +299,10 @@ export class WidgetComponent implements OnInit, AfterViewInit {
     }
   }
 
-  getBlockWidgets(name: string) {
+  getBlockWidgetsForIndex(): any {
+    return this.getBlockWidgets(this.blocks[this.selectBlockIndex].name);
+  }
+  getBlockWidgets(name: string): any {
     return this.blockWidgets[name] ?? [];
   }
 
@@ -257,7 +312,23 @@ export class WidgetComponent implements OnInit, AfterViewInit {
       widgets: <Record<string, any>>{},
     };
     let i = 1;
-    for (let name in this.blockWidgets) {
+
+    let children = (childrenWidgets: ProductWidget[]) => {
+      if (childrenWidgets.length < 1) {
+        return [];
+      }
+      let widgets: Record<string, any>[] = [];
+      childrenWidgets.forEach((child: ProductWidget) => {
+        widgets.push({
+          id: child.id,
+          name: child.widget.name,
+          attributes: child.form.getRawValue(),
+          children: children(child.children),
+        })
+      })
+      return widgets;
+    };
+    Object.keys(this.blockWidgets).forEach(name => {
       body.blocks[name] = [];
       this.blockWidgets[name].forEach(item => {
         const widgetName = 'widget-' + item.widget.name + '-' + i;
@@ -266,10 +337,11 @@ export class WidgetComponent implements OnInit, AfterViewInit {
           id: item.id,
           name: item.widget.name,
           attributes: item.form.getRawValue(),
+          children: children(item.children),
         };
         i++;
       });
-    }
+    })
     this.http.post(SAVE_BLOCK_WIDGET, body).subscribe({
     });
   }
@@ -287,76 +359,84 @@ export class WidgetComponent implements OnInit, AfterViewInit {
     if (typeof performance !== 'undefined' && typeof performance.now === 'function'){
       d += performance.now(); // 添加性能测量器的当前时间
     }
-    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-xxxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
       const r = (d + Math.random() * 16) % 16 | 0;
-      d = Math.floor(d/16);
+      d = Math.floor(d / 16);
       return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
-    return uuid;
   }
 
   selected(product: ProductWidget) {
     if (product.selected) {
       return ;
     }
-    this.selectedWidgetComponent(product.id);
+    this.selectedWidgetComponent(product.id, this.widgetItems);
   }
 
-  onNext(name: string, item: ProductWidget) {
-    const index = this.blockWidgets[name].findIndex(ele => ele.id == item.id);
-    if (index > - 1) {
-      const next = this.blockWidgets[name][index+1];
-      if (next) {
-        this.blockWidgets[name][index + 1] = item;
-        this.blockWidgets[name][index] = next;
+  onNext(item: ProductWidget) {
+    const find = (widgets: ProductWidget[]) => {
+      for (let index = 0; index < widgets.length; index++) {
+        if (widgets[index].id == item.id) {
+          const next = widgets[index+1] || null;
+          if (next) {
+            widgets[index + 1] = widgets[index];
+            widgets[index] = next;
+          }
+          break;
+        } else if (widgets[index].children.length > 0) {
+          find(widgets[index].children);
+        }
       }
-    }
+    };
+    find(this.getBlockWidgetsForIndex());
   }
 
-  onPrevious(name: string, item: ProductWidget) {
-    const index = this.blockWidgets[name].findIndex(ele => ele.id == item.id);
-    if (index > -1) {
-      const pre = this.blockWidgets[name][index - 1];
-      if (pre) {
-        this.blockWidgets[name][index - 1] = item;
-        this.blockWidgets[name][index] = pre;
+  onPrevious(item: ProductWidget) {
+    const find = (widgets: ProductWidget[]) => {
+      for (let index = 0; index < widgets.length; index++) {
+        if (widgets[index].id == item.id) {
+          const pre = widgets[index-1] || null;
+          if (pre) {
+            widgets[index - 1] = widgets[index];
+            widgets[index] = pre;
+          }
+          break;
+        } else if (widgets[index].children.length > 0) {
+          find(widgets[index].children);
+        }
       }
-    }
+    };
+    find(this.getBlockWidgetsForIndex());
   }
-  onRemove(name: string, item: ProductWidget) {
-    const index = this.blockWidgets[name].findIndex(ele => ele.id == item.id);
-    if (index > -1) {
-      this.blockWidgets[name].splice(index, 1);
-    }
+  onRemove(item: ProductWidget) {
+    const find = (widgets: ProductWidget[]) => {
+      for (let index = 0; index < widgets.length; index++) {
+        if (widgets[index].id == item.id) {
+          widgets.splice(index, 1);
+          break;
+        } else if (widgets[index].children.length > 0) {
+          find(widgets[index].children);
+        }
+      }
+    };
+    find(this.getBlockWidgetsForIndex());
   }
 
+  pack(widget: Widget) {
+    return iconPack(widget);
+  }
 }
 
 
 @Component({
   selector: 'widget-item',
   template: `
-    <div class="position-relative widget-container">
+    <div class="position-relative widget-container" *ngIf="product.widget.name !== 'group'">
       <div #container class="widget-{{product.widget.name}}">
-        <nb-icon *ngIf="isMedia()"
-                 style="width: 100px; height: 100px" [pack]="product.widget.icon.startsWith('fa-') ? 'fa': ''"
-                 [icon]="product.widget.icon">
-        </nb-icon>
+        <nb-icon *ngIf="isMedia()" style="width: 100px; height: 100px" [pack]="pack()" [icon]="product.widget.icon"></nb-icon>
       </div>
-      <ng-template [ngIf]="product.widget.name === 'group'">
-        <div class="d-flex flex-column py-5 px-3">
-          <div class="d-flex mb-2">
-            <nb-icon [pack]="product.widget.icon.startsWith('fa-') ? 'fa': ''"
-                     [icon]="product.widget.icon">
-            </nb-icon>
-            <span>{{ product.widget.label }}</span>
-          </div>
-          <button nbButton fullWidth status="basic">
-            <nb-icon icon="plus-outline"></nb-icon>
-          </button>
-        </div>
-      </ng-template>
     </div>
+    <widget-group #groupComponent [widgets]="product.children" *ngIf="product.widget.name === 'group'" [parent]="this"></widget-group>
   `,
   styles: [
     `
@@ -370,15 +450,23 @@ export class WidgetComponent implements OnInit, AfterViewInit {
   ]
 })
 export class WidgetItemComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('groupComponent') groupComponent: WidgetGroupComponent | undefined;
   @Input('product') product!: ProductWidget
+  @Input('blockIndex') blockIndex: number = 0;
+  @Input('index') index: number = 0;
   private subscribeChange: Subscription | undefined;
+  @Input('pre') pre: WidgetItemComponent | undefined;
 
   @HostBinding('attr.id') get Id() {
     return this.product.id
   }
   @ViewChild('container', {read: ElementRef<HTMLDivElement>}) container!: ElementRef<HTMLDivElement>;
 
-  constructor(protected http: HttpClient, protected ds: DomSanitizer) {
+  constructor(protected http: HttpClient, protected ds: DomSanitizer, public parent: WidgetComponent) {
+  }
+
+  pack() {
+    return iconPack(this.product.widget);
   }
 
   ngOnInit(): void {
@@ -388,11 +476,19 @@ export class WidgetItemComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  addChildren(product: ProductWidget) {
+    this.product.children.push(product);
+  }
+
   private render(data: Record<string, any>) {
     data.name = this.product.widget.name;
     this.http.post<RenderedResponse>(WIDGET_RENDERED, data).subscribe(response => {
       if (response.output) {
-        this.container.nativeElement.innerHTML = response.output
+        if (this.container) {
+          this.container.nativeElement.innerHTML = response.output;
+        } else if (this.groupComponent) {
+          this.groupComponent.groupRenderClassName = response.output;
+        }
       }
     });
   }
@@ -402,12 +498,58 @@ export class WidgetItemComponent implements OnInit, AfterViewInit, OnDestroy {
   isMedia() {
     return ['image', 'file', 'video', 'audio', 'cover', 'gallery'].includes(this.product.widget.name);
   }
-
-
+  isGroup() {
+    return this.product.name === 'group';
+  }
   ngOnDestroy(): void {
     if (this.subscribeChange) {
       this.subscribeChange.unsubscribe();
     }
     this.subscribeChange = undefined;
+  }
+}
+
+@Component({
+  selector: 'widget-group',
+  template: `
+    <div class="op-widget-group" [className]="groupRenderClassName">
+      <widget-item
+        #widgetItemComponent
+        tabindex="0"
+        [class.selected]="product.selected"
+        [id]="product.id"
+        [product]="product"
+        [blockIndex]="this.parent.blockIndex"
+        [index]="ii"
+        [pre]="parent"
+        (focus)="this.parent.parent.selectorWidget(widgetItemComponent)"
+        (blur)="this.parent.parent.unselectWidget($event)"
+        *ngFor="let product of widgets; index as ii;"></widget-item>
+    </div>
+    <div class="d-flex flex-column py-5 px-3" *ngIf="widgets.length < 1">
+      <button nbButton fullWidth status="basic"
+              (nbPopoverShowStateChange)="this.parent.parent.quickToggle($event, this.parent.blockIndex)"
+              [nbPopover]="this.parent.parent.quickInsertWidgetDialog"
+              nbPopoverTrigger="click">
+        <nb-icon icon="plus-outline"></nb-icon>
+      </button>
+    </div>
+  `
+})
+export class WidgetGroupComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChildren('widgetItemComponent') widgetItems!: QueryList<WidgetItemComponent>;
+  @Input('widgets') widgets: ProductWidget[] = [];
+  @Input('parent') parent!: WidgetItemComponent;
+  @Input('groupRenderClassName') groupRenderClassName: string = ""
+  constructor(protected http: HttpClient, protected ds: DomSanitizer) {
+  }
+  ngOnInit(): void {
+  }
+  ngOnDestroy(): void {
+  }
+  ngAfterViewInit(): void {
+    this.widgetItems.changes.subscribe((res: QueryList<WidgetItemComponent>) => {
+      this.parent.parent.selectorWidget(res.last)
+    });
   }
 }

@@ -134,21 +134,24 @@ export class ControlContainerComponent implements OnInit, OnChanges, AfterViewIn
     if (depends == undefined || depends.length < 1) {
       return ;
     }
-    for (let dependStr of depends) {
-      const depend = dependStr.split(":");
+    for (let depend of depends) {
       if (depend.length < 2) {
         continue;
       }
       const dependId = depend[0];
       if (depend[1] === "d") { // 显示
         if (depend[2] !== undefined)  {
-          control.hidden = this.form.controls[dependId].value !== depend[2];
+          control.hidden =  Array.isArray(depend[2])
+            ? !depend[2].includes(this.form.controls[dependId].value)
+            : this.form.controls[dependId].value !== depend[2];
         } else {
           control.hidden = !this.form.controls[dependId].value;
         }
         this.form.controls[dependId].valueChanges.subscribe(value => {
           if (depend[2] !== undefined) {
-            control.hidden = value !== depend[2];
+            control.hidden = Array.isArray(depend[2])
+              ? !depend[2].includes(value)
+              : value !== depend[2];
           } else {
             control.hidden = !value;
           }
@@ -171,6 +174,13 @@ export class ControlContainerComponent implements OnInit, OnChanges, AfterViewIn
               break;
             case "string":
               this.form.controls[dependId].setValue("", options);
+              break;
+            case "object":
+              if (Array.isArray(value)) {
+                this.form.controls[dependId].setValue([], options);
+              } else {
+                this.form.controls[dependId].setValue({}, options);
+              }
               break;
             default:
               this.form.controls[dependId].setValue(null, options);
