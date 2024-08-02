@@ -15,7 +15,7 @@ class Heading extends AbstractWidget
         // TODO: Implement template() method.
         $tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
         $tag = in_array($context['size'] ?? '', $tags) ? $context['size'] : 'h2';
-        return sprintf('<%s class="%s">输入标题</%s>', $tag, "op-widget-heading", $tag);
+        return sprintf('<%s class="%s">%s</%s>', $tag, "op-widget-heading", $context['title'] ?? '', $tag);
     }
 
     protected function context(array $attributes = []): array
@@ -23,6 +23,7 @@ class Heading extends AbstractWidget
         // TODO: Implement context() method.
         return [
             'size' => $attributes['size'] ?? 'h1',
+            'title' => $attributes['title'] ?? '输入标题',
         ];
     }
 
@@ -47,7 +48,10 @@ class Heading extends AbstractWidget
                     ['value' => 'h6', 'label' => 'H6'],
                 ]
             ]),
-        );
+        )->addControl(
+            Control::createInput('title', '标题')
+        )
+        ;
         $this->addSection($section);
     }
 }
