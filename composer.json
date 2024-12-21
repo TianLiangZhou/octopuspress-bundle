@@ -10,7 +10,7 @@
         "ext-mysqli": "*",
         "ext-pdo": "*",
         "ext-zip": "*",
-        "ckfinder/ckfinder-symfony-bundle": "dev-main",
+        "ckfinder/ckfinder-symfony-bundle": "^4.0.2",
         "doctrine/doctrine-bundle": "^2.7",
         "doctrine/orm": "^3.2",
         "doctrine/dbal": "^4.0",
@@ -71,11 +71,5 @@
         ],
         "test": "vendor/bin/phpunit",
         "phpstan": "vendor/bin/phpstan analyse"
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/TianLiangZhou/ckfinder-symfony-bundle"
-        }
-    ]
+    }
 }
