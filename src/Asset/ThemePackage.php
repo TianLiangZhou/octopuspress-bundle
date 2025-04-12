@@ -10,7 +10,7 @@ class ThemePackage extends UrlPackage
 {
     private ActivatedTheme $activatedTheme;
 
-    public function __construct(string|array $assetsUrl, ActivatedTheme $activatedTheme, ContextInterface $context = null)
+    public function __construct(string|array $assetsUrl, ActivatedTheme $activatedTheme, ?ContextInterface $context = null)
     {
         $this->activatedTheme = $activatedTheme;
         parent::__construct($assetsUrl, new ThemeVersionStrategy($this->activatedTheme, '%s?v=%s'), $context);

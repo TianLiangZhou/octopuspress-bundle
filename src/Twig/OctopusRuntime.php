@@ -309,7 +309,7 @@ class OctopusRuntime implements RuntimeExtensionInterface
      * @param array $args
      * @return string
      */
-    public function thumbnail(Post $post, string $class = '', string $size = '', string $alt = null, array $args = []): string
+    public function thumbnail(Post $post, string $class = '', string $size = '', ?string $alt = null, array $args = []): string
     {
         $type = $post->getType();
         if ($type !== Post::TYPE_ATTACHMENT) {

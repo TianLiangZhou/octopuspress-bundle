@@ -52,7 +52,7 @@ class PostManager
      * @param Request|null $request
      * @return bool
      */
-    public function save(Post $post, string $oldStatus, Request $request = null): bool
+    public function save(Post $post, string $oldStatus, ?Request $request = null): bool
     {
         try {
             if ($post->getId() != null) {

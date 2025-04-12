@@ -11,7 +11,7 @@ class ThemeVersionStrategy implements VersionStrategyInterface
 
     private string $format;
 
-    public function __construct(ActivatedTheme $theme, string $format = null)
+    public function __construct(ActivatedTheme $theme, ?string $format = null)
     {
         $this->format = $format ?: '%s?%s';
         $this->theme = $theme;

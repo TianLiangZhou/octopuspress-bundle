@@ -58,7 +58,7 @@ final class UserAgent extends MobileDetect
      * @param string|null $userAgent
      * @return ?string
      */
-    protected function findDetectionRulesAgainstUA(array $rules, string $userAgent = null): ?string
+    protected function findDetectionRulesAgainstUA(array $rules, ?string $userAgent = null): ?string
     {
         // Loop given rules
         foreach ($rules as $key => $regex) {
@@ -80,7 +80,7 @@ final class UserAgent extends MobileDetect
      * @param string|null $userAgent
      * @return string
      */
-    public function browser(string $userAgent = null): string
+    public function browser(?string $userAgent = null): string
     {
         return $this->findDetectionRulesAgainstUA(
             array_merge(self::getBrowsers(), self::$additionalBrowsers),
@@ -93,7 +93,7 @@ final class UserAgent extends MobileDetect
      * @param  string|null $userAgent
      * @return string
      */
-    public function os(string $userAgent = null): string
+    public function os(?string $userAgent = null): string
     {
         return $this->findDetectionRulesAgainstUA(
             array_merge(self::$additionalOperatingSystems, self::getOperatingSystems()),
@@ -106,7 +106,7 @@ final class UserAgent extends MobileDetect
      * @param  string|null $userAgent
      * @return string
      */
-    public function device(string $userAgent = null): string
+    public function device(?string $userAgent = null): string
     {
         $rules = array_merge(
             self::getPhoneDevices(),

@@ -15,7 +15,7 @@ trait RepositoryTrait
      * @param callable|null $builderCallable
      * @return array Returns an array of Option objects
      */
-    public function pagination(Request $request, int $hydrationMode = AbstractQuery::HYDRATE_ARRAY, callable $builderCallable = null): array
+    public function pagination(Request $request, int $hydrationMode = AbstractQuery::HYDRATE_ARRAY, ?callable $builderCallable = null): array
     {
         $all = $request->query->all();
         $builderQuery = $this->createQueryBuilder('a');

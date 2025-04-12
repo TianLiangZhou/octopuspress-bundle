@@ -525,7 +525,7 @@ class Post implements JsonSerializable
      * @param $default
      * @return mixed|null
      */
-    public function getMetaValue(string $name, $default = null): mixed
+    public function getMetaValue(string $name, mixed $default = null): mixed
     {
         $meta = $this->getMeta($name);
         if ($meta == null) {

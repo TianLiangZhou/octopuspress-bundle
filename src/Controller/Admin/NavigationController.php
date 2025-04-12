@@ -266,7 +266,7 @@ class NavigationController extends AdminController
      * @throws \Doctrine\ORM\ORMException
      * @throws OptimisticLockException
      */
-    private function persistNode(array $nodes, TermTaxonomy $taxonomy, Post $parent = null, User $user = null, array &$confirmed = []): void
+    private function persistNode(array $nodes, TermTaxonomy $taxonomy, ?Post $parent = null, ?User $user = null, array &$confirmed = []): void
     {
         foreach ($nodes as $key => $node) {
             $nav = new Post();
