@@ -55,9 +55,9 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~18.2.18",
-    "@angular/cli": "~18.2.18",
-    "@angular/compiler-cli": "~18.2.13",
+    "@angular-devkit/build-angular": "~19.2.7",
+    "@angular/cli": "~19.2.7",
+    "@angular/compiler-cli": "~19.2.6",
     "@ckeditor/ckeditor5-adapter-ckfinder": "^41.1.0",
     "@ckeditor/ckeditor5-alignment": "^41.1.0",
     "@ckeditor/ckeditor5-angular": "^7.0.1",
