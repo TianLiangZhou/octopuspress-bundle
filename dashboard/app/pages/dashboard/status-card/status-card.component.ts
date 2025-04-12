@@ -17,6 +17,7 @@ import {ResponseBody} from "../../../@core/definition/common";
       </div>
     </nb-card>
   `,
+  standalone: false,
 })
 export class StatusCardComponent {
 

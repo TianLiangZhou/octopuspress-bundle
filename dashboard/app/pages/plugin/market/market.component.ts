@@ -11,6 +11,7 @@ import {SPINNER} from "../../../@core/interceptor/authorization";
 @Component({
   selector: 'app-plugin-market',
   templateUrl: './market.component.html',
+  standalone: false,
 })
 export class MarketComponent implements OnInit, OnSpinner, AfterViewInit {
   plugins: Package[] = [];

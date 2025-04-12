@@ -13,6 +13,7 @@ import {ControlContainerComponent} from "./control-container.component";
   selector: "group-control",
   templateUrl: "group-control.component.html",
   styleUrls: ["group-control.component.scss"],
+  standalone: false
 })
 export class GroupControlComponent implements OnInit {
 
@@ -139,6 +140,7 @@ export class GroupControlComponent implements OnInit {
       }
     `
   ],
+  standalone: false
 })
 export class GroupControlDialogComponent implements OnInit {
   @ViewChild('containerComponent') containerComponent!: ControlContainerComponent;

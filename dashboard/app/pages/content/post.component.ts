@@ -89,7 +89,8 @@ import {ht} from "date-fns/locale";
         </angular2-smart-table>
       </nb-card-body>
     </nb-card>
-  `
+  `,
+  standalone: false
 })
 export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
   protected typeChange$: ReplaySubject<string> = new ReplaySubject<string>(1);
@@ -419,6 +420,7 @@ export class PostComponent implements OnInit, OnSpinner, AfterViewInit {
     <edit-post></edit-post>
   `,
   styles: [],
+  standalone: false
 })
 export class EditPostComponent {
 }
@@ -450,7 +452,8 @@ export class EditPostComponent {
         }
       }
     `
-  ]
+  ],
+  standalone: false
 })
 export class PostActionsComponent {
   private actionClick: EventEmitter<{action:string, id: number}> = new EventEmitter();
@@ -523,6 +526,7 @@ export class PostActionsComponent {
       <ng-container *ngIf="termTaxonomies.length < 1">-</ng-container>
     </div>
   `,
+  standalone: false
 })
 export class PostTaxonomyComponent implements OnInit {
   @Input() value!: string;
@@ -553,6 +557,7 @@ export class PostTaxonomyComponent implements OnInit {
     </div>
 
   `,
+  standalone: false
 })
 export class PostAuthorComponent implements OnInit {
   @Input() value!: User;

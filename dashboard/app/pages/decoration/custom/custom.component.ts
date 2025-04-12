@@ -12,7 +12,8 @@ import {NbSidebarService} from "@nebular/theme";
 @Component({
   selector: 'app-theme-custom',
   templateUrl: './custom.component.html',
-  styles: []
+  styles: [],
+  standalone: false
 })
 export class CustomComponent implements OnInit, OnSpinner{
 

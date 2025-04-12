@@ -7,6 +7,7 @@ import {SPINNER} from "../../../../@core/interceptor/authorization";
 @Component({
   selector: 'app-site-media',
   templateUrl: './media.component.html',
+  standalone: false,
 })
 export class MediaComponent implements OnInit, OnSpinner {
   option: Record<string, any> = {};

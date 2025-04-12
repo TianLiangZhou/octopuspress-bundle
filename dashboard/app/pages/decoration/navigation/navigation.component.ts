@@ -61,6 +61,7 @@ interface DropInfo {
   templateUrl: './navigation.component.html',
   styleUrls: ['./navigation.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class NavigationComponent implements OnInit, OnSpinner, AfterViewInit {
   private searchResult: Record<string, object|undefined> = {};

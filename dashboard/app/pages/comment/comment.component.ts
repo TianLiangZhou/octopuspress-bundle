@@ -14,7 +14,8 @@ import {Post} from "../../@core/definition/content/type";
 @Component({
   selector: 'app-comment',
   templateUrl: './comment.component.html',
-  styleUrls: ['./comment.component.scss']
+  styleUrls: ['./comment.component.scss'],
+  standalone: false,
 })
 export class CommentComponent implements OnInit, OnSpinner {
   source!: ServerDataSource;
@@ -171,7 +172,8 @@ export class CommentComponent implements OnInit, OnSpinner {
         }
       }
     `
-  ]
+  ],
+  standalone: false,
 })
 export class CommentContentComponent implements OnInit {
 
@@ -292,6 +294,7 @@ export class CommentContentComponent implements OnInit {
       </div>
     </form>
   `,
+  standalone: false,
 })
 export class CommentEditComponent implements OnInit {
   comment: any = {};
@@ -343,6 +346,7 @@ export class CommentEditComponent implements OnInit {
   template: `
     <a *ngIf="value" [routerLink]="'/app/content/edit-post/'+value.id">查看文章</a>
   `,
+  standalone: false,
 })
 export class CommentPostComponent implements OnInit {
 

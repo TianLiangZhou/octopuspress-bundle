@@ -14,6 +14,7 @@ import {PostTypeSetting} from "../../@core/definition/content/type";
 @Component({
   selector: 'app-user',
   templateUrl: './member.component.html',
+  standalone: false
 })
 export class MemberComponent implements OnInit, OnSpinner {
   settings: Settings = {
@@ -193,6 +194,7 @@ export class MemberComponent implements OnInit, OnSpinner {
       <a class="mx-2" [class.ms-0]="i == 0" [routerLink]="'/app/content/'+link.type" queryParamsHandling="merge" [queryParams]="{author:rowData.id}" *ngFor="let link of links; index as i">{{link.label}}</a>
     </div>
   `,
+  standalone: false
 })
 export class MemberActionComponent implements OnInit {
   @Input() value!: string;

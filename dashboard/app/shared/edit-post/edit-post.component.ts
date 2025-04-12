@@ -53,6 +53,7 @@ type CheckTermTaxonomy = TermTaxonomy & {
 @Component({
   selector: 'edit-post',
   templateUrl: './edit-post.component.html',
+  standalone: false,
 })
 export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
   private type: string = 'post';
@@ -397,6 +398,7 @@ export class EditPostComponent implements OnInit, AfterViewInit, OnSpinner {
       <app-taxonomy-create [setting]="taxonomySetting!" (create)="onCreate($event)"></app-taxonomy-create>
     </ng-template>
   `,
+  standalone: false
 })
 export class HierarchicalTermSelectorComponent implements OnInit {
 
@@ -470,8 +472,8 @@ export class HierarchicalTermSelectorComponent implements OnInit {
       <nb-icon nbSuffix icon="search" pack="eva"></nb-icon>
     </nb-form-field>
   `,
+  standalone: false
 })
-
 export class FlatTermSelectorComponent implements OnInit, OnSpinner {
 
   @Input() control: FormControl<TermTaxonomy[] | null> | undefined;

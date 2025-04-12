@@ -72,6 +72,7 @@ type ResponseMenus = {menus: Capability[]} & ResponseBody;
   </div>
 </div>
   `,
+  standalone: false,
 })
 export class RoleComponent implements OnInit, OnSpinner {
   settings: Settings = {columns: {}};

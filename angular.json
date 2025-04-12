@@ -18,13 +18,16 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
             "sourceMap": true,
-            "outputPath": "public/dashboard",
+            "outputPath": {
+              "base": "public/dashboard"
+            },
             "index": "dashboard/index.html",
-            "main": "dashboard/main.ts",
-            "polyfills": "dashboard/polyfills.ts",
+            "polyfills": [
+              "dashboard/polyfills.ts"
+            ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "aot": true,
@@ -54,7 +57,8 @@
             ],
             "scripts": [
 
-            ]
+            ],
+            "browser": "dashboard/main.ts"
           },
           "configurations": {
             "production": {
@@ -80,9 +84,7 @@
               "sourceMap": false
             },
             "development": {
-              "buildOptimizer": false,
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true
@@ -133,6 +135,5 @@
         }
       }
     }
-  },
-  "defaultProject": "dashboard"
+  }
 }

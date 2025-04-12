@@ -18,6 +18,7 @@ import {SPINNER} from "../../../@core/interceptor/authorization";
 @Component({
   selector: 'app-theme',
   templateUrl: './theme.component.html',
+  standalone: false
 })
 export class ThemeComponent implements OnInit, OnSpinner, AfterViewInit {
 

@@ -5,7 +5,8 @@ import {NbLogoutComponent} from "@nebular/auth";
   selector: 'app-logout',
   template: `
     <div>正在退出账号, 请稍后...</div>
-  `
+  `,
+  standalone: false,
 })
 export class LogoutComponent extends NbLogoutComponent {
 

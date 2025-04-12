@@ -12,6 +12,7 @@ import {EditorConfig} from "@ckeditor/ckeditor5-core";
   template: `
     <ckeditor #editorComponent (change)="dataChange($event)" [editor]="editor" (ready)="onReady($event)" [(ngModel)]="data" [config]="editorOptions"></ckeditor>
   `,
+  standalone: false,
 })
 export class CkeditorComponent implements OnInit {
   @ViewChild('editorComponent') editorComponent: CKEditorComponent | undefined;

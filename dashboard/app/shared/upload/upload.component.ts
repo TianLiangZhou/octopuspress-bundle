@@ -8,7 +8,8 @@ import {NbComponentStatus} from "@nebular/theme/components/component-status";
   templateUrl: './upload.component.html',
   styles: [
     `:host {display: block}`
-  ]
+  ],
+  standalone: false
 })
 export class UploadComponent {
 

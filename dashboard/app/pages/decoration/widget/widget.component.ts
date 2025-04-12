@@ -46,6 +46,7 @@ const iconPack = (widget: Widget) => {
   selector: 'app-widget',
   templateUrl: './widget.component.html',
   styleUrls: ['./widget.component.scss'],
+  standalone: false,
 })
 export class WidgetComponent implements OnInit, AfterViewInit {
   private widgets: Widget[] = [];
@@ -447,7 +448,8 @@ export class WidgetComponent implements OnInit, AfterViewInit {
         margin: 1.25rem 0;
       }
     `
-  ]
+  ],
+  standalone: false
 })
 export class WidgetItemComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('groupComponent') groupComponent: WidgetGroupComponent | undefined;
@@ -534,7 +536,8 @@ export class WidgetItemComponent implements OnInit, AfterViewInit, OnDestroy {
         <nb-icon icon="plus-outline"></nb-icon>
       </button>
     </div>
-  `
+  `,
+  standalone: false,
 })
 export class WidgetGroupComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChildren('widgetItemComponent') widgetItems!: QueryList<WidgetItemComponent>;

@@ -19,6 +19,7 @@ import {Records} from "../../@core/definition/common";
       }
     `
   ],
+  standalone: false
 })
 export class ControlComponent implements OnInit {
 

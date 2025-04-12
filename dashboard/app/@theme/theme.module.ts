@@ -136,7 +136,7 @@ let NB_THEME_PROVIDERS: any[] = [
 ];
 
 @NgModule({
-    imports: [...BASE_MODULES, ...NB_MODULES, NbContextMenuModule, RouterLink],
+  imports: [...BASE_MODULES, ...NB_MODULES, NbContextMenuModule, RouterLink,],
   exports: [...BASE_MODULES, ...NB_MODULES, ...COMPONENTS, ...PIPES],
   declarations: [...COMPONENTS, ...PIPES],
 })

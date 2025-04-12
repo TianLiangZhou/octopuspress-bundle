@@ -9,7 +9,8 @@ import {ConfigurationService} from "../../@core/services/configuration.service";
         <nb-route-tabset [tabs]="tabs"></nb-route-tabset>
       </nb-card-body>
     </nb-card>
-  `
+  `,
+  standalone: false
 })
 export class SettingComponent implements OnInit {
 

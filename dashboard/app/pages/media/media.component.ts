@@ -21,7 +21,8 @@ import {CKFinderService} from "../../@core/services/ckfinder.service";
         }
       }
     `
-  ]
+  ],
+  standalone: false
 })
 export class MediaComponent implements OnInit, AfterViewInit {
 

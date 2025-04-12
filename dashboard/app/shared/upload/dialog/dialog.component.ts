@@ -26,7 +26,8 @@ import {NbDialogRef} from '@nebular/theme';
       }
     }
     `
-  ]
+  ],
+  standalone: false
 })
 export class DialogComponent implements OnInit {
 

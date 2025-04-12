@@ -11,6 +11,7 @@ import {EditEvent} from "angular2-smart-table/lib/lib/events";
 @Component({
   selector: 'app-option',
   templateUrl: './option.component.html',
+  standalone: false,
 })
 export class OptionComponent implements OnInit {
 

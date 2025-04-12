@@ -28,7 +28,8 @@ import {Router} from "@angular/router";
   `,
   styleUrls: [
     '../../../node_modules/@nebular/auth/components/auth.component.scss'
-  ]
+  ],
+  standalone: false,
 })
 export class AuthComponent extends NbAuthComponent implements OnInit {
 

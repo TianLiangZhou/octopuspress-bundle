@@ -18,6 +18,7 @@ import {SPINNER} from "../../../@core/interceptor/authorization";
 @Component({
   selector: 'app-plugin-installed',
   templateUrl: './installed.component.html',
+  standalone: false,
 })
 export class InstalledComponent implements OnInit, OnSpinner, AfterViewInit {
 

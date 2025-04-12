@@ -12,6 +12,7 @@ import {SharedService} from "../@core/services/shared.service";
       <router-outlet></router-outlet>
     </app-layout>
   `,
+  standalone: false,
 })
 export class PagesComponent implements OnInit {
   menus: NbMenuItem[] = [];

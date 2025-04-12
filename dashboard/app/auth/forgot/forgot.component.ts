@@ -60,7 +60,8 @@ import {NbRequestPasswordComponent} from "@nebular/auth";
       <p><a class="text-link" routerLink="../login">返回登录</a></p>
       <p><a routerLink="../register" class="text-link">注册</a></p>
     </section>
-  `
+  `,
+  standalone: false
 })
 export class ForgotComponent extends NbRequestPasswordComponent implements OnInit {
   ngOnInit(): void {

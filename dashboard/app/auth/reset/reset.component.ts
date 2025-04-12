@@ -4,7 +4,8 @@ import {ActivatedRoute, Router} from "@angular/router";
 
 @Component({
   selector: 'app-reset',
-  templateUrl: './reset.component.html'
+  templateUrl: './reset.component.html',
+  standalone: false,
 })
 export class ResetComponent extends NbResetPasswordComponent implements OnInit {
 

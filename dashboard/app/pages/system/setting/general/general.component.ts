@@ -9,6 +9,7 @@ import {SPINNER} from "../../../../@core/interceptor/authorization";
 @Component({
   selector: 'app-site-general',
   templateUrl: './general.component.html',
+  standalone: false
 })
 export class GeneralComponent implements OnInit, OnSpinner {
 

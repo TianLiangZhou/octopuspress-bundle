@@ -42,6 +42,7 @@ import {LocationStrategy} from "@angular/common";
       </nb-card-body>
     </nb-card>
   `,
+  standalone: false
 })
 export class CreateTaxonomyComponent implements OnInit, OnSpinner, OnChanges {
   @Input() setting!: TaxonomySetting;
@@ -160,6 +161,7 @@ export class CreateTaxonomyComponent implements OnInit, OnSpinner, OnChanges {
       </nb-card-body>
     </nb-card>
   `,
+  standalone: false
 })
 export class EditTaxonomyComponent implements OnInit, OnSpinner {
   formGroup: FormGroup | undefined;

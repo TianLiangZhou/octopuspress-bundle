@@ -23,7 +23,8 @@ interface SelfStyleDefinition extends Omit<StyleDefinition, 'classes'> {
 @Component({
   selector: 'app-site-editor',
   templateUrl: './editor.component.html',
-  styles: []
+  styles: [],
+  standalone: false,
 })
 export class EditorComponent implements OnInit, OnSpinner {
   option: OptionKeyType = {

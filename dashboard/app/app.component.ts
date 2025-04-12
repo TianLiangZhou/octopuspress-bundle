@@ -7,6 +7,7 @@ import zh from "@angular/common/locales/zh";
 @Component({
   selector: 'app-root',
   template: `<router-outlet></router-outlet>`,
+  standalone: false,
 })
 export class AppComponent {
   constructor(

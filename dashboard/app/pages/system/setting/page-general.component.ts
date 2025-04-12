@@ -14,7 +14,8 @@ import {Component} from '@angular/core';
         display: none;
       }
     `
-  ]
+  ],
+  standalone: false
 })
 export class PageGeneralComponent {
 

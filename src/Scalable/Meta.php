@@ -20,7 +20,7 @@ final class Meta
      * @param AbstractControl|array|null $control
      * @return $this
      */
-    public function registerTaxonomy(string|array $taxonomy, string $key, array $args = [], AbstractControl|array $control = null): Meta
+    public function registerTaxonomy(string|array $taxonomy, string $key, array $args = [], AbstractControl|array|null $control = null): Meta
     {
         foreach ((array) $taxonomy as $t) {
             $this->taxonomy[$t][] = $this->register($key, $args, $control);
@@ -35,7 +35,7 @@ final class Meta
      * @param AbstractControl|array|null $control
      * @return $this
      */
-    public function registerPost(string|array $type, string $key, array $args = [], AbstractControl|array $control = null): Meta
+    public function registerPost(string|array $type, string $key, array $args = [], AbstractControl|array|null $control = null): Meta
     {
         foreach ((array) $type as $t) {
             $this->post[$t][] = $this->register($key, $args, $control);
@@ -49,7 +49,7 @@ final class Meta
      * @param AbstractControl|array|null $control
      * @return $this
      */
-    public function registerUser(string $key, array $args = [], AbstractControl|array $control = null): Meta
+    public function registerUser(string $key, array $args = [], AbstractControl|array|null $control = null): Meta
     {
         $this->user[] = $this->register($key, $args, $control);
         return $this;
@@ -61,7 +61,7 @@ final class Meta
      * @param AbstractControl|array|null $control
      * @return $this
      */
-    public function registerComment(string $key, array $args = [], AbstractControl|array $control = null): Meta
+    public function registerComment(string $key, array $args = [], AbstractControl|array|null $control = null): Meta
     {
         $this->comment[] = $this->register($key, $args, $control);
         return $this;
@@ -73,7 +73,7 @@ final class Meta
      * @param AbstractControl|array|null $control
      * @return array
      */
-    private function register(string $key, array $args = [], AbstractControl|array $control = null): array
+    private function register(string $key, array $args = [], AbstractControl|array|null $control = null): array
     {
         $meta = array_merge([
             'key'    => $key,

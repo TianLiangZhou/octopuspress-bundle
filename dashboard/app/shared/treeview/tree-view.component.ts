@@ -16,6 +16,7 @@ import {ReplaySubject, Subject} from "rxjs";
 @Component({
   selector: 'app-tree',
   templateUrl: './tree-view.component.html',
+  standalone: false
 })
 export class TreeViewComponent implements OnInit, OnChanges {
 
@@ -127,7 +128,8 @@ export class TreeViewComponent implements OnInit, OnChanges {
 @Component({
   selector: 'app-tree-item',
   templateUrl: './tree-item.component.html',
-  styleUrls: ['./tree-item.component.scss']
+  styleUrls: ['./tree-item.component.scss'],
+  standalone: false
 })
 export class TreeViewItemComponent implements DoCheck, AfterViewInit, OnDestroy {
 

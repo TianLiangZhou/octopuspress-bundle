@@ -16,6 +16,7 @@ import {NbDialogRef, NbDialogService} from '@nebular/theme';
 @Component({
   selector: 'app-taxonomy',
   templateUrl: './taxonomy.component.html',
+  standalone: false,
 })
 export class TaxonomyComponent implements OnInit, OnSpinner {
   private taxonomy: string = "";
@@ -209,7 +210,8 @@ export class TaxonomyComponent implements OnInit, OnSpinner {
         }
       }
     `
-  ]
+  ],
+  standalone: false
 })
 export class TaxonomyActionsComponent implements OnInit {
 
@@ -258,6 +260,7 @@ export class TaxonomyActionsComponent implements OnInit {
       </nb-card-footer>
     </nb-card>
   `,
+  standalone: false,
 })
 export class ConvertDialogComponent implements OnInit{
   taxonomy: TermTaxonomy | undefined;

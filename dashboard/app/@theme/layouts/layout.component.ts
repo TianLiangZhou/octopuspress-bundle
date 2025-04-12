@@ -35,7 +35,8 @@ import {SharedService} from "../../@core/services/shared.service";
         justify-content: right !important;
       }
     `
-  ]
+  ],
+  standalone: false
 })
 export class LayoutComponent {
 

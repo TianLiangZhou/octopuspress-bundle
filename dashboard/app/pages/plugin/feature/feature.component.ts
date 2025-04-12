@@ -19,7 +19,8 @@ import {Cell} from "angular2-smart-table/lib/lib/data-set/cell";
         overflow: hidden !important;
       }
     `
-  ]
+  ],
+  standalone: false,
 })
 export class FeatureComponent implements OnInit {
 

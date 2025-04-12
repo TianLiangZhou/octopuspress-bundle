@@ -9,6 +9,7 @@ import {TermTaxonomy} from "../../../../@core/definition/content/type";
 @Component({
   selector: 'app-site-content',
   templateUrl: './content.component.html',
+  standalone: false
 })
 export class ContentComponent implements OnInit, OnSpinner {
   option: Record<string, any> = {};

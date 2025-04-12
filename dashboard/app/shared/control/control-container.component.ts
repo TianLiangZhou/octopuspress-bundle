@@ -34,6 +34,7 @@ import {ReplaySubject, timer} from "rxjs";
       }
     `
   ],
+  standalone: false
 })
 export class ControlContainerComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() direction = 'column';

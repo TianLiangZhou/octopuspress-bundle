@@ -19,6 +19,7 @@ import {buildFormGroup, Control} from "../../shared/control/type";
 @Component({
   selector: 'app-user-new',
   templateUrl: './new.component.html',
+  standalone: false
 })
 export class NewComponent implements OnInit, OnSpinner, OnDestroy {
   formGroup: FormGroup = new FormGroup<any>({

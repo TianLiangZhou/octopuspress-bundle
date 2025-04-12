@@ -6,6 +6,7 @@ import {SharedService} from "../../@core/services/shared.service";
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
+  standalone: false
 })
 export class LoginComponent extends NbLoginComponent implements OnInit {
   constructor(protected override service: NbAuthService,

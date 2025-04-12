@@ -45,7 +45,8 @@ import {Location} from '@angular/common';
         }
       }
     `
-  ]
+  ],
+  standalone: false,
 })
 export class NotFoundComponent {
   constructor(private location: Location) {
