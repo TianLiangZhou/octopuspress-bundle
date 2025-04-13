@@ -22,7 +22,8 @@
           "options": {
             "sourceMap": true,
             "outputPath": {
-              "base": "public/dashboard"
+              "base": "public/dashboard",
+              "browser": ""
             },
             "index": "dashboard/index.html",
             "polyfills": [
