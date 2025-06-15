@@ -24,7 +24,7 @@ use Symfony\Component\Validator\Constraints\Regex;
 #[Entity(repositoryClass: PostMetaRepository::class)]
 #[ORM\UniqueConstraint(columns: ['post_id', 'meta_key'])]
 #[Index(name: 'post_id', columns: ['post_id'])]
-#[Index(name: 'meta_key', columns: ['meta_key'])]
+#[Index(name: 'post_meta_key', columns: ['meta_key'])]
 class PostMeta
 {
     /**

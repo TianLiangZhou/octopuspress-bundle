@@ -22,7 +22,7 @@ use OctopusPress\Bundle\Util\Formatter;
 #[Entity(repositoryClass: CommentMetaRepository::class)]
 #[UniqueConstraint(columns: ['comment_id', 'meta_key'])]
 #[Index(name: 'comment_id', columns: ['comment_id'])]
-#[Index(name: 'meta_key', columns: ['meta_key'])]
+#[Index(name: 'comment_meta_key', columns: ['meta_key'])]
 class CommentMeta
 {
     /**

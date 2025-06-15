@@ -24,7 +24,7 @@ use Symfony\Component\Validator\Constraints\Regex;
 #[Entity(repositoryClass: TermMetaRepository::class)]
 #[UniqueConstraint(columns: ['term_id', 'meta_key'])]
 #[Index(name: 'term_id', columns: ['term_id'])]
-#[Index(name: 'meta_key', columns: ['meta_key'])]
+#[Index(name: 'term_meta_key', columns: ['meta_key'])]
 class TermMeta
 {
     /**
